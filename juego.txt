@@ -1,0 +1,79 @@
+juego de conseguir un dominio ("pintar casillas")
+mapa/tablero (p ej: 50x50)
+2-4 de momento jugadores
+10-15 unidades/jugador
+num maximo de unidades y num minimo de unidades
+si el min es 5 y se muere tu quinta, reaparece en un lugar de tu zona
+cada (por ejemplo) 3 rondas reaparecen unidades hasta llegar a un numero dado
+
+las zonas se capturan saliendo de tu zona y dibujando un rectangulo
+
+........  ........ ........
+..rrrr..  ..rrrr.. ..rrrr..
+..rrrr..  ..rrrr.. ..rrrr..
+..rrrr..  ..rrrr.. ..rrrr..
+........  ..d..d.. ..rrrr..
+........  ..d..d.. ..rrrr..
+........  ..dddd.. ..rrrr..
+........  ........ ........
+
+por lo menos uno de los lados de la zona nueva debe ser dibujo.
+
+Máximo de casillas pintables de golpe: evita pintar todo el mapa
+	si se sobrepasa, se pintan máximo casillas y se eligen las
+	más cercanas al dominio del jugador
+
+dentro de mi zona:
+mis unidades se mueven y atacan en diagonal
+aparecen cosas (burbujas?) que puedes atacar y petar para puntos
+	las burbujas se mueven cada 2 o 3 turnos en cualquier dirección
+	si un enemigo las ataca, dentro de x turnos explotan generando
+	 .
+	...
+	 .
+	 y reaparece una unidad de su equipo en su zona (si u < umax)
+	 
+energía:
+cada ronda pasada en una casilla de mi zona +1 puntos
+cada ronda pasada en una casilla neutral 0 puntos
+cada ronda pasada en una casilla enemiga -1 puntos
+
+valores minimo y maximo (maximo?)
+
+la energía ayuda a decidir las batallas, (al luchar se pierde energía aunque ganes?)
+
+bonus:
+el mapa tiene bonus que sirven para mejorar unidades
+un equipo solo puede mejorar una unidad a la vez (por ejemplo)
+
+idea: una unidad con bonus no pierde energía por estar en zona enemiga
+	consigue también la energía máxima?
+
+habilidad: una unidad mejorada hace aparecer un NxN a su alrededor que
+sobrepinta lo que hubiese debajo (supongamos que no elimina los trazos/dibujos) y 
+encierra la zona: los enemigos no pueden ni entrar ni salir. 
+
+conflictos de habilidades:
+	1: si se tiran el mismo turno empatan, ocurre nada
+	2: si se tiran el mismo turno empatan, pintan mediomedio y anulan barrera
+	3: si se tira después sobrepinta y anula la habilidad anterior
+	4: si se tira después no hace nada
+	5: si se tira después anula la habilidad anterior
+	6: si se tira después pinta mediomedio y anula barrera
+	
+
+
+
+
+
+
+
+m2
+
+
+
+
+
+
+
+
