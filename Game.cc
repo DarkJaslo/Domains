@@ -30,6 +30,9 @@ Position& Position::operator+= (const Direction& d){
   return *this;
 }
 
+//Player
+int Player::me()const{return id;}
+
 //Square
 Square::Square(){p=Position(-1,-1); painted=false; drawed=false; painter=-1; drawer=-1;}
 
@@ -43,15 +46,18 @@ Board::Board(int h,int w){
       square_map[i][j].p = Position(i,j);
   }
 }
-int Board::cols(){return game_map[0].size();}
-int Board::rows(){return game_map.size();}
-Square Board::square(const Position& p){
+int Board::cols()const{return game_map[0].size();}
+int Board::rows()const{return game_map.size();}
+Square Board::square(const Position& p)const{
   if(p.y < cols() or p.y > cols() or p.x > rows() or p.x < rows()) cerr << "Position is not valid" << endl;
   return square_map[p.x][p.y];
 }
 
 //Game
 
+Game::Game(){
+
+}
 void Game::play(){
 
 }

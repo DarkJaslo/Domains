@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <queue>
 using namespace std;
 
 namespace game{
@@ -26,17 +27,85 @@ struct Position{
   Position& operator+= (const Direction& d);
 };
 
-class Player{
-  int id;
-  virtual void play();
+enum OrderType{ movement, attack };
+class Order{
+  struct OrderData{
+    int unitId;
+    Direction dir;
+    OrderType type;
+  };
+public:
+  void move(int unitId, Direction dir);
+  void attack(int unitId, Direction dir);
+  void ability(int unitId);
+  
+private:
+  friend class Game;
+  int maxSize;
+  int index;
+  void executeOrder();
+  vector<Order> orderList;
 };
 
-struct Unit{
+class Player{
+
+  public:
+  int me() const;
+  int squares() const;
+
+  private:
+  friend class Game;
   int id;
-  Player* player;
+  int squares;
+  virtual void play();  
+};
+
+enum UnitType{ unit, bubble,bonus };
+
+struct Unit{
+public:
+
+  int id() const;
+  int player() const;
+  Position position() const;
+  bool upgraded() const;
+  int energy() const;
+  int roundsToPop() const;
+
+private:
+
+  int id;
+  int player;
+  Position p;
+  UnitType type;
+
+  //unit params
+  bool upgraded;
+  int energy;
+
+  //bubble params
+  int roundsToPop;
+
+  Unit();
+};
+
+struct Bonus{
+  int id;
+  Position p;
+  UnitType type;
 };
 
 struct Square{
+public:
+
+  Position pos() const;
+  bool painted() const;
+  bool drawed() const;
+  int painter() const;
+  int drawer() const;
+
+private:
+  friend class Board;
   Position p;
   bool painted;
   bool drawed;
@@ -45,34 +114,44 @@ struct Square{
   Square();
 };
 
-struct Unit{
-  Position p;
-  int energy;
-  
-};
-
 class Board{
   public:
   Board();
   Board(int h, int w);
-  int cols();
-  int rows();
-  Square square(const Position& p);
+  int cols() const;
+  int rows() const;
+  Square square(const Position& p) const;
   private:
   vector<vector<int8>> game_map;
   vector<vector<Square>> square_map;
 };
 
 class Game{
+
+public:
+  int board_cols() const;
+  int board_rows() const;
+
+private:
   int numPlayers;
   int unitsStart;
   int unitsMax;
   int unitsMin;
   int squaresMax;
+  int bonusMax;
   int roundsPerRespawn;
+  int pointsPerUnit;
+  int pointsPerBubble;
+  int pointsPerPop;
+  int pointsPerSquare;
+  int energyMax;
+  int energyMin;
+  int abilitySize;
   vector<Player*> players;
+  vector<Order*> orders;
   vector<int> roundsSinceRespawn;
 
+  Game();
   //Plays the whole game
   void play();
 
@@ -80,7 +159,4 @@ class Game{
 
 
 }
-
-
-
 #endif
