@@ -40,9 +40,15 @@ struct Square{
   Position p;
   bool painted;
   bool drawed;
-  Player* painter;
-  Player* drawer;
+  int painter;  //Player
+  int drawer;   //Player
   Square();
+};
+
+struct Unit{
+  Position p;
+  int energy;
+  
 };
 
 class Board{
@@ -58,8 +64,17 @@ class Board{
 };
 
 class Game{
+  int numPlayers;
+  int unitsStart;
+  int unitsMax;
+  int unitsMin;
+  int squaresMax;
+  int roundsPerRespawn;
+  vector<Player*> players;
+  vector<int> roundsSinceRespawn;
 
-
+  //Plays the whole game
+  void play();
 
 };
 
