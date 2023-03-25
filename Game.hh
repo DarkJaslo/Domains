@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include "Player.hh"
 using namespace std;
 
 namespace game{
@@ -45,19 +46,6 @@ private:
   int index;
   void executeOrder();
   vector<Order> orderList;
-};
-
-class Player{
-
-  public:
-  int me() const;
-  int squares() const;
-
-  private:
-  friend class Game;
-  int id;
-  int numSquares;
-  virtual void play();  
 };
 
 enum UnitType{ unit, bubble,bonus };

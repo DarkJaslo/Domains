@@ -1,6 +1,8 @@
 #include <iostream>
+#include "Game.hh"
 using namespace std;
 
 int main(){
-  cout << "existo " << endl;
+  cout << "hola soy el main" << endl;
+  Register::printPlayers();
 }

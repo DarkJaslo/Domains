@@ -30,9 +30,6 @@ Position& Position::operator+= (const Direction& d){
   return *this;
 }
 
-//Player
-int Player::me()const{return id;}
-
 //Square
 Square::Square(){p=Position(-1,-1); isPainted=false; isDrawed=false; plPainter=-1; plDrawer=-1;}
 

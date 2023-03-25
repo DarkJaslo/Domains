@@ -5,9 +5,12 @@ PLAYERS_OBJ = $(patsubst %.cc, %.o, $(PLAYERS_SRC)) #$(EXTRA_OBJ) $(DUMMY_OBJ)
 
 #Rules
 
-OBJ = Register.o Game.o Main.o
+OBJ = Register.o Game.o Main.o Player.o
 
 all: Game
 
 Game:	$(OBJ) $(PLAYERS_OBJ)
-	g++ -O3 $(OBJ) -o Game.exe
+	g++ $(OBJ) $(PLAYERS_OBJ) -o Game.exe
+
+clean: 
+	rm *.o *.exe
