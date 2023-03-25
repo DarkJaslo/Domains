@@ -13,11 +13,14 @@ public:
   void move(int unitId, Direction dir);
   void attack(int unitId, Direction dir);
   void ability(int unitId);
+  PlayerOrders();
   
 private:
   void printOrderIds();
+  void resetList();
   friend class Game;
   int maxSize;
+  int index; //orderList[0,index] has valid orders. If index == -1, no orders
   vector<Order> orderList;
 };
 

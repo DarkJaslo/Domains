@@ -11,7 +11,7 @@ class Game{
 public:
   Game();
   //Plays the whole game
-  void play(const vector<string>& vnames);
+  void play(const vector<string>& vnames, bool showInfo);
 
 private:
   int rounds;

@@ -9,12 +9,12 @@ public:
   int cols() const;
   int rows() const;
   Square square(const Position& p) const;
+  void printSettings();
 
 private:
   friend class Board;
 
   void readSettings();
-  void iniBoard();
   int numPlayers;
   int unitsStart;
   int unitsMax;
@@ -32,7 +32,7 @@ private:
   int abilitySize;
   int boardWidth;
   int boardHeight;
-  vector<vector<int8>> game_map;
+  vector<vector<char>> game_map;
   vector<vector<Square>> square_map;
   vector<int> roundsSinceRespawn;
 };

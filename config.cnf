@@ -1,4 +1,4 @@
-NUMBER_OF_ROUNDS            200
+NUMBER_OF_ROUNDS            1
 NUMBER_OF_PLAYERS           2
 UNITS_AT_START              10
 MAX_NUMBER_OF_UNITS         15
@@ -13,5 +13,6 @@ POINTS_PER_SQUARE           5
 ENERGY_AT_START             5
 MAX_ENERGY                  20
 MIN_ENERGY                  0
-BOARD_WIDTH                 50
-BOARD_HEIGHT                50
+ABILITY_SIZE                4
+BOARD_WIDTH                 10
+BOARD_HEIGHT                10

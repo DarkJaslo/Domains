@@ -13,7 +13,7 @@ int main(int argc, char** argv){
   vector<string> names(2);
   names[0] = argv[1];
   names[1] = argv[2];
-  g.play(names);
+  g.play(names,true);
 
   cerr << "Fin main" << endl;
   exit(0);
