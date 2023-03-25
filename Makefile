@@ -1,4 +1,4 @@
-# The following two lines will detect all your players (files matching "AI*.cc")
+# Detect all native players (files matching "AI*.cc")
 
 PLAYERS_SRC = $(wildcard AI*.cc)
 PLAYERS_OBJ = $(patsubst %.cc, %.o, $(PLAYERS_SRC)) #$(EXTRA_OBJ) $(DUMMY_OBJ)
