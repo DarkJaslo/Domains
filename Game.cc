@@ -34,7 +34,7 @@ Position& Position::operator+= (const Direction& d){
 int Player::me()const{return id;}
 
 //Square
-Square::Square(){p=Position(-1,-1); painted=false; drawed=false; painter=-1; drawer=-1;}
+Square::Square(){p=Position(-1,-1); isPainted=false; isDrawed=false; plPainter=-1; plDrawer=-1;}
 
 //Board
 Board::Board(){}

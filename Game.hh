@@ -56,7 +56,7 @@ class Player{
   private:
   friend class Game;
   int id;
-  int squares;
+  int numSquares;
   virtual void play();  
 };
 
@@ -74,17 +74,17 @@ public:
 
 private:
 
-  int id;
-  int player;
+  int id_;
+  int pl;
   Position p;
   UnitType type;
 
   //unit params
-  bool upgraded;
-  int energy;
+  bool upg;
+  int energ;
 
   //bubble params
-  int roundsToPop;
+  int rtp;  //rounds to pop
 
   Unit();
 };
@@ -103,15 +103,15 @@ public:
   bool drawed() const;
   int painter() const;
   int drawer() const;
+  Square();
 
 private:
   friend class Board;
   Position p;
-  bool painted;
-  bool drawed;
-  int painter;  //Player
-  int drawer;   //Player
-  Square();
+  bool isPainted;
+  bool isDrawed;
+  int plPainter;  //Player
+  int plDrawer;   //Player
 };
 
 class Board{

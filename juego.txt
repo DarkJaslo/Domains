@@ -60,15 +60,53 @@ conflictos de habilidades:
 	4: si se tira después no hace nada
 	5: si se tira después anula la habilidad anterior
 	6: si se tira después pinta mediomedio y anula barrera
-	
-
-
-
-
-
-
-
 m2
+
+
+clases
+
+Game
+Board
+Player
+Order
+
+Las rondas son de Board
+Las órdenes son de Order
+Player y Border acceden a Order
+
+4 clases principales: Game, Board, Order y Player
+
+Game es el macroprograma, se encarga de leer datos, ejecutar códigos de jugadores y pasar ronda
+Board es el tablero de juego, se encarga de ejecutar las órdenes y cambiar el tablero
+Order guarda las órdenes de todos los jugadores
+Player es la clase que necesitas para meter el código de cada jugador
+
+1-game registra jugadores y lee config
+2-game inicializa partida ronda = 0
+3-game ejecuta los códigos de los jugadores
+4-el tablero accede a las órdenes y las ejecuta
+5-el tablero actualiza cosas que pasan entre rondas
+6-output del estado de la ronda
+7-pasar ronda
+8-si no se ha acabado la partida, vuelve a 3
+
+
+problemas:
+
+	registrar jugadores
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
