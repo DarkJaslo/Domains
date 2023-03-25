@@ -5,7 +5,7 @@ PLAYERS_OBJ = $(patsubst %.cc, %.o, $(PLAYERS_SRC)) #$(EXTRA_OBJ) $(DUMMY_OBJ)
 
 #Rules
 
-OBJ = Register.o Game.o Main.o Player.o
+OBJ = Register.o Game.o Main.o Player.o Board.o Utility.o Order.o
 
 all: Game
 
