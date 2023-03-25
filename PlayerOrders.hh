@@ -1,12 +1,13 @@
-#ifndef Order_hh
-#define Order_hh
+#ifndef PlayerOrders_hh
+#define PlayerOrders_hh
 #include "Utility.hh"
 
-class Order{
-  struct OrderData{
+class PlayerOrders{
+  struct Order{
     int unitId;
     Direction dir;
     OrderType type;
+    Order(int id,Direction d, OrderType t){unitId = id; dir = d; t = type;}
   };
 public:
   void move(int unitId, Direction dir);
@@ -14,10 +15,9 @@ public:
   void ability(int unitId);
   
 private:
+  void printOrderIds();
   friend class Game;
   int maxSize;
-  int index;
-  void executeOrder();
   vector<Order> orderList;
 };
 

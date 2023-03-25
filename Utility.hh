@@ -11,7 +11,7 @@ using namespace std;
 /**
  * Defines all directions
 */
-enum Direction{ up,down,left,right,UL,UR,DL,DR };
+enum Direction{ up,down,left,right,UL,UR,DL,DR,null };
 
 struct Position{
   int x;

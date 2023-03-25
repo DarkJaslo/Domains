@@ -1,13 +1,11 @@
 #include "Utility.hh"
+#include "GameInfo.hh"
 
 class Board{
-  public:
+public:
   Board();
-  Board(int h, int w);
-  int cols() const;
-  int rows() const;
-  Square square(const Position& p) const;
-  private:
-  vector<vector<int8>> game_map;
-  vector<vector<Square>> square_map;
+private:
+  void iniBoard();
+  GameInfo info;
+  //vector<Player*> players;
 };

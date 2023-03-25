@@ -91,11 +91,6 @@ Player es la clase que necesitas para meter el código de cada jugador
 8-si no se ha acabado la partida, vuelve a 3
 
 
-problemas:
-
-	registrar jugadores
-
-
 
 
 

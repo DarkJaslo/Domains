@@ -7,7 +7,9 @@ struct PLAYER_NAME : public Player{
     return new PLAYER_NAME;
   }
 
-  virtual void play(){}
+  virtual void play(){
+    move(1,Direction::right);
+  }
 };
 
 REGISTER_PLAYER(PLAYER_NAME);

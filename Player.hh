@@ -1,14 +1,15 @@
 #include "Register.hh"
+#include "PlayerOrders.hh"
+#include "GameInfo.hh"
 
-class Player{
+class Player : public PlayerOrders, public GameInfo{
 
   public:
   int me() const;
-  int squares() const;
   virtual void play(); 
 
   private:
+  int id_;
   friend class Game;
-  int id;
-  int numSquares; 
+  friend class Board;
 };
