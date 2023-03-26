@@ -21,7 +21,6 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
   b.iniBoard(seed);
   b.printRound();
 
-
 /* CODE TO TEST THE RANDOMIZER
   
   int ntests = 1000000;
