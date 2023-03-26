@@ -1,3 +1,6 @@
+#ifndef Player_hh
+#define Player_hh
+
 #include "Register.hh"
 #include "PlayerOrders.hh"
 #include "GameInfo.hh"
@@ -13,3 +16,5 @@ class Player : public PlayerOrders, public GameInfo{
   friend class Game;
   friend class Board;
 };
+
+#endif

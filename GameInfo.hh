@@ -10,6 +10,7 @@ public:
   int rows() const;
   Square square(const Position& p) const;
   void printSettings();
+  static int randomNumber(int l, int r);
 
 private:
   friend class Board;
