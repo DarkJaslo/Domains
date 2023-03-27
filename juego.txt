@@ -41,6 +41,9 @@ cada ronda pasada en una casilla enemiga -1 puntos
 valores minimo y maximo (maximo?)
 
 la energía ayuda a decidir las batallas, (al luchar se pierde energía aunque ganes?)
+moverse a una casilla con una unidad la ataca; si ganas, te mueves a la casilla.
+atacar a una casilla ataca a la unidad que está ahí. Si se ha movido previamente y sigue
+en rango, la atacas igualmente. No te mueves.
 
 bonus:
 el mapa tiene bonus que sirven para mejorar unidades
@@ -92,6 +95,8 @@ Player es la clase que necesitas para meter el código de cada jugador
 
 
 
+implementa Board::draw() 
+implementa Board::executeRound() y expecificamente Board::executeOrder()
 
 
 

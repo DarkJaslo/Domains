@@ -3,12 +3,6 @@
 #include "Utility.hh"
 
 class PlayerOrders{
-  struct Order{
-    int unitId;
-    Direction dir;
-    OrderType type;
-    Order(int id,Direction d, OrderType t){unitId = id; dir = d; t = type;}
-  };
 public:
   void move(int unitId, Direction dir);
   void attack(int unitId, Direction dir);
@@ -16,9 +10,16 @@ public:
   PlayerOrders();
   
 private:
+  friend class Game;
+  friend class Board;
   void printOrderIds();
   void resetList();
-  friend class Game;
+  struct Order{
+    int unitId;
+    Direction dir;
+    OrderType type;
+    Order(int id,Direction d, OrderType t){unitId = id; dir = d; t = type;}
+  };
   int maxSize;
   int index; //orderList[0,index] has valid orders. If index == -1, no orders
   vector<Order> orderList;

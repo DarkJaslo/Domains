@@ -33,6 +33,10 @@ public:
   bool drawed() const;
   int painter() const;
   int drawer() const;
+  bool hasUnit() const;
+  Unit unit() const;
+  bool hasBonus() const;
+  Bonus bonus() const;
   Square();
 
 private:
@@ -42,6 +46,9 @@ private:
   bool isDrawed;
   int plPainter;  //Player
   int plDrawer;   //Player
+  int uDrawer;
+  Unit* u;        //nullptr if there is not an unit
+  Bonus* b;
 };
 
 enum UnitType{ unit, bubble,bonus };
@@ -55,13 +62,17 @@ public:
   bool upgraded() const;
   int energy() const;
   int roundsToPop() const;
+  UnitType type() const;
+  Unit();
+  Unit(int id, int player, const Position& position, bool upgraded, int energy, UnitType type, int roundsToPop = -1);
 
 private:
+  friend class Board;
 
   int id_;
   int pl;
   Position p;
-  UnitType type;
+  UnitType t;
 
   //unit params
   bool upg;
@@ -69,8 +80,6 @@ private:
 
   //bubble params
   int rtp;  //rounds to pop
-
-  Unit();
 };
 
 struct Bonus{
@@ -80,5 +89,7 @@ struct Bonus{
 };
 
 enum OrderType{ movement, attack, ability };
+
+
 
 #endif

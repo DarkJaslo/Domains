@@ -10,7 +10,7 @@ bool Position::operator<(const Position& p){
   return x+y < p.x+p.y; 
 }
 Position Position::operator+ (const Direction& d){
-  Position p;
+  Position p = *this;
   switch (d){
   case Direction::left:{ p.y--; break;}
   case Direction::right:{ p.y++; break;}
@@ -32,3 +32,22 @@ Position& Position::operator+= (const Direction& d){
 
 //Square
 Square::Square(){p=Position(-1,-1); isPainted=false; isDrawed=false; plPainter=-1; plDrawer=-1;}
+int Square::painter()const{return plPainter;}
+bool Square::hasUnit()const{return u != nullptr;}
+Unit Square::unit()const{return *u;}
+bool Square::hasBonus()const{return b != nullptr;}
+Bonus Square::bonus()const{return *b;}
+
+//Unit
+
+Unit::Unit(){}
+Unit::Unit(int id, int player, const Position& position, bool upgraded, int energy, UnitType type, int roundsToPop){
+  id_ = id; pl = player; p = position; upg = upgraded; energ = energy; t = type; rtp = roundsToPop;
+}
+int Unit::id()const{return id_;}
+int Unit::energy()const{return energ;}
+bool Unit::upgraded()const{return upg;}
+int Unit::player()const{return pl;}
+Position Unit::position()const{return p;}
+UnitType Unit::type()const{return t;}
+int Unit::roundsToPop()const{return rtp;}

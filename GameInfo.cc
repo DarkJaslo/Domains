@@ -48,4 +48,24 @@ void GameInfo::readSettings(){
   >> s >> abilitySize
   >> s >> boardWidth
   >> s >> boardHeight;
+
+  whoHasWhat = vector<int>(unitsMax*numPlayers,-1);
+  points = vector<int>(numPlayers,0);
+  bonusPlayers = vector<int>(numPlayers,0);
+}
+
+bool GameInfo::posOk(const Position& p)const{
+  return p.x >= 0 and p.y >= 0 and p.x < boardHeight and p.y < boardWidth;
+}
+
+int GameInfo::painter(const Position& p)const{
+  if(posOk(p)) return square_map[p.x][p.y].painter();
+  else{
+    cerr << "error: position (" << p.x << "," << p.y << ") is not valid" << endl;
+    return -1;
+  }
+}
+
+vector<int> GameInfo::units(int player)const{
+
 }

@@ -12,7 +12,7 @@ POINTS_PER_POP              50
 POINTS_PER_SQUARE           5
 ENERGY_AT_START             5
 MAX_ENERGY                  20
-MIN_ENERGY                  0
+MIN_ENERGY                  1
 ABILITY_SIZE                4
 BOARD_WIDTH                 10
 BOARD_HEIGHT                10
