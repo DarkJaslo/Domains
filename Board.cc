@@ -83,29 +83,28 @@ void Board::killUnit(Unit& u){
   killedUnits[u.id_] = true;
 }
 
-void Board::draw(int plId, int uid, const Position& p){
-  //If p is owned by me, don't draw
-  //If p is drawed by this player, see if it can paint
-  //If it cannot, erase the drawing you're stepping on
-    //is it ok to do this if you're stepping on your own drawing?
-  //If it is drawed by another player, erase it
-  //If none of this happens, just draw it
-  if(info.square_map[p.x][p.y].plPainter == plId) return;
-  if(info.square_map[p.x][p.y].plDrawer == plId){
+void Board::draw(int plId, int uid, const Position& pnew, const Position& pant){
+  if(info.painter(pnew) == plId){
+    if(info.painter(pant) != plId){
+      //try to paint
+
+      //if it didn't paint
+      erasePath(uid,pant);
+    }
+    return;
+  }
+  if(info.drawerPlayer(pnew) == plId){
     //try to paint
 
-    //if it painted, paint() already erased the drawing. Return
-    //if it didn't,
-      //erase the unit's drawing
-      //don't erase if it's me (or maybe do it, idk)    
+    //if it painted, paint() already erased the drawing. Return 
   }
-  if(info.square_map[p.x][p.y].plDrawer != plId){
-    //If the drawer is not me, erase
-    erasePath(info.square_map[p.x][p.y].uDrawer, p);
+  if(info.drawerPlayer(pnew) != -1){
+    //Erase the drawing
+    erasePath(info.square_map[pnew.x][pnew.y].uDrawer, pnew);
   }
   //draw
-  info.square_map[p.x][p.y].uDrawer = uid;
-  info.square_map[p.x][p.y].plDrawer = plId;
+  info.square_map[pnew.x][pnew.y].uDrawer = uid;
+  info.square_map[pnew.x][pnew.y].plDrawer = plId;
 }
 
 int Board::fight(Unit& u1, Unit& u2){
@@ -174,7 +173,7 @@ bool Board::executeOrder(int plId, const Order& ord){
     }
     info.unitsVector[u.id_].p = newPos;
     info.square_map[newPos.x][newPos.y].u = &info.unitsVector[u.id_];
-    draw(plId,u.id_,newPos);
+    draw(plId,u.id_,newPos,u.p);
   }
   else if(ord.type == OrderType::attack){
     //Compute attacked position

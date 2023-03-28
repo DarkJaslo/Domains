@@ -6,15 +6,26 @@
 class GameInfo{
 public:
 
+  //Returns the number of columns the board has
   int cols() const;
+  //returns the number of rows the board has
   int rows() const;
+  //Returns the square located in position p
   Square square(const Position& p) const;
+  //Returns which player owns this position, -1 if it is blank
   int painter(const Position& p) const;
+  //Returns which player is drawing here, -1 if it is blank
+  int drawerPlayer(const Position& p) const;
+  //True if p is within the board, false if it is not
   bool posOk(const Position& p)const;
+  //Prints all game settings
   void printSettings();
+  //Returns a number inside  [l,r]
   static int randomNumber(int l, int r); //implemented in Board.cc
+  //Returns a random permutation of 0,1,2,3
   static vector<int> randomPermutation(); //implemented in Board.cc
-  vector<int> units(int player) const;
+  //Returns all unit ids the player p possesses
+  vector<int> units(int p) const;
 
 private:
   friend class Board;

@@ -66,6 +66,14 @@ int GameInfo::painter(const Position& p)const{
   }
 }
 
+int GameInfo::drawerPlayer(const Position& p)const{
+  if(posOk(p)) return square_map[p.x][p.y].drawer();
+  else{
+    cerr << "error: position (" << p.x << "," << p.y << ") is not valid" << endl;
+    return -1;
+  }
+}
+
 vector<int> GameInfo::units(int player)const{
 
 }
