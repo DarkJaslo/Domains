@@ -87,8 +87,23 @@ void Board::draw(int plId, int uid, const Position& p){
   //If p is owned by me, don't draw
   //If p is drawed by this player, see if it can paint
   //If it cannot, erase the drawing you're stepping on
+    //is it ok to do this if you're stepping on your own drawing?
   //If it is drawed by another player, erase it
   //If none of this happens, just draw it
+  if(info.square_map[p.x][p.y].plPainter == plId) return;
+  if(info.square_map[p.x][p.y].plDrawer == plId){
+    //try to paint
+
+    //if it painted, paint() already erased the drawing. Return
+    //if it didn't,
+      //erase the unit's drawing
+      //don't erase if it's me (or maybe do it, idk)    
+  }
+  if(info.square_map[p.x][p.y].plDrawer != plId){
+    //If the drawer is not me, erase
+    erasePath(info.square_map[p.x][p.y].uDrawer, p);
+  }
+  //draw
   info.square_map[p.x][p.y].uDrawer = uid;
   info.square_map[p.x][p.y].plDrawer = plId;
 }
