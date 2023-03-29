@@ -29,8 +29,12 @@ private:
   //Updates everything to match u's death
   void killUnit(Unit& u);
 
+  void enclose(int uid, const Position& p, int& xmin, int& xmax, int& ymin, int& ymax);
+
+  void flood(int col, const Position& p, bool& ok);
+
   //Seriously how the fuck do you do this
-  bool paint();
+  bool paint(int plId, int uid, const Position& p);
 
   //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
   void draw(int plId, int uid, const Position& pnew, const Position& pant);

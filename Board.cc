@@ -61,6 +61,7 @@ bool Board::unitOk(int uid)const {return uid >= 0 and uid < info.unitsVector.siz
 
 void Board::erasePath(int uid, const Position& p){
   if(info.posOk(p) and info.square_map[p.x][p.y].uDrawer == uid){
+    info.square_map[p.x][p.y].isDrawed = false;
     info.square_map[p.x][p.y].uDrawer = -1;
     info.square_map[p.x][p.y].plDrawer = -1;
     Position pp = p;
@@ -83,26 +84,94 @@ void Board::killUnit(Unit& u){
   killedUnits[u.id_] = true;
 }
 
-void Board::draw(int plId, int uid, const Position& pnew, const Position& pant){
-  if(info.painter(pnew) == plId){
-    if(info.painter(pant) != plId){
-      //try to paint
+void Board::enclose(int uid, const Position& p, int& xmin, int& xmax, int& ymin, int& ymax){
+  //you have to properly mark the tile border
+  //que pasa si hay un cuadrado (cuenta border) en la zona a pintar
+  if(info.posOk(p) and (info.square(p).border() or info.square(p).drawer() == uid)){
+    info.square_map[p.x][p.y].isClosing = true;
+    if(p.x < xmin) xmin = p.x;
+    if(p.x > xmax) xmax = p.x;
+    if(p.y < ymin) ymin = p.y;
+    if(p.y > ymax) ymax = p.y;
+    Position pp = p;
+    Position ppp;
+    ppp = pp+Direction::up;
+    enclose(uid,ppp,xmin,xmax,ymin,ymax);
+    ppp = pp+Direction::down;
+    enclose(uid,ppp,xmin,xmax,ymin,ymax);
+    ppp = pp+Direction::left;
+    enclose(uid,ppp,xmin,xmax,ymin,ymax);
+    ppp = pp+Direction::right;
+    enclose(uid,ppp,xmin,xmax,ymin,ymax);
+  }
+}
 
-      //if it didn't paint
-      erasePath(uid,pant);
+#define COLORINDEX 10
+
+void Board::flood(int col, const Position& p, bool& ok){
+  if(info.posOk(p) and not info.square(p).border()){
+    Position pp = p;
+    Position ppp;
+    ppp = pp+Direction::up;
+    flood(col,ppp,ok);
+    ppp = pp+Direction::down;
+    flood(col,ppp,ok);
+    ppp = pp+Direction::left;
+    flood(col,ppp,ok);
+    ppp = pp+Direction::right;
+    flood(col,ppp,ok);
+  }
+  else{
+    ok = false;
+  }
+}
+
+bool Board::paint(int plId, int uid, const Position& p){
+  int xmin,xmax,ymin,ymax;
+  xmin = xmax = p.x;
+  ymin = ymax = p.y;
+  enclose(uid,p,xmin,xmax,ymin,ymax);
+  vector<vector<Square>> box(xmax-xmin+1,vector<Square>(ymax-ymin+1));
+
+  //Copy the container box
+  for(int i = xmin; i <= xmax; ++i){
+    for(int j = ymin; j <= ymax; ++j){
+      box[i-xmin][j-ymin] = info.square_map[i][j];
     }
-    return;
   }
-  if(info.drawerPlayer(pnew) == plId){
-    //try to paint
+  int colIndex = COLORINDEX;
+  vector<bool> colors;
 
-    //if it painted, paint() already erased the drawing. Return 
+  for(int i = 1; i < box.size()-1; ++i){
+    for(int j = 1; j < box[0].size()-1; ++j){
+
+    }
   }
-  if(info.drawerPlayer(pnew) != -1){
-    //Erase the drawing
-    erasePath(info.square_map[pnew.x][pnew.y].uDrawer, pnew);
+}
+
+void Board::draw(int plId, int uid, const Position& pnew, const Position& pant){
+  
+  Square sant = info.square(pant);
+  Square snew = info.square(pnew);
+  //if behind you is a drawing and you enter a secure painted area, enclose and paint
+  
+  if(snew.isDrawed and snew.uDrawer != uid){
+    //if you step on someone else's drawing, erase it
+    erasePath(snew.uDrawer,pnew);
   }
-  //draw
+  if(sant.uDrawer == uid){
+    //draws if behind you is a drawing
+    if(snew.plPainter == plId){
+      //enclose
+      
+      paint(plId, uid, sant.p);
+      //paint
+    }
+  }
+  if(sant.plPainter == plId and snew.plPainter != plId){
+    //draws if exiting a secure painted area
+    //draw
+  }
   info.square_map[pnew.x][pnew.y].uDrawer = uid;
   info.square_map[pnew.x][pnew.y].plDrawer = plId;
 }

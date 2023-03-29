@@ -31,7 +31,10 @@ public:
   Position pos() const;
   bool painted() const;
   bool drawed() const;
+  bool border() const;
+  bool closes() const;
   int painter() const;
+  //Returns an uid
   int drawer() const;
   bool hasUnit() const;
   Unit unit() const;
@@ -44,6 +47,8 @@ private:
   Position p;
   bool isPainted;
   bool isDrawed;
+  bool isBorder;
+  bool isClosing;
   int plPainter;  //Player
   int plDrawer;   //Player
   int uDrawer;

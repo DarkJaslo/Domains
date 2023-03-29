@@ -95,8 +95,16 @@ Player es la clase que necesitas para meter el código de cada jugador
 
 
 
-implementa Board::draw() 
-implementa Board::executeRound() y expecificamente Board::executeOrder()
+encierras la zona a pintar con muro (mientras tanto, calculas caja contenedora)
+copias el trozo de la caja contenedora a una matriz nueva de ese tamaño
+
+recorres i,j de la copia para ver si se puede pintar. Cada vez que pintas o lo intentas usas un color nuevo y al final te guardas si ha servido o no
+
+copias todo en la matriz original otra vez con las casillas bien pintadas
+
+recorres i,j de la caja contenedora y
+	si está pintada y tiene casillas no pintadas por mí a un lado (que no son dibujo) les pone frontera
+	si está pintada y no tiene casillas adyacentes sin pintar, les quita frontera
 
 
 
