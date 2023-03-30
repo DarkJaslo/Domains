@@ -32,7 +32,6 @@ public:
   bool painted() const;
   bool drawed() const;
   bool border() const;
-  bool closes() const;
   int painter() const;
   //Returns an uid
   int drawer() const;
@@ -45,10 +44,7 @@ public:
 private:
   friend class Board;
   Position p;
-  bool isPainted;
-  bool isDrawed;
   bool isBorder;
-  bool isClosing;
   int plPainter;  //Player
   int plDrawer;   //Player
   int uDrawer;

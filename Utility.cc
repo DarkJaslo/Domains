@@ -31,12 +31,11 @@ Position& Position::operator+= (const Direction& d){
 
 
 //Square
-Square::Square(){p=Position(-1,-1); isPainted=false; isDrawed=false; plPainter=-1; plDrawer=-1;}
+Square::Square(){p=Position(-1,-1); plPainter=-1; plDrawer=-1;}
 Position Square::pos()const{return p;}
-bool Square::painted()const{return isPainted;}
-bool Square::drawed()const{return isDrawed;}
+bool Square::painted()const{return plPainter != -1;}
+bool Square::drawed()const{return uDrawer != -1;}
 bool Square::border()const{return isBorder;}
-bool Square::closes()const{return isClosing;}
 int Square::painter()const{return plPainter;}
 int Square::drawer()const{return uDrawer;}
 bool Square::hasUnit()const{return u != nullptr;}
