@@ -24,20 +24,20 @@ private:
   bool unitOk(int uid)const;
 
   //Erases all drawings made by uid in p and all connected squares
-  void erasePath(int uid, const Position& p);
+  void erasePath(int uid, Position p);
 
   //Updates everything to match u's death
   void killUnit(Unit& u);
 
-  void enclose(int uid, const Position& p, int& xmin, int& xmax, int& ymin, int& ymax);
+  void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
 
-  void flood(int col, const Position& p, bool& ok);
+  void flood(int plId, int col, Position p, bool& ok, vector<vector<Square>>& grid);
 
   //Seriously how the fuck do you do this
-  bool paint(int plId, int uid, const Position& p);
+  void paint(int plId, int uid, Position p);
 
   //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
-  void draw(int plId, int uid, const Position& pnew, const Position& pant);
+  void draw(int plId, int uid, Position pnew, Position pant);
 
   //Executes the fight between u1 and u2 and its consequences... Returns the winner's uid
   int fight(Unit& u1, Unit& u2);

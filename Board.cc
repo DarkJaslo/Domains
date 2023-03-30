@@ -59,21 +59,19 @@ void Board::iniBoard(int s){
 
 bool Board::unitOk(int uid)const {return uid >= 0 and uid < info.unitsVector.size();}
 
-void Board::erasePath(int uid, const Position& p){
+void Board::erasePath(int uid, Position p){
   if(info.posOk(p) and info.square_map[p.x][p.y].uDrawer == uid){
-    info.square_map[p.x][p.y].isDrawed = false;
     info.square_map[p.x][p.y].uDrawer = -1;
     info.square_map[p.x][p.y].plDrawer = -1;
-    Position pp = p;
-    Position ppp;
-    ppp = pp+Direction::up;
-    erasePath(uid,ppp);
-    ppp = pp+Direction::down;
-    erasePath(uid,ppp);
-    ppp = pp+Direction::left;
-    erasePath(uid,ppp);
-    ppp = pp+Direction::right;
-    erasePath(uid,ppp);
+    Position pp;
+    pp = p+Direction::up;
+    erasePath(uid,pp);
+    pp = p+Direction::down;
+    erasePath(uid,pp);
+    pp = p+Direction::left;
+    erasePath(uid,pp);
+    pp = p+Direction::right;
+    erasePath(uid,pp);
   }
 }
 
@@ -84,53 +82,52 @@ void Board::killUnit(Unit& u){
   killedUnits[u.id_] = true;
 }
 
-void Board::enclose(int uid, const Position& p, int& xmin, int& xmax, int& ymin, int& ymax){
-  //you have to properly mark the tile border
-  //que pasa si hay un cuadrado (cuenta border) en la zona a pintar
-  if(info.posOk(p) and (info.square(p).border() or info.square(p).drawer() == uid)){
-    info.square_map[p.x][p.y].isClosing = true;
-    if(p.x < xmin) xmin = p.x;
-    if(p.x > xmax) xmax = p.x;
-    if(p.y < ymin) ymin = p.y;
-    if(p.y > ymax) ymax = p.y;
-    Position pp = p;
-    Position ppp;
-    ppp = pp+Direction::up;
-    enclose(uid,ppp,xmin,xmax,ymin,ymax);
-    ppp = pp+Direction::down;
-    enclose(uid,ppp,xmin,xmax,ymin,ymax);
-    ppp = pp+Direction::left;
-    enclose(uid,ppp,xmin,xmax,ymin,ymax);
-    ppp = pp+Direction::right;
-    enclose(uid,ppp,xmin,xmax,ymin,ymax);
+void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax){
+  if(info.posOk(p)){
+    if(info.square(p).border() or info.square(p).drawer() == uid){
+      if(not info.square(p).border()) info.square_map[p.x][p.y].isBorder = true;
+      if(p.x < xmin) xmin = p.x;
+      if(p.x > xmax) xmax = p.x;
+      if(p.y < ymin) ymin = p.y;
+      if(p.y > ymax) ymax = p.y;
+      Position pp;
+      pp = p+Direction::up;
+      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
+      pp = p+Direction::down;
+      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
+      pp = p+Direction::left;
+      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
+      pp = p+Direction::right;
+      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
+    }
   }
 }
 
 #define COLORINDEX 10
 
-void Board::flood(int col, const Position& p, bool& ok){
-  if(info.posOk(p) and not info.square(p).border()){
-    Position pp = p;
-    Position ppp;
-    ppp = pp+Direction::up;
-    flood(col,ppp,ok);
-    ppp = pp+Direction::down;
-    flood(col,ppp,ok);
-    ppp = pp+Direction::left;
-    flood(col,ppp,ok);
-    ppp = pp+Direction::right;
-    flood(col,ppp,ok);
+void Board::flood(int plId, int col, Position p, bool& ok, vector<vector<Square>>& grid){
+  if(p.x >= 0 and p.y >= 0 and p.x < grid.size() and p.y < grid[0].size() and not info.square(p).border() and info.square(p).plPainter < COLORINDEX and info.square(p).plPainter != plId){
+    grid[p.x][p.y].plPainter = col;
+    Position pp;
+    pp = p+Direction::up;
+    flood(plId,col,pp,ok,grid);
+    pp = p+Direction::down;
+    flood(plId,col,pp,ok,grid);
+    pp = p+Direction::left;
+    flood(plId,col,pp,ok,grid);
+    pp = p+Direction::right;
+    flood(plId,col,pp,ok,grid);
   }
   else{
-    ok = false;
+    if(ok) ok = false;
   }
 }
 
-bool Board::paint(int plId, int uid, const Position& p){
+void Board::paint(int plId, int uid, Position p){
   int xmin,xmax,ymin,ymax;
   xmin = xmax = p.x;
   ymin = ymax = p.y;
-  enclose(uid,p,xmin,xmax,ymin,ymax);
+  enclose(plId,uid,p,xmin,xmax,ymin,ymax);
   vector<vector<Square>> box(xmax-xmin+1,vector<Square>(ymax-ymin+1));
 
   //Copy the container box
@@ -140,32 +137,105 @@ bool Board::paint(int plId, int uid, const Position& p){
     }
   }
   int colIndex = COLORINDEX;
-  vector<bool> colors;
+  vector<int> colors; //stores all used colors
+  bool flooded = true;
 
+  //Floods all positions and stores which colors flooded a closed zone
   for(int i = 1; i < box.size()-1; ++i){
     for(int j = 1; j < box[0].size()-1; ++j){
+      flood(plId,colIndex,Position(i,j),flooded,box);
+      if(flooded){
+        colors.push_back(colIndex);
+      }
+      else flooded = true;
+      colIndex++;
+    }
+  }
 
+  //Paints all correctly flooded zones. Also erases any drawing inside
+  for(int i = 0; i < box.size()-1; ++i){
+    for(int j = 0; j < box[0].size()-1; ++j){
+      if(box[i][j].plPainter > 0){
+        bool found = false;
+        int k = 0;
+        while(not found and k < colors.size()){
+          if(colors[k] == box[i][j].plPainter) found = true;
+          ++k;
+        }
+        if(found){
+          box[i][j].plPainter = plId;
+        }
+        else if(box[i][j].plDrawer == plId){
+          box[i][j].plPainter = plId;
+          box[i][j].plDrawer = -1;
+          box[i][j].uDrawer = -1;
+        }
+      }
+    }
+  }
+
+  //Copies the box back to the main grid
+  for(int i = xmin; i <= xmax; ++i){
+    for(int j = ymin; j <= ymax; ++j){
+      info.square_map[i][j] = box[i-xmin][j-ymin];
+    }
+  }
+
+  //Updates border and erases drawings
+  for(int i = xmin-1; i <= xmax+1; ++i){
+    for(int j = ymin-1; j <= xmax+1; ++j){
+      Position pos = Position(i,j);
+      if(info.posOk(pos)){
+
+        if(info.square_map[pos.x][pos.y].drawed() and i >= xmin and i <= xmax and info.square_map[pos.x][pos.y].plPainter == plId){
+          erasePath(info.square_map[pos.x][pos.y].drawer(),pos);
+        }
+
+        bool border = false;
+        for(int i = 0; i < 1; ++i){
+          Position pos2 = pos+Direction::UL;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+          pos2 = pos+Direction::up;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+          pos2 = pos+Direction::UR;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+          pos2 = pos+Direction::left;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+          pos2 = pos+Direction::right;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+          pos2 = pos+Direction::DL;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+          pos2 = pos+Direction::down;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+          pos2 = pos+Direction::DR;
+          if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+        }
+        
+        if(border){
+          if(not info.square_map[pos.x][pos.y].border()) info.square_map[pos.x][pos.y].isBorder = true;
+        }
+        else{
+          if(info.square_map[pos.x][pos.y].border()) info.square_map[pos.x][pos.y].isBorder = false;
+        }
+      }
     }
   }
 }
 
-void Board::draw(int plId, int uid, const Position& pnew, const Position& pant){
+void Board::draw(int plId, int uid, Position pnew, Position pant){
   
   Square sant = info.square(pant);
   Square snew = info.square(pnew);
   //if behind you is a drawing and you enter a secure painted area, enclose and paint
   
-  if(snew.isDrawed and snew.uDrawer != uid){
+  if(snew.drawed() and snew.uDrawer != uid){
     //if you step on someone else's drawing, erase it
     erasePath(snew.uDrawer,pnew);
   }
   if(sant.uDrawer == uid){
     //draws if behind you is a drawing
     if(snew.plPainter == plId){
-      //enclose
-      
       paint(plId, uid, sant.p);
-      //paint
     }
   }
   if(sant.plPainter == plId and snew.plPainter != plId){
@@ -260,6 +330,7 @@ bool Board::executeOrder(int plId, const Order& ord){
     
     //The ability can be used
   }
+  return false;
 }
 
 void Board::executeRound(const vector<Player*>& pl){
