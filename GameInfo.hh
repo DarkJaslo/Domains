@@ -10,6 +10,8 @@ public:
   int cols() const;
   //returns the number of rows the board has
   int rows() const;
+  //returns the current round
+  static int round();
   //Returns the square located in position p
   Square square(const Position& p) const;
   //Returns which player owns this position, -1 if it is blank
@@ -25,10 +27,11 @@ public:
   //Returns a random permutation of 0,1,2,3
   static vector<int> randomPermutation(); //implemented in Board.cc
   //Returns all unit ids the player p possesses
-  vector<int> units(int p) const;
+  static vector<int> units(int p);
 
 private:
   friend class Board;
+  friend class Game;
 
   void readSettings();
   int numPlayers;
@@ -48,11 +51,12 @@ private:
   int abilitySize;
   int boardWidth;
   int boardHeight;
+  static int currentRound;
   vector<vector<char>> game_map;
   vector<vector<Square>> square_map;
   vector<int> roundsSinceRespawn;
   vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
-  vector<Unit> unitsVector;
+  static vector<Unit> unitsVector;
   vector<int> points;
   vector<int> bonusPlayers;
 };

@@ -14,12 +14,6 @@ private:
   friend class Board;
   void printOrderIds();
   void resetList();
-  struct Order{
-    int unitId;
-    Direction dir;
-    OrderType type;
-    Order(int id,Direction d, OrderType t){unitId = id; dir = d; t = type;}
-  };
   int maxSize;
   int index; //orderList[0,index] has valid orders. If index == -1, no orders
   vector<Order> orderList;

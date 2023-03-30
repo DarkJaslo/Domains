@@ -38,7 +38,7 @@ public:
   int roundsToPop() const;
   UnitType type() const;
   Unit();
-  Unit(int id, int player, const Position& position, bool upgraded, int energy, UnitType type, int roundsToPop = -1);
+  Unit(int id, int player, const Position& position, bool upgraded = false, int energy = 0, UnitType type = UnitType::unit, int roundsToPop = -1);
 
 private:
   friend class Board;
@@ -64,6 +64,14 @@ struct Bonus{
 
 enum OrderType{ movement, attack, ability };
 
+struct Order{
+  int unitId;
+  Direction dir;
+  OrderType type;
+  Order(){}
+  Order(int id,Direction d, OrderType t){unitId = id; dir = d; t = type;}
+};
+
 struct Square{
 public:
 
@@ -84,6 +92,7 @@ private:
   friend class Board;
   Position p;
   bool isBorder;
+  bool closes;
   int plPainter;  //Player
   int plDrawer;   //Player
   int uDrawer;

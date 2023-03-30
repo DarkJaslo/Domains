@@ -1,10 +1,13 @@
 #include "GameInfo.hh"
+int GameInfo::currentRound;
+vector<Unit> GameInfo::unitsVector;
 
 
 int GameInfo::cols()const{return game_map[0].size();}
 int GameInfo::rows()const{return game_map.size();}
+int GameInfo::round(){return GameInfo::currentRound;}
 Square GameInfo::square(const Position& p)const{
-  if(p.y < cols() or p.y > cols() or p.x > rows() or p.x < rows()) cerr << "Position is not valid" << endl;
+  if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) cerr << "Position is not valid (sq)" << endl;
   return square_map[p.x][p.y];
 }
 
@@ -55,7 +58,9 @@ void GameInfo::readSettings(){
 }
 
 bool GameInfo::posOk(const Position& p)const{
-  return p.x >= 0 and p.y >= 0 and p.x < boardHeight and p.y < boardWidth;
+  if(p.x >= 0 and p.y >= 0 and p.x < boardHeight and p.y < boardWidth) return true;
+  else cerr << "checking position " << p.x << " " << p.y << endl;
+  return false;
 }
 
 int GameInfo::painter(const Position& p)const{
@@ -74,7 +79,7 @@ int GameInfo::drawerPlayer(const Position& p)const{
   }
 }
 
-vector<int> GameInfo::units(int player)const{
+vector<int> GameInfo::units(int player){
   vector<int> u;
   for(int i = 0; i < unitsVector.size(); ++i){
     if(unitsVector[i].player() == player) u.push_back(i); 

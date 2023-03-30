@@ -8,7 +8,7 @@ struct PLAYER_NAME : public Player{
   }
 
   virtual void play(){
-    move(2,Direction::null);
+    //move(2,Direction::null);
   }
 };
 

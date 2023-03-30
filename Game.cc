@@ -70,9 +70,12 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
 
   for(int round = 0; round < rounds; ++round){
 
+    b.info.currentRound = round;
+
     if(showInfo) cerr << "starting round " << round << endl << endl;
     for(int i = 0; i < pl.size(); ++i){
       if(showInfo) cerr << "player " << names[i] << endl;
+      pl[i]->resetList();
       pl[i]->play();
       if(showInfo) cerr << "end player " << names[i] << endl << endl;
     }

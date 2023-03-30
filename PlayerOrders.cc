@@ -1,6 +1,7 @@
 #include "PlayerOrders.hh"
 
 void PlayerOrders::move(int unitId, Direction dir){
+  cerr << "ordering unit " << unitId << endl; 
   Order o(unitId,dir,OrderType::movement);
   ++index;
   if(index == orderList.size()){
@@ -9,6 +10,7 @@ void PlayerOrders::move(int unitId, Direction dir){
   else{
     orderList[index] = o;
   }
+  cerr << "finished ordering unit " << unitId << endl;
 }
 void PlayerOrders::attack(int unitId, Direction dir){
   Order o(unitId,dir,OrderType::attack);

@@ -14,12 +14,7 @@ public:
   //Prints all game settings
   void printSettings();
 private:
-  struct Order{
-    int unitId;
-    Direction dir;
-    OrderType type;
-    Order(int id,Direction d, OrderType t){unitId = id; dir = d; t = type;}
-  };
+  friend class Game;
   //True if uid is a valid unit, false if it is not
   bool unitOk(int uid)const;
 
@@ -28,6 +23,8 @@ private:
 
   //Updates everything to match u's death
   void killUnit(Unit& u);
+
+  void deenclose(Position p);
 
   void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
 
@@ -43,7 +40,7 @@ private:
   int fight(Unit& u1, Unit& u2);
 
   //Executes ord (if it is valid) and returns true if it succeeds
-  bool executeOrder(int plId, const Order& ord);
+  bool executeOrder(int plId, Order ord);
 
   int seed;
   GameInfo info;
