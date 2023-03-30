@@ -12,5 +12,8 @@ all: Game
 Game:	$(OBJ) $(PLAYERS_OBJ)
 	g++ $(OBJ) $(PLAYERS_OBJ) -o Game.exe
 
+opt:	$(OBJ) $(PLAYERS_OBJ)
+	g++ -O3 $(OBJ) $(PLAYERS_OBJ) -o Game.exe
+
 clean: 
 	rm *.o *.exe
