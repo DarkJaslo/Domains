@@ -75,5 +75,9 @@ int GameInfo::drawerPlayer(const Position& p)const{
 }
 
 vector<int> GameInfo::units(int player)const{
-
+  vector<int> u;
+  for(int i = 0; i < unitsVector.size(); ++i){
+    if(unitsVector[i].player() == player) u.push_back(i); 
+  }
+  return u;
 }
