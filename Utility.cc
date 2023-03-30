@@ -6,26 +6,26 @@ Position::Position(int posx, int posy){ x = posx; y = posy; }
 bool Position::operator== (const Position& p){return x == p.x and y == p.y;}
 bool Position::operator!= (const Position& p){return x != p.x or y != p.y;}
 bool Position::operator<(const Position& p){
-  if(x+y == p.x+p.y) return x < p.y;
-  return x+y < p.x+p.y; 
+  if(x != p.x) return x < p.x;
+  return y < p.y;
 }
 Position Position::operator+ (const Direction& d){
   Position p = *this;
-  switch (d){
-  case Direction::left:{ p.y--; break;}
-  case Direction::right:{ p.y++; break;}
-  case Direction::up:{ p.x--; break;}
-  case Direction::down:{ p.x++; break;}
-  case Direction::UL:{ p.x--; p.y--; break;}
-  case Direction::UR:{ p.x--; p.y++; break;}
-  case Direction::DL:{ p.x++; p.y--; break;}
-  case Direction::DR:{ p.x++; p.y++; break;}
-  default:{break;}
-  }
+  p += d;  
   return p;
 }
 Position& Position::operator+= (const Direction& d){
-  *this = *this+d;
+  switch (d){
+  case Direction::left:{ y--; break;}
+  case Direction::right:{ y++; break;}
+  case Direction::up:{ x--; break;}
+  case Direction::down:{ x++; break;}
+  case Direction::UL:{ x--; y--; break;}
+  case Direction::UR:{ x--; y++; break;}
+  case Direction::DL:{ x++; y--; break;}
+  case Direction::DR:{ x++; y++; break;}
+  default:{break;}
+  }
   return *this;
 }
 
