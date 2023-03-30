@@ -25,33 +25,6 @@ struct Position{
   Position& operator+= (const Direction& d);
 };
 
-struct Square{
-public:
-
-  Position pos() const;
-  bool painted() const;
-  bool drawed() const;
-  bool border() const;
-  int painter() const;
-  //Returns an uid
-  int drawer() const;
-  bool hasUnit() const;
-  Unit unit() const;
-  bool hasBonus() const;
-  Bonus bonus() const;
-  Square();
-
-private:
-  friend class Board;
-  Position p;
-  bool isBorder;
-  int plPainter;  //Player
-  int plDrawer;   //Player
-  int uDrawer;
-  Unit* u;        //nullptr if there is not an unit
-  Bonus* b;
-};
-
 enum UnitType{ unit, bubble,bonus };
 
 struct Unit{
@@ -90,6 +63,33 @@ struct Bonus{
 };
 
 enum OrderType{ movement, attack, ability };
+
+struct Square{
+public:
+
+  Position pos() const;
+  bool painted() const;
+  bool drawed() const;
+  bool border() const;
+  int painter() const;
+  //Returns an uid
+  int drawer() const;
+  bool hasUnit() const;
+  Unit unit() const;
+  bool hasBonus() const;
+  Bonus bonus() const;
+  Square();
+
+private:
+  friend class Board;
+  Position p;
+  bool isBorder;
+  int plPainter;  //Player
+  int plDrawer;   //Player
+  int uDrawer;
+  Unit* u;        //nullptr if there is not an unit
+  Bonus* b;
+};
 
 
 
