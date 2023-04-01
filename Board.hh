@@ -28,7 +28,7 @@ private:
 
   void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
 
-  void flood(int plId, int col, Position p, bool& ok, vector<vector<Square>>& grid);
+  void flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid);
 
   //Seriously how the fuck do you do this
   void paint(int plId, int uid, Position p);
