@@ -2,7 +2,6 @@
 int GameInfo::currentRound;
 vector<Unit> GameInfo::unitsVector;
 
-
 int GameInfo::cols()const{return game_map[0].size();}
 int GameInfo::rows()const{return game_map.size();}
 int GameInfo::round(){return GameInfo::currentRound;}

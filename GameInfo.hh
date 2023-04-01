@@ -29,6 +29,7 @@ public:
   //Returns all unit ids the player p possesses
   static vector<int> units(int p);
 
+
 private:
   friend class Board;
   friend class Game;
