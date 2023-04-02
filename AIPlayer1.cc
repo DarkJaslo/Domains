@@ -224,32 +224,127 @@ struct PLAYER_NAME : public Player{
     }
     if(round() == 42){
       cerr << "round " << round() << endl;
-      move(u[0],Direction::down);
+      move(u[0],Direction::up);
       cerr << "moved" << endl;
     }
     if(round() == 43){
       cerr << "round " << round() << endl;
-      move(u[0],Direction::down);
+      move(u[0],Direction::up);
       cerr << "moved" << endl;
     }
     if(round() == 44){
       cerr << "round " << round() << endl;
-      move(u[0],Direction::down);
+      move(u[0],Direction::left);
       cerr << "moved" << endl;
     }
     if(round() == 45){
       cerr << "round " << round() << endl;
-      move(u[0],Direction::right);
+      move(u[0],Direction::up);
       cerr << "moved" << endl;
     }
     if(round() == 46){
       cerr << "round " << round() << endl;
-      move(u[0],Direction::up);
+      move(u[0],Direction::right);
       cerr << "moved" << endl;
     }
     if(round() == 47){
       cerr << "round " << round() << endl;
+      move(u[0],Direction::right);
+      cerr << "moved" << endl;
+    }
+    if(round() == 48){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::right);
+      cerr << "moved" << endl;
+    }
+    if(round() == 49){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::right);
+      cerr << "moved" << endl;
+    }
+    if(round() == 50){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::right);
+      cerr << "moved" << endl;
+    }
+    if(round() == 51){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::right);
+      cerr << "moved" << endl;
+    }
+    if(round() == 52){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::right);
+      cerr << "moved" << endl;
+    }
+    if(round() == 53){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::right);
+      cerr << "moved" << endl;
+    }
+    if(round() == 54){
+      cerr << "round " << round() << endl;
       move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 55){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 56){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 57){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 58){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 59){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 60){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 61){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 62){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::down);
+      cerr << "moved" << endl;
+    }
+    if(round() == 63){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::left);
+      cerr << "moved" << endl;
+    }
+    if(round() == 64){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::left);
+      cerr << "moved" << endl;
+    }
+    if(round() == 65){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::up);
+      cerr << "moved" << endl;
+    }
+    if(round() == 66){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::up);
       cerr << "moved" << endl;
     }
 
