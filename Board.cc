@@ -145,7 +145,7 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
 
 void Board::flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid){
 
-  if(p.x >= 0 and p.y >= 0 and p.x < grid.size() and p.y < grid[0].size() and (not grid[p.x][p.y].border() or grid[p.x][p.y].plPainter != plId) and grid[p.x][p.y].plPainter < COLORINDEX){
+  if(p.x >= 0 and p.y >= 0 and p.x < grid.size() and p.y < grid[0].size() and (not grid[p.x][p.y].border() or (grid[p.x][p.y].plPainter != plId and grid[p.x][p.y].drawer() != plId)) and grid[p.x][p.y].plPainter < COLORINDEX){
 
     //This region must not be painted
     if(p.x == 0 or p.y == 0 or p.x == grid.size()-1 or p.y == grid[0].size()-1){
@@ -254,33 +254,34 @@ void Board::paint(int plId, int uid, Position p){
   }
 
   //Updates border and erases drawings
+  cerr << "updating border and erasing drawings..." << endl;
   for(int i = xmin-1; i <= xmax+1; ++i){
-    for(int j = ymin-1; j <= xmax+1; ++j){
+    for(int j = ymin-1; j <= ymax+1; ++j){
       Position pos = Position(i,j);
       if(info.posOk(pos)){
-
         if(info.square_map[pos.x][pos.y].drawed() and i >= xmin and i <= xmax and info.square_map[pos.x][pos.y].plPainter == plId){
+          cerr << "erasing drawing starting at " << i << "," << j << endl;
           erasePath(info.square_map[pos.x][pos.y].drawer(),pos);
         }
         if(info.square_map[pos.x][pos.y].plPainter == plId){
           bool border = false;
           for(int i = 0; i < 1; ++i){
             Position pos2 = pos+Direction::UL;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::up;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::UR;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::left;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::right;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::DL;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::down;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::DR;
-            if(info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
           }
           
           if(border){
@@ -293,6 +294,7 @@ void Board::paint(int plId, int uid, Position p){
       }
     }
   }
+  cerr << "paint func end " << endl;
 }
 
 void Board::draw(int plId, int uid, Position pnew, Position pant){
