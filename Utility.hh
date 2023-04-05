@@ -69,7 +69,7 @@ struct Order{
   Direction dir;
   OrderType type;
   Order(){}
-  Order(int id,Direction d, OrderType t){unitId = id; dir = d; t = type;}
+  Order(int id,Direction d, OrderType t){unitId = id; dir = d; type = t;}
 };
 
 struct Square{

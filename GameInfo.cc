@@ -58,7 +58,7 @@ void GameInfo::readSettings(){
 
 bool GameInfo::posOk(const Position& p)const{
   if(p.x >= 0 and p.y >= 0 and p.x < boardHeight and p.y < boardWidth) return true;
-  else cerr << "checking position " << p.x << " " << p.y << endl;
+  //else cerr << "checking position " << p.x << " " << p.y << endl;
   return false;
 }
 

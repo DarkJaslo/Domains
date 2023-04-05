@@ -221,18 +221,18 @@ void Board::paint(int plId, int uid, Position p){
         continue;
       }
       if(box[i][j].plPainter > 0){
-        cerr << "plpainter > 0" << endl;
+        //cerr << "plpainter > 0" << endl;
         bool found = false;
-        cerr << "size: " << colors.size() << endl;
+        //cerr << "size: " << colors.size() << endl;
         int k = 0;
         while(not found and k < colors.size()){
-          cerr << colors[k] << " ";
+          //cerr << colors[k] << " ";
           if(colors[k] == box[i][j].plPainter) found = true;
           ++k;
         }
-        cerr << endl;
+        //cerr << endl;
         if(found){
-          cerr << "found valid color" << endl;
+          //cerr << "found valid color" << endl;
           box[i][j].plPainter = plId;
           cerr << "painting position " << xmin+i << "," << ymin+j << endl;
         }
@@ -350,11 +350,12 @@ int Board::fight(Unit& u1, Unit& u2){
 
 bool Board::executeOrder(int plId, Order ord){
   //movimientos implementados
-  cerr << "executing order to " << ord.unitId << " owned by " << plId << endl;
-  if(ord.type == OrderType::movement) cerr << "movement"<< endl;
-  if(ord.type == OrderType::attack) cerr << "attack"<< endl;
-  if(ord.type == OrderType::ability) cerr << "ability"<< endl;
-  else cerr << "wtf" << endl;
+  cerr << "executing order to " << ord.unitId << " owned by " << plId << " ";
+
+  /*if(ord.type == OrderType::movement) cerr << "movement"<< endl;
+  else if(ord.type == OrderType::attack) cerr << "attack"<< endl;
+  else if(ord.type == OrderType::ability) cerr << "ability"<< endl;
+  else cerr << "wtf" << endl;*/
 
   cerr << ord.dir << " " <<ord.type << " " << ord.unitId << endl;
   ord.type = OrderType::movement;
@@ -373,7 +374,7 @@ bool Board::executeOrder(int plId, Order ord){
 
   //Unit is controlled by the player
   if(ord.type == OrderType::movement){
-    cerr << "order is movement" << endl;
+    cerr << "movement" << endl;
     if(info.painter(u.p) != plId){ //Not on same-color domain
       if(ord.dir == Direction::DL or ord.dir == Direction::DR or ord.dir == Direction::UL or ord.dir == Direction::UR){
         cerr << "error: unit " << u.id_ << " cannot move diagonally here" << endl;
@@ -452,7 +453,7 @@ void Board::executeRound(const vector<Player*>& pl){
 }
 
 void Board::printRound(){
-  cout << "Printing round " << info.round() << endl;
+  cout << endl << "Printing round " << info.round() << endl << endl;
   for(int i = 0; i < info.boardHeight; ++i){
     for(int j = 0; j < info.boardWidth; ++j){
       
