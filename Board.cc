@@ -174,7 +174,7 @@ void Board::paint(int plId, int uid, Position p){
   xmin = xmax = p.x;
   ymin = ymax = p.y;
   enclose(plId,uid,p,xmin,xmax,ymin,ymax);
-  cout << xmin << " " << xmax << " " << ymin << " " << ymax << endl;
+  cerr << xmin << " " << xmax << " " << ymin << " " << ymax << endl;
   deenclose(p);
 
   vector<vector<Square>> box(xmax-xmin+1,vector<Square>(ymax-ymin+1));
@@ -443,27 +443,35 @@ void Board::executeRound(const vector<Player*>& pl){
   for(int i = 0; i < pl.size(); ++i){
     for(int j = 0; j <= pl[i]->index; ++j){
       if(executeOrder(i,pl[i]->orderList[j])){
-        cout << "order executed succesfully" << endl;
+        cerr << "order executed succesfully" << endl;
       }
       else{
-        cout << "order didn't execute" << endl;
+        cerr << "order didn't execute" << endl;
       }
     }
   }
 }
 
 void Board::printRound(){
-  cout << endl << "Printing round " << info.round() << endl << endl;
+  //cout << endl << "Printing round " << info.round() << endl << endl;
+  cout << info.round() << " ";
   for(int i = 0; i < info.boardHeight; ++i){
     for(int j = 0; j < info.boardWidth; ++j){
       
       Square sq = info.square(Position(i,j));
-      if(sq.painted()) cout << sq.plPainter;
+      //Prints painter id, drawer id and unit's player id
+      cout << sq.plPainter << " " << sq.plDrawer << " ";
+      if(sq.hasUnit()) cout << sq.unit().pl << " ";
+      else cout << -1 << " ";
+
+
+
+      /*if(sq.painted()) cout << sq.plPainter;
       else if(sq.drawed()) cout << 'd';
       else cout << '.';
-      if(j < info.boardWidth-1) cout << " ";
+      if(j < info.boardWidth-1) cout << " ";*/
     }
-    cout << endl;
+    //cout << endl;
   }
   cout << endl;
 }
