@@ -4,7 +4,7 @@
 
 Game::Game(){}
 void Game::play(const vector<string>& names, int seed, bool showInfo){
-  cerr << "playing game with seed " << seed << endl;
+  cerr << "starting game with seed " << seed << endl;
   vector<Player*> pl;
   //vector<string> names = {"Player1", "Player2"};
   string s;
@@ -19,7 +19,8 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
   if(showInfo) cerr << "initializing board" << endl;
   //Hay que inicializar bien el tablero
   b.iniBoard(seed);
-  b.printRound();
+  cerr << "board initialized" << endl;
+  //b.printRound();
 
 
 /* CODE TO TEST THE RANDOMIZER
@@ -67,6 +68,7 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
   cout << "error: " << error*100 << "%" << endl;
 
 */
+  cout << rounds << " " << b.info.rows() << " " << b.info.cols() << endl;
 
   for(int round = 0; round < rounds; ++round){
 

@@ -3,7 +3,7 @@
 using namespace std;
 
 int main(int argc, char** argv){
-  cout << "hola soy el main" << endl;
+  cerr << "hola soy el main" << endl;
   Register::printPlayers();
   if(argc < 3){
     cerr << "not enough players" << endl;
