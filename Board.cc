@@ -41,7 +41,7 @@ vector<int> GameInfo::randomPermutation(){
   return v;
 }
 
-//Board
+//Board class
 Board::Board(){}
 
 void Board::iniBoard(int s){
@@ -113,8 +113,6 @@ void Board::deenclose(Position p){
   }
 }
 
-//DOES NOT ENCLOSE WELL
-
 void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax){
   //cerr << "enclosing " << p.x << "," << p.y  << endl;
   if(info.posOk(p)){
@@ -141,6 +139,7 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
   }
 }
 
+//used to flood
 #define COLORINDEX 10
 
 void Board::flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid){
@@ -349,16 +348,8 @@ int Board::fight(Unit& u1, Unit& u2){
 }
 
 bool Board::executeOrder(int plId, Order ord){
-  //movimientos implementados
   cerr << "executing order to " << ord.unitId << " owned by " << plId << " ";
-
-  /*if(ord.type == OrderType::movement) cerr << "movement"<< endl;
-  else if(ord.type == OrderType::attack) cerr << "attack"<< endl;
-  else if(ord.type == OrderType::ability) cerr << "ability"<< endl;
-  else cerr << "wtf" << endl;*/
-
   cerr << ord.dir << " " <<ord.type << " " << ord.unitId << endl;
-  ord.type = OrderType::movement;
 
   if(not unitOk(ord.unitId)){
     cerr << "error: unit " << ord.unitId << " is not valid" << endl;
@@ -427,6 +418,7 @@ bool Board::executeOrder(int plId, Order ord){
 void Board::executeRound(const vector<Player*>& pl){
 
   if(info.round() == 40){
+    //fills some squares. used to test a specific case you cannot generate alone
     //4,5,6
     info.square_map[4][1].plPainter = 0;
     info.square_map[5][1].plPainter = 0;
@@ -463,19 +455,29 @@ void Board::printRound(){
       cout << sq.plPainter << " " << sq.plDrawer << " ";
       if(sq.hasUnit()) cout << sq.unit().pl << " ";
       else cout << -1 << " ";
-
-
-
-      /*if(sq.painted()) cout << sq.plPainter;
-      else if(sq.drawed()) cout << 'd';
-      else cout << '.';
-      if(j < info.boardWidth-1) cout << " ";*/
     }
-    //cout << endl;
   }
   cout << endl;
+
+  /*if(info.round() == 36){
+    Square sq = info.square(Position(3,5));
+    Square sq2 = info.square(Position(3,4));
+    if(sq.hasUnit()) cerr << "sq has unit" << endl;
+    if(sq2.hasUnit()) cerr << "sq2 has unit" << endl;
+  }*/
+
+  for(int i = 0; i < info.boardHeight; ++i){
+    for(int j = 0; j < info.boardWidth; ++j){
+      
+      Square sq = info.square(Position(i,j));
+      if(sq.painted()) cerr << sq.plPainter;
+      else if(sq.drawed()) cerr << 'd';
+      else cerr << '.';
+      if(j < info.boardWidth-1) cerr << " ";
+    }
+    cerr << endl;
+  }
+  cerr << endl;
 }
 
-void Board::printSettings(){
-  info.printSettings();
-}
+void Board::printSettings(){info.printSettings();}
