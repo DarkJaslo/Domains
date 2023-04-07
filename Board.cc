@@ -446,6 +446,8 @@ void Board::executeRound(const vector<Player*>& pl){
 
 void Board::printRound(){
   //cout << endl << "Printing round " << info.round() << endl << endl;
+
+  //VIEWER FORMAT
   cout << info.round() << " ";
   for(int i = 0; i < info.boardHeight; ++i){
     for(int j = 0; j < info.boardWidth; ++j){
@@ -459,13 +461,7 @@ void Board::printRound(){
   }
   cout << endl;
 
-  /*if(info.round() == 36){
-    Square sq = info.square(Position(3,5));
-    Square sq2 = info.square(Position(3,4));
-    if(sq.hasUnit()) cerr << "sq has unit" << endl;
-    if(sq2.hasUnit()) cerr << "sq2 has unit" << endl;
-  }*/
-
+  //CONSOLE FORMAT
   for(int i = 0; i < info.boardHeight; ++i){
     for(int j = 0; j < info.boardWidth; ++j){
       
