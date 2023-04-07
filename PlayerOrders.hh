@@ -17,6 +17,7 @@ private:
   int maxSize;
   int index; //orderList[0,index] has valid orders. If index == -1, no orders
   vector<Order> orderList;
+  set<int> orderedUnits;
 };
 
 #endif
