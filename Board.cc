@@ -477,3 +477,41 @@ void Board::printRound(){
 }
 
 void Board::printSettings(){info.printSettings();}
+
+void Board::spawnPlayer(int i, int j, int plId){
+  Position p(i,j);
+  info.square_map[i][j].plPainter = plId;
+  Unit u;
+  u.id_ = plId;
+  u.pl = plId;
+  u.p = p;
+  u.energ = info.energyStart;
+  info.unitsVector.push_back(u);
+}
+
+void Board::spawnPlayers(){
+  int playersToSpawn = info.numPlayers;
+
+  if(playersToSpawn < 2){
+    cerr << "can't play solo" << endl;
+    exit(1);
+  }
+
+  /* order is:
+      bot-left
+      up-right
+      bot-right
+      up-left
+      at least 9x9
+  */
+
+  int cols = info.cols();
+  int rows = info.rows();
+  int i,j;
+
+  //bottom left
+  i = rows-3;
+  j = 2;
+  //info.square_map[i][j]
+
+}

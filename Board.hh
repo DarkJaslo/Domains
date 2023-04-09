@@ -42,8 +42,13 @@ private:
   //Executes ord (if it is valid) and returns true if it succeeds
   bool executeOrder(int plId, Order ord);
 
+  //Spawns a player
+  void spawnPlayer(int i, int j, int plId);
+
+  //Spawns players
+  void spawnPlayers();
+
   int seed;
   GameInfo info;
-  vector<bool> killedUnits; 
-  //vector<Player*> players;
+  vector<bool> killedUnits;
 };
