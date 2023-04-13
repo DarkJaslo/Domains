@@ -42,7 +42,7 @@ private:
   //Executes ord (if it is valid) and returns true if it succeeds
   bool executeOrder(int plId, Order ord);
 
-  //Spawns a player
+  //Spawns a player, giving them the unit identified with plId
   void spawnPlayer(int i, int j, int plId);
 
   //Spawns players

@@ -45,10 +45,15 @@ vector<int> GameInfo::randomPermutation(){
 Board::Board(){}
 
 void Board::iniBoard(int s){
+  cerr << "Initializing board..." << endl;
   seed = s;
   randind = seed%randsize();
   jump = seed%randjump()+1;   //+1 to avoid jump = 0
+  cerr << "Reading settings..." << endl;
   info.readSettings();
+  //cerr << "Read all settings" << endl;
+
+  cerr << "Initializing squares..." << endl;
   info.game_map = vector<vector<char>>(info.boardHeight,vector<char>(info.boardWidth,'.'));
   info.square_map = vector<vector<Square>>(info.boardHeight,vector<Square>(info.boardWidth));
   for(int i = 0; i < info.boardHeight; ++i){
@@ -64,11 +69,38 @@ void Board::iniBoard(int s){
     }
   }
 
-  info.unitsVector.push_back(Unit(0,0,Position(5,5)));
+  cerr << "Initializing units..." << endl;
+  //Size may change when other unit types are introduced
+  info.unitsVector.reserve(info.unitsMax*info.numPlayers);
 
+  //First info.unitsMax*info.numPlayers units are players'.
+  for(int i = 0; i < info.unitsMax*info.numPlayers; ++i){
+    //info.unitsVector[i] = 
+    info.unitsVector.emplace_back(
+    Unit(/*id*/          i,
+         /*player*/     -1,
+         /*position*/   Position(-1,-1), //invalid position
+         /*upgraded*/   false,
+         /*energy*/     info.energyStart,
+         /*type*/       UnitType::unit,
+         /*roundsToPop*/3
+    ));
+  }
+  //cerr << "Initialization ended successfully" << endl;
+
+/*
+  //Static initialization
+  info.unitsVector[0].pl = 0; 
+  info.unitsVector[0].p = Position(5,5); 
   info.square_map[5][5].isBorder = true;
   info.square_map[5][5].plPainter = 0;
   info.square_map[5][5].u = &info.unitsVector[0];
+*/
+  cerr << "Spawning players..." << endl;
+  spawnPlayers();
+  
+  
+  cerr << "Board successfully initialized" << endl;
 }
 
 bool Board::unitOk(int uid)const {return uid >= 0 and uid < info.unitsVector.size();}
@@ -375,6 +407,13 @@ bool Board::executeOrder(int plId, Order ord){
     //Valid movement
     if(ord.dir == Direction::null) return true;
     Position newPos = u.p + ord.dir;
+
+    //Return false if position is not valid
+    if(not info.posOk(newPos)){
+      cerr << "warning: moving to outside of the board" << endl;
+      return false;
+    }
+    
     Square sq = info.square_map[newPos.x][newPos.y];
     if(sq.hasUnit()){
       int win = fight(u,info.unitsVector[sq.u->id_]);
@@ -417,7 +456,7 @@ bool Board::executeOrder(int plId, Order ord){
 
 void Board::executeRound(const vector<Player*>& pl){
 
-  if(info.round() == 40){
+  /*if(info.round() == 40){
     //fills some squares. used to test a specific case you cannot generate alone
     //4,5,6
     info.square_map[4][1].plPainter = 0;
@@ -429,7 +468,8 @@ void Board::executeRound(const vector<Player*>& pl){
 
     info.square_map[5][3].plPainter = 2;
     info.square_map[5][3].isBorder = true;
-  }
+  }*/
+  cerr << "Executing round " << info.round() << endl;
 
   killedUnits = vector<bool>(info.unitsMax*info.numPlayers,false);
   for(int i = 0; i < pl.size(); ++i){
@@ -481,12 +521,23 @@ void Board::printSettings(){info.printSettings();}
 void Board::spawnPlayer(int i, int j, int plId){
   Position p(i,j);
   info.square_map[i][j].plPainter = plId;
-  Unit u;
-  u.id_ = plId;
+
+  Unit u = info.unitsVector[plId];
   u.pl = plId;
   u.p = p;
-  u.energ = info.energyStart;
-  info.unitsVector.push_back(u);
+  info.unitsVector[plId] = u;
+
+  //Center square
+  info.square_map[i][j].u = &info.unitsVector[plId];
+  info.square_map[i][j].isBorder = false;
+  info.square_map[i][j].plPainter = plId;
+
+  const vector<Direction> DIRS = {DL,Direction::left,UL,down,up,DR,Direction::right,UR};
+  for(int k = 0; k < DIRS.size(); ++k){
+    Position aux = p+DIRS[k];
+    info.square_map[aux.x][aux.y].isBorder = true;
+    info.square_map[aux.x][aux.y].plPainter = plId;
+  }
 }
 
 void Board::spawnPlayers(){
@@ -510,8 +561,26 @@ void Board::spawnPlayers(){
   int i,j;
 
   //bottom left
-  i = rows-3;
-  j = 2;
-  //info.square_map[i][j]
+  i = rows-2;
+  j = 1;
+  spawnPlayer(i,j,0);
 
+  //up right
+  i = 1;
+  j = cols-2;
+  spawnPlayer(i,j,1);
+
+  if(playersToSpawn >= 3){
+    //bot-right
+    i = rows-2;
+    j = cols-2;
+    spawnPlayer(i,j,2);
+  }
+
+  if(playersToSpawn >= 4){
+    //up left
+    i = 1;
+    j = 1;
+    spawnPlayer(i,j,3);
+  }
 }
