@@ -48,6 +48,10 @@ Bonus Square::bonus()const{return *b;}
 Unit::Unit(){
   pl = -1; upg = false; t = UnitType::unit; rtp = -1;
 }
+Unit::Unit(int id){
+  Unit();
+  id_ = id;
+}
 Unit::Unit(int id, int player, const Position& position, bool upgraded, int energy, UnitType type, int roundsToPop){
   id_ = id; pl = player; p = position; upg = upgraded; energ = energy; t = type; rtp = roundsToPop;
 }

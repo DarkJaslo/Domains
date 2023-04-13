@@ -39,6 +39,7 @@ public:
   int roundsToPop() const;
   UnitType type() const;
   Unit();
+  Unit(int id);
   Unit(int id, int player, const Position& position, bool upgraded = false, int energy = 0, UnitType type = UnitType::unit, int roundsToPop = -1);
 
 private:
