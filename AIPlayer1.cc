@@ -347,6 +347,27 @@ struct PLAYER_NAME : public Player{
       move(u[0],Direction::up);
       cerr << "moved" << endl;
     }
+    else if(round() == 67){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::left);
+      cerr << "moved" << endl;
+    }
+    else if(round() == 68){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::left);
+      cerr << "moved" << endl;
+    }
+    else if(round() == 69){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::DR);
+      cerr << "moved" << endl;
+    }
+    else if(round() == 70){
+      cerr << "round " << round() << endl;
+      move(u[0],Direction::UL);
+      cerr << "moved" << endl;
+    }
+    
 
 
     /*
