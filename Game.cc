@@ -16,11 +16,8 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
     pl[i]->id_ = i;
   }
 
-  if(showInfo) cerr << "initializing board" << endl;
   //Hay que inicializar bien el tablero
   b.iniBoard(seed);
-  cerr << "board initialized" << endl;
-  //b.printRound();
 
 
 /* CODE TO TEST THE RANDOMIZER
@@ -69,6 +66,7 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
 
 */
   cout << rounds << " " << b.info.rows() << " " << b.info.cols() << endl;
+  b.printRound();
 
   for(int round = 0; round < rounds; ++round){
 
