@@ -8,6 +8,8 @@ struct PLAYER_NAME : public Player{
   }
 
   virtual void play(){
+
+    //changing player
     
     vector<int> u = units(me());
     cerr << "u.size() = " << u.size() << endl;
