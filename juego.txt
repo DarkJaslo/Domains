@@ -110,6 +110,13 @@ recorres i,j de la caja contenedora y
 
 
 
+cosas que hay que hacer para poder programar un bot
+
+poder dar los 3 tipos de orden
+que los respawns funcionen
+que salgan blobs
+que salgan bonus
+que la energía se gane y se pierda como toca
 
 
 
