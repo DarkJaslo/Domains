@@ -55,6 +55,7 @@ private:
   static int currentRound;
   vector<vector<char>> game_map;
   vector<vector<Square>> square_map;
+  vector<vector<Square>> old_square_map;
   vector<int> roundsSinceRespawn;
   vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
   static vector<Unit> unitsVector;
