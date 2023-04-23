@@ -42,6 +42,9 @@ private:
   //Executes ord (if it is valid) and returns true if it succeeds
   bool executeOrder(int plId, Order ord);
 
+  //Gives points from painted squares
+  void giveBoardPoints();
+
   //Spawns a player, giving them the unit identified with plId
   void spawnPlayer(int i, int j, int plId);
 
@@ -51,4 +54,5 @@ private:
   int seed;
   GameInfo info;
   vector<bool> killedUnits;
+  vector<Position> attackedPositions;
 };

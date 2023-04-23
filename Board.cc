@@ -410,7 +410,7 @@ bool Board::executeOrder(int plId, Order ord){
 
     //Return false if position is not valid
     if(not info.posOk(newPos)){
-      cerr << "warning: moving to outside of the board" << endl;
+      cerr << "warning: moving outside of the board" << endl;
       return false;
     }
     
@@ -436,6 +436,14 @@ bool Board::executeOrder(int plId, Order ord){
   }
   else if(ord.type == OrderType::attack){
     //Compute attacked position
+    Position attacked = u.p + ord.dir;
+    if(not info.posOk(attacked)){
+      cerr << "attacking an invalid position" << endl;
+      return false;
+    }
+
+    //attackedPositions[u.id_] = attacked;
+
     //If there is an enemy unit, attack
     //If there is not, see if there was one before that has moved
     //If there was, see if it is in range
@@ -454,22 +462,20 @@ bool Board::executeOrder(int plId, Order ord){
   return false;
 }
 
+void Board::giveBoardPoints(){
+  for(int i = 0; i < info.rows(); ++i){
+    for(int j = 0; j < info.cols(); ++j){
+      int painter = info.square_map[i][j].plPainter;
+      if(painter >= 0){
+        info.points[painter] += info.pointsPerSquare;
+      }
+    }
+  }
+}
+
 void Board::executeRound(const vector<Player*>& pl){
-
-  /*if(info.round() == 40){
-    //fills some squares. used to test a specific case you cannot generate alone
-    //4,5,6
-    info.square_map[4][1].plPainter = 0;
-    info.square_map[5][1].plPainter = 0;
-    info.square_map[6][1].plPainter = 0;
-    info.square_map[4][1].isBorder = true;
-    info.square_map[5][1].isBorder = true;
-    info.square_map[6][1].isBorder = true;
-
-    info.square_map[5][3].plPainter = 2;
-    info.square_map[5][3].isBorder = true;
-  }*/
   cerr << "Executing round " << info.round() << endl;
+  info.old_square_map = info.square_map;
 
   killedUnits = vector<bool>(info.unitsMax*info.numPlayers,false);
   for(int i = 0; i < pl.size(); ++i){
@@ -482,6 +488,8 @@ void Board::executeRound(const vector<Player*>& pl){
       }
     }
   }
+
+  giveBoardPoints();
 }
 
 void Board::printRound(){
