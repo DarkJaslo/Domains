@@ -5,7 +5,7 @@ class Board{
 public:
   //Default constructor
   Board();
-  //Debug constructor
+  //Debug and view constructor
   Board(bool d, bool v);
   //Reads settings and initializes variables
   void iniBoard(int s);
