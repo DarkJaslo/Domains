@@ -42,8 +42,8 @@ vector<int> GameInfo::randomPermutation(){
 }
 
 //Board class
-Board::Board(){debug = false;}
-Board::Board(bool d){debug = d;}
+Board::Board(){debug = false; view = true;}
+Board::Board(bool d, bool v){debug = d; view = v;}
 
 void Board::iniBoard(int s){
   cerr << "Initializing board..." << endl;
@@ -497,21 +497,23 @@ void Board::printRound(){
   //cout << endl << "Printing round " << info.round() << endl << endl;
 
   //VIEWER FORMAT
-  cout << info.round() << " ";
-  for(int i = 0; i < info.boardHeight; ++i){
-    for(int j = 0; j < info.boardWidth; ++j){
-      
-      Square sq = info.square(Position(i,j));
-      //Prints painter id, drawer id and unit's player id
-      cout << sq.plPainter << " " << sq.plDrawer << " ";
-      if(sq.hasUnit()) cout << sq.unit().pl << " ";
-      else cout << -1 << " ";
+  if(view){
+    cout << info.round() << " ";
+    for(int i = 0; i < info.boardHeight; ++i){
+      for(int j = 0; j < info.boardWidth; ++j){
+        
+        Square sq = info.square(Position(i,j));
+        //Prints painter id, drawer id and unit's player id
+        cout << sq.plPainter << " " << sq.plDrawer << " ";
+        if(sq.hasUnit()) cout << sq.unit().pl << " ";
+        else cout << -1 << " ";
+      }
     }
+    cout << endl;
   }
-  cout << endl;
 
-  if(0){
-    //CONSOLE FORMAT
+  //CONSOLE FORMAT
+  if(debug){
     for(int i = 0; i < info.boardHeight; ++i){
       for(int j = 0; j < info.boardWidth; ++j){
         
@@ -525,7 +527,6 @@ void Board::printRound(){
     }
     cerr << endl;
   }
-  
 }
 
 void Board::printSettings(){info.printSettings();}
