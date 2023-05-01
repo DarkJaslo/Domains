@@ -42,7 +42,8 @@ vector<int> GameInfo::randomPermutation(){
 }
 
 //Board class
-Board::Board(){}
+Board::Board(){debug = false;}
+Board::Board(bool d){debug = d;}
 
 void Board::iniBoard(int s){
   cerr << "Initializing board..." << endl;
@@ -509,19 +510,22 @@ void Board::printRound(){
   }
   cout << endl;
 
-  //CONSOLE FORMAT
-  for(int i = 0; i < info.boardHeight; ++i){
-    for(int j = 0; j < info.boardWidth; ++j){
-      
-      Square sq = info.square(Position(i,j));
-      if(sq.painted()) cerr << sq.plPainter;
-      else if(sq.drawed()) cerr << 'd';
-      else cerr << '.';
-      if(j < info.boardWidth-1) cerr << " ";
+  if(0){
+    //CONSOLE FORMAT
+    for(int i = 0; i < info.boardHeight; ++i){
+      for(int j = 0; j < info.boardWidth; ++j){
+        
+        Square sq = info.square(Position(i,j));
+        if(sq.painted()) cerr << sq.plPainter;
+        else if(sq.drawed()) cerr << 'd';
+        else cerr << '.';
+        if(j < info.boardWidth-1) cerr << " ";
+      }
+      cerr << endl;
     }
     cerr << endl;
   }
-  cerr << endl;
+  
 }
 
 void Board::printSettings(){info.printSettings();}

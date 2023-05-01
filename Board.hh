@@ -5,6 +5,8 @@ class Board{
 public:
   //Default constructor
   Board();
+  //Debug constructor
+  Board(bool d);
   //Reads settings and initializes variables
   void iniBoard(int s);
   //Executes the orders given in this round
@@ -55,4 +57,5 @@ private:
   GameInfo info;
   vector<bool> killedUnits;
   vector<Position> attackedPositions;
+  bool debug;
 };
