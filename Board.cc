@@ -103,7 +103,7 @@ void Board::iniBoard(int s){
   cerr << "Board successfully initialized" << endl;
 }
 
-bool Board::unitOk(int uid)const {return uid >= 0 and uid < info.unitsVector.size();}
+bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
 
 void Board::erasePath(int uid, Position p){
   cerr << "erasing path" << endl;
@@ -176,10 +176,10 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
 
 void Board::flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid){
 
-  if(p.x >= 0 and p.y >= 0 and p.x < grid.size() and p.y < grid[0].size() and (not grid[p.x][p.y].border() or (grid[p.x][p.y].plPainter != plId and grid[p.x][p.y].drawer() != plId)) and grid[p.x][p.y].plPainter < COLORINDEX){
+  if(p.x >= 0 and p.y >= 0 and p.x < static_cast<int>(grid.size()) and p.y < static_cast<int>(grid[0].size()) and (not grid[p.x][p.y].border() or (grid[p.x][p.y].plPainter != plId and grid[p.x][p.y].drawer() != plId)) and grid[p.x][p.y].plPainter < COLORINDEX){
 
     //This region must not be painted
-    if(p.x == 0 or p.y == 0 or p.x == grid.size()-1 or p.y == grid[0].size()-1){
+    if(p.x == 0 or p.y == 0 or p.x == static_cast<int>(grid.size()-1) or p.y == static_cast<int>(grid[0].size()-1)){
       cerr << "don't need to flood here: ";
       if(ok) ok = false;
     }
@@ -222,8 +222,8 @@ void Board::paint(int plId, int uid, Position p){
   bool correct = true;
 
   //Floods all positions and stores which colors flooded a closed zone
-  for(int i = 1; i < box.size()-1; ++i){
-    for(int j = 1; j < box[0].size()-1; ++j){
+  for(int i = 1; i < static_cast<int>(box.size()-1); ++i){
+    for(int j = 1; j < static_cast<int>(box[0].size()-1); ++j){
       if(box[i][j].plPainter != plId){
         flood(plId,colIndex,Position(i,j),flooded,correct,box);
         if(flooded){
@@ -242,8 +242,8 @@ void Board::paint(int plId, int uid, Position p){
   cerr << box.size() << " " << box[0].size() << endl;
 
   //Paints all correctly flooded zones.
-  for(int i = 0; i < box.size(); ++i){
-    for(int j = 0; j < box[0].size(); ++j){
+  for(int i = 0; i < static_cast<int>(box.size()); ++i){
+    for(int j = 0; j < static_cast<int>(box[0].size()); ++j){
       if(box[i][j].border() and box[i][j].plDrawer == plId){
         cerr << "painting position " << xmin+i << "," << ymin+j << endl;
         box[i][j].plPainter = plId;
