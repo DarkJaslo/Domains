@@ -61,6 +61,13 @@ private:
   static vector<Unit> unitsVector;
   vector<int> points;
   vector<int> bonusPlayers;
+
+  //Spawn events management
+  vector<int> respawnCounters;
+  vector<int> blobCounters;
+  int bonusCounter;
+  
+  vector<set<Position>> player_squares;
 };
 
 #endif

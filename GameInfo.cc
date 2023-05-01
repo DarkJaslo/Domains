@@ -54,6 +54,7 @@ void GameInfo::readSettings(){
   whoHasWhat = vector<int>(unitsMax*numPlayers,-1);
   points = vector<int>(numPlayers,0);
   bonusPlayers = vector<int>(numPlayers,0);
+  player_squares = vector<set<Position>>(numPlayers);
 }
 
 bool GameInfo::posOk(const Position& p)const{
