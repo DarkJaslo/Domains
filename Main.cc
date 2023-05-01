@@ -1,8 +1,14 @@
 #include <iostream>
 #include "Game.hh"
+#include "time.cc"
+#include <unistd.h>
 using namespace std;
 
 int main(int argc, char** argv){
+  float t1,t2;
+
+  t1 = GetTime();
+
   cerr << "hola soy el main" << endl;
   Register::printPlayers();
   if(argc < 3){
@@ -20,5 +26,8 @@ int main(int argc, char** argv){
   g.play(names,atoi(argv[3]),true);
 
   cerr << "Fin main" << endl;
+
+  t2 = GetTime();
+  cerr << "Tiempo: " << t2-t1 << "ms" << endl;
   exit(0);
 }
