@@ -10,7 +10,7 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
   string s;
   int rounds;
   cin >> s >> rounds;
-  Board b;
+  Board b(false,true);
   for(int i = 0; i < names.size(); ++i){
     pl.push_back(Register::newPlayer(names[i]));
     pl[i]->id_ = i;
