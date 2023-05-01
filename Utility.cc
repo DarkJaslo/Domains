@@ -3,9 +3,9 @@
 //Position
 Position::Position(){ x = 0; y = 0;};
 Position::Position(int posx, int posy){ x = posx; y = posy; }
-bool Position::operator== (const Position& p){return x == p.x and y == p.y;}
-bool Position::operator!= (const Position& p){return x != p.x or y != p.y;}
-bool Position::operator<(const Position& p){
+bool Position::operator== (const Position& p) const{return x == p.x and y == p.y;}
+bool Position::operator!= (const Position& p) const{return x != p.x or y != p.y;}
+bool Position::operator<(const Position& p) const{
   if(x != p.x) return x < p.x;
   return y < p.y;
 }
@@ -29,7 +29,6 @@ Position& Position::operator+= (const Direction& d){
   return *this;
 }
 
-
 //Square
 Square::Square(){p=Position(-1,-1); plPainter=-1; plDrawer=-1;}
 Position Square::pos()const{return p;}
@@ -38,22 +37,25 @@ bool Square::drawed()const{return uDrawer != -1;}
 bool Square::border()const{return isBorder;}
 int Square::painter()const{return plPainter;}
 int Square::drawer()const{return uDrawer;}
+bool Square::empty()const{return u == nullptr and b == nullptr and bb == nullptr;}
 bool Square::hasUnit()const{return u != nullptr;}
 Unit Square::unit()const{return *u;}
 bool Square::hasBonus()const{return b != nullptr;}
 Bonus Square::bonus()const{return *b;}
+bool Square::hasBubble()const{return bb != nullptr;}
+Bubble Square::bubble()const{return *bb;}
 
 //Unit
 
 Unit::Unit(){
-  pl = -1; upg = false; t = UnitType::unit; rtp = -1;
+  pl = -1; upg = false; t = UnitType::unit;
 }
 Unit::Unit(int id){
   Unit();
   id_ = id;
 }
-Unit::Unit(int id, int player, const Position& position, bool upgraded, int energy, UnitType type, int roundsToPop){
-  id_ = id; pl = player; p = position; upg = upgraded; energ = energy; t = type; rtp = roundsToPop;
+Unit::Unit(int id, int player, const Position& position, bool upgraded, int energy){
+  id_ = id; pl = player; p = position; upg = upgraded; energ = energy; t = UnitType::unit;
 }
 int Unit::id()const{return id_;}
 int Unit::energy()const{return energ;}
@@ -61,4 +63,12 @@ bool Unit::upgraded()const{return upg;}
 int Unit::player()const{return pl;}
 Position Unit::position()const{return p;}
 UnitType Unit::type()const{return t;}
-int Unit::roundsToPop()const{return rtp;}
+
+//Bubble
+
+Bubble::Bubble(){pl = -1; t = UnitType::bubble;}
+Bubble::Bubble(int id){Bubble(); id_ = id;}
+Bubble::Bubble(int id, int player, Position pos, int roundsToPop){ id_ = id; pl = player; p = pos; rtp = roundsToPop;}
+int Bubble::roundsToPop()const{return rtp;}
+Position Bubble::position()const{return p;}
+UnitType Bubble::type()const{return t;}

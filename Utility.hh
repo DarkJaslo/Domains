@@ -19,9 +19,9 @@ struct Position{
   int y;
   Position();
   Position(int posx, int posy);
-  bool operator== (const Position& p);
-  bool operator!= (const Position& p);
-  bool operator<(const Position& p);
+  bool operator== (const Position& p) const;
+  bool operator!= (const Position& p) const;
+  bool operator<(const Position& p) const;
   Position operator+(const Direction& d);
   Position& operator+= (const Direction& d);
 };
@@ -36,11 +36,10 @@ public:
   Position position() const;
   bool upgraded() const;
   int energy() const;
-  int roundsToPop() const;
   UnitType type() const;
   Unit();
   Unit(int id);
-  Unit(int id, int player, const Position& position, bool upgraded = false, int energy = 0, UnitType type = UnitType::unit, int roundsToPop = -1);
+  Unit(int id, int player, const Position& position, bool upgraded = false, int energy = 0);
 
 private:
   friend class Board;
@@ -53,9 +52,26 @@ private:
   //unit params
   bool upg;
   int energ;
+};
+
+struct Bubble{
+public:
+  Bubble();
+  Bubble(int id);
+  Bubble(int id, int player, Position pos, int rtp);
+  int roundsToPop() const;
+  UnitType type() const;
+  Position position()const;
+private:
+  friend class Board;
+
+  int id_;
+  int pl;
+  Position p;
+  UnitType t;
 
   //bubble params
-  int rtp;  //rounds to pop
+  int rtp;
 };
 
 struct Bonus{
@@ -84,10 +100,13 @@ public:
   int painter() const;
   //Returns an uid
   int drawer() const;
+  bool empty() const;
   bool hasUnit() const;
   Unit unit() const;
   bool hasBonus() const;
   Bonus bonus() const;
+  bool hasBubble() const;
+  Bubble bubble() const;
   Square();
 
 private:
@@ -100,6 +119,7 @@ private:
   int uDrawer;
   Unit* u;        //nullptr if there is not an unit
   Bonus* b;
+  Bubble* bb;
 };
 
 
