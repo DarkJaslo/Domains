@@ -66,6 +66,7 @@ void Board::iniBoard(int s){
       info.square_map[i][j].plDrawer = -1;
       info.square_map[i][j].u = nullptr;
       info.square_map[i][j].b = nullptr;
+      info.square_map[i][j].bb = nullptr;
       info.square_map[i][j].closes = false;
     }
   }
@@ -74,7 +75,7 @@ void Board::iniBoard(int s){
   //Size may change when other unit types are introduced
   info.unitsVector.reserve(info.unitsMax*info.numPlayers);
 
-  //First info.unitsMax*info.numPlayers units are players'.
+  //First info.unitsMax*info.numPlayers units are players
   for(int i = 0; i < info.unitsMax*info.numPlayers; ++i){
     //info.unitsVector[i] = 
     info.unitsVector.emplace_back(
@@ -82,21 +83,10 @@ void Board::iniBoard(int s){
          /*player*/     -1,
          /*position*/   Position(-1,-1), //invalid position
          /*upgraded*/   false,
-         /*energy*/     info.energyStart,
-         /*type*/       UnitType::unit,
-         /*roundsToPop*/3
+         /*energy*/     info.energyStart
     ));
   }
   //cerr << "Initialization ended successfully" << endl;
-
-/*
-  //Static initialization
-  info.unitsVector[0].pl = 0; 
-  info.unitsVector[0].p = Position(5,5); 
-  info.square_map[5][5].isBorder = true;
-  info.square_map[5][5].plPainter = 0;
-  info.square_map[5][5].u = &info.unitsVector[0];
-*/
   cerr << "Spawning players..." << endl;
   spawnPlayers();
   
@@ -464,11 +454,21 @@ bool Board::executeOrder(int plId, Order ord){
 }
 
 void Board::giveBoardPoints(){
+  for(int i = 0; i < info.numPlayers; ++i){
+    info.points[i] += info.pointsPerSquare * info.player_squares[i].size();
+  }
+}
+
+void Board::getPlayerSquares(){
+  for(int i = 0; i < info.numPlayers; ++i){
+    info.player_squares[i].clear();
+  }
+
   for(int i = 0; i < info.rows(); ++i){
     for(int j = 0; j < info.cols(); ++j){
       int painter = info.square_map[i][j].plPainter;
       if(painter >= 0){
-        info.points[painter] += info.pointsPerSquare;
+        info.player_squares[painter].insert(Position(i,j));
       }
     }
   }
@@ -489,7 +489,8 @@ void Board::executeRound(const vector<Player*>& pl){
       }
     }
   }
-
+  cerr << "getting player squares..." << endl;
+  getPlayerSquares();
   giveBoardPoints();
 }
 

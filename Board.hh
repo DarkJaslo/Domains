@@ -26,8 +26,10 @@ private:
   //Updates everything to match u's death
   void killUnit(Unit& u);
 
+  //enclose marks squares and this function removes those marks
   void deenclose(Position p);
 
+  //Saves a rectangle (Position(xmin,ymin),Position(xmax,ymax)) to paint
   void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
 
   void flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid);
@@ -46,6 +48,9 @@ private:
 
   //Gives points from painted squares
   void giveBoardPoints();
+
+  //Saves all squares owned by each player
+  void getPlayerSquares();
 
   //Spawns a player, giving them the unit identified with plId
   void spawnPlayer(int i, int j, int plId);
