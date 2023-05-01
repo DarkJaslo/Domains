@@ -119,6 +119,28 @@ que salgan bonus
 que la energía se gane y se pierda como toca
 
 
+para que vayan los respawns
+
+al final de cada ronda:
+
+guarda que posiciones son de quien
+incrementa timers si no valen sus valores máximos
+
+	respawn()
+	lo que hace esta operacion es
+	-si alguno tiene como valor ROUNDS_PER_RESPAWN,
+		-intenta spawnear una unidad nueva
+			-recopila todas las posiciones válidas
+			-selecciona un número random entre 0 y posiciones.size()-1
+		-si se ha podido, contador a 0 y borrar la posicion del conjunto
+		-si no, deja el contador sin tocar
+
+	spawn_blobs() se puede juntar con respawn unit probablemente
+
+
+	si toca bonus, selecciona posiciones random y cuando tengas una sin ocupar ponlo ahí
+
+
 
 
 
