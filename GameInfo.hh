@@ -28,46 +28,59 @@ public:
   static vector<int> randomPermutation(); //implemented in Board.cc
   //Returns all unit ids the player p possesses
   static vector<int> units(int p);
+  //Returns the number of units belonging to each player
+  static vector<int> numberOfUnits();
 
 
 private:
   friend class Board;
   friend class Game;
 
+  //Reads and initializes info
   void readSettings();
-  int numPlayers;
-  int unitsStart;
-  int unitsMax;
-  int unitsMin;
-  int squaresMax;
-  int bonusMax;
-  int roundsPerRespawn;
-  int pointsPerUnit;
-  int pointsPerBubble;
-  int pointsPerPop;
-  int pointsPerSquare;
-  int energyStart;
-  int energyMax;
-  int energyMin;
-  int abilitySize;
-  int boardWidth;
-  int boardHeight;
+  //Returns true and leaves the position of a free square owned by p. False if there is no free position
+  bool freeSquare(int plId, Position& p);
+  //Spawns a unit
+  void spawnUnit(int plId, Position p);
+  //Spawns a bubble
+  void spawnBubble(int plId, Position p);
+  static int numPlayers;
+  static int unitsStart;
+  static int unitsMax;
+  static int unitsMin;
+  static int squaresMax;
+  static int bonusMax;
+  static int roundsPerRespawn;
+  static int roundsPerBubble;
+  static int roundsPerBonus;
+  static int pointsPerUnit;
+  static int pointsPerBubble;
+  static int pointsPerPop;
+  static int pointsPerSquare;
+  static int energyStart;
+  static int energyMax;
+  static int energyMin;
+  static int abilitySize;
+  static int boardWidth;
+  static int boardHeight;
+  static int roundsToPop;
   static int currentRound;
   vector<vector<char>> game_map;
   vector<vector<Square>> square_map;
   vector<vector<Square>> old_square_map;
-  vector<int> roundsSinceRespawn;
   vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
   static vector<Unit> unitsVector;
+  vector<Bubble> bubblesVector;
   vector<int> points;
   vector<int> bonusPlayers;
+  Bonus bonus;
 
   //Spawn events management
   vector<int> respawnCounters;
-  vector<int> blobCounters;
+  vector<int> bubbleCounters;
   int bonusCounter;
   
-  vector<set<Position>> player_squares;
+  vector<vector<Position>> player_squares;
 };
 
 #endif
