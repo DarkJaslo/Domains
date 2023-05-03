@@ -66,6 +66,7 @@ public:
   Position position()const;
 private:
   friend class Board;
+  friend class GameInfo;
 
   int id_;
   int pl;
