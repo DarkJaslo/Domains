@@ -52,6 +52,9 @@ private:
   //Saves all squares owned by each player
   void getPlayerSquares();
 
+  //Tries to respawn player units, bubbles and bonuses
+  void respawn();
+
   //Spawns a player, giving them the unit identified with plId
   void spawnPlayer(int i, int j, int plId);
 
