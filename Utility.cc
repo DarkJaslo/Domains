@@ -28,6 +28,25 @@ Position& Position::operator+= (const Direction& d){
   }
   return *this;
 }
+Direction Position::to(Position p){
+  Direction d = Direction::left;
+  if(*this+d == p){return d;}
+  d = Direction::right;
+  if(*this+d == p){return d;}
+  d = Direction::up;
+  if(*this+d == p){return d;}
+  d = Direction::down;
+  if(*this+d == p){return d;}
+  d = Direction::DL;
+  if(*this+d == p){return d;}
+  d = Direction::DR;
+  if(*this+d == p){return d;}
+  d = Direction::UL;
+  if(*this+d == p){return d;}
+  d = Direction::UR;
+  if(*this+d == p){return d;}
+  return Direction::null;
+}
 
 //Square
 Square::Square(){p=Position(-1,-1); plPainter=-1; plDrawer=-1;}

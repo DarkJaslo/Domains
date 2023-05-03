@@ -12,7 +12,7 @@ using namespace std;
 /**
  * Defines all directions
 */
-enum Direction{ up,down,left,right,UL,UR,DL,DR,null };
+enum Direction{null,up,down,left,right,UL,UR,DL,DR};
 
 struct Position{
   int x;
@@ -24,6 +24,9 @@ struct Position{
   bool operator<(const Position& p) const;
   Position operator+(const Direction& d);
   Position& operator+= (const Direction& d);
+  /* Pre: p is adjacent (diagonal counts) to this
+     Returns the direction from this to p. Returns null if an unexpected situation occurs  */
+  Direction to(Position p);
 };
 
 enum UnitType{ unit, bubble,bonus };
