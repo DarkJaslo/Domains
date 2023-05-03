@@ -78,6 +78,10 @@ private:
 };
 
 struct Bonus{
+public:
+  Bonus();
+  Bonus(Position pos);
+private:
   int id;
   Position p;
   UnitType type;

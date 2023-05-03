@@ -73,3 +73,8 @@ int Bubble::roundsToPop()const{return rtp;}
 int Bubble::player()const{return pl;}
 Position Bubble::position()const{return p;}
 UnitType Bubble::type()const{return t;}
+
+//Bonus
+
+Bonus::Bonus(){id = 0; type = UnitType::bonus;}
+Bonus::Bonus(Position pos){Bonus(); p = pos;}
