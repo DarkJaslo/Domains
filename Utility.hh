@@ -61,6 +61,7 @@ public:
   Bubble(int id);
   Bubble(int id, int player, Position pos, int rtp);
   int roundsToPop() const;
+  int player() const;
   UnitType type() const;
   Position position()const;
 private:

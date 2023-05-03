@@ -70,5 +70,6 @@ Bubble::Bubble(){pl = -1; t = UnitType::bubble;}
 Bubble::Bubble(int id){Bubble(); id_ = id;}
 Bubble::Bubble(int id, int player, Position pos, int roundsToPop){ id_ = id; pl = player; p = pos; rtp = roundsToPop;}
 int Bubble::roundsToPop()const{return rtp;}
+int Bubble::player()const{return pl;}
 Position Bubble::position()const{return p;}
 UnitType Bubble::type()const{return t;}
