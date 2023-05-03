@@ -14,6 +14,7 @@ int randdigit(){
   c-='0';
   return c;
 }
+bool isDiagonal(Direction d){return d >= Direction::UL;}
 
 int GameInfo::randomNumber(int l, int r){
   //cerr << "starting random number generation" << endl;
@@ -347,26 +348,52 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
   }
 }
 
-int Board::fight(Unit& u1, Unit& u2){
+int Board::fight(Unit& u1, Unit& u2, FightMode fm){
   cerr << "fighting" << endl;
   //Transformations to energy if needed
-  int e1 = GameInfo::randomNumber(0,u1.energ);
-  int e2 = GameInfo::randomNumber(0,u2.energ);
-  int winner = u1.id_;
-  if(e2 > e1) winner = u2.id_;
+
+  int e1,e2;
+  int winner = -1;
+  int energySub = 0;
+  if(fm == FightMode::Fair){  //Uses random numbers to decide
+    e1 = GameInfo::randomNumber(0,u1.energ);
+    e2 = GameInfo::randomNumber(0,u2.energ);
+    winner = u1.id();
+    if(e2 > e1) winner = u2.id();
+
+    energySub = winner == u1.id() ? GameInfo::randomNumber(0,e2) : GameInfo::randomNumber(0,e1);
+  }
+  else if(fm == FightMode::Attacks){  //Attacks. Kills if e1>e2
+    if(u1.energy() >= u2.energy()){
+      winner = u1.id();
+    }
+    else{
+      u2.energ -= u1.energ;
+      if(u2.energy() < info.energyMin){
+        u2.energ = info.energyMin;
+      }
+    }
+  }
+
+
+  
 
   //Kill unit, give points and subtract energy
-  if(winner == u1.id_){
+  if(winner == u1.id()){
     killUnit(u2);
     info.points[u1.pl] += info.pointsPerUnit;
-    u1.energ -= GameInfo::randomNumber(0,e2);
-    if(u1.energ < info.energyMin) u1.energ = info.energyMin;
+    if(fm == FightMode::Fair){
+      u1.energ -= GameInfo::randomNumber(0,e2/2);
+      if(u1.energ < info.energyMin) u1.energ = info.energyMin;
+    }
   }
-  else{
+  else if(winner == u2.id()){
     killUnit(u1);
     info.points[u2.pl] += info.pointsPerUnit;
-    u2.energ -= GameInfo::randomNumber(0,e1);
-    if(u2.energ < info.energyMin) u2.energ = info.energyMin;
+    if(fm == FightMode::Fair){
+      u2.energ -= GameInfo::randomNumber(0,e1/2);
+      if(u2.energ < info.energyMin) u2.energ = info.energyMin;
+    }
   }
   return winner;
 }
@@ -388,14 +415,22 @@ bool Board::executeOrder(int plId, Order ord){
   }
 
   //Unit is controlled by the player
-  if(ord.type == OrderType::movement){
+
+  switch (ord.type){
+  case OrderType::movement:{
+    
+    bool diagonal = false;
     cerr << "movement" << endl;
     if(info.painter(u.p) != plId){ //Not on same-color domain
-      if(ord.dir == Direction::DL or ord.dir == Direction::DR or ord.dir == Direction::UL or ord.dir == Direction::UR){
+      if(isDiagonal(ord.dir)){
         cerr << "error: unit " << u.id_ << " cannot move diagonally here" << endl;
         return false;
       }
     }
+    else if(isDiagonal(ord.dir)){
+      diagonal = true;
+    }
+
     //Valid movement
     if(ord.dir == Direction::null) return true;
     Position newPos = u.p + ord.dir;
@@ -406,11 +441,15 @@ bool Board::executeOrder(int plId, Order ord){
       return false;
     }
     
-    Square sq = info.square_map[newPos.x][newPos.y];
+    Square sq = info.square(newPos);
     if(sq.hasUnit()){
-      int win = fight(u,info.unitsVector[sq.u->id_]);
-      if(win != u.id_){ //Lost the fight
-        return false;
+      FightMode fm = FightMode::Fair;
+      if(isDiagonal(sq.p.to(u.p)) and sq.unit().player() != sq.painter())
+        fm = FightMode::Attacks;
+
+      int win = fight(u,info.unitsVector[sq.u->id_],fm);
+      if(win != u.id()){ //Lost the fight
+        return true;
       }
     }
     else if(sq.hasBonus()){
@@ -425,32 +464,84 @@ bool Board::executeOrder(int plId, Order ord){
     info.square_map[u.p.x][u.p.y].u = nullptr;
     draw(plId,u.id_,newPos,u.p);
     return true;
+
+    break;
   }
-  else if(ord.type == OrderType::attack){
+  case OrderType::attack:{
+
     //Compute attacked position
     Position attacked = u.p + ord.dir;
     if(not info.posOk(attacked)){
       cerr << "attacking an invalid position" << endl;
       return false;
     }
-
-    //attackedPositions[u.id_] = attacked;
+    Square sq = info.square(attacked);
 
     //If there is an enemy unit, attack
-    //If there is not, see if there was one before that has moved
-    //If there was, see if it is in range
-    //If it still is in range, attack
+    if(sq.hasUnit()){
 
+      //Decide fairness
+      FightMode fm = FightMode::Fair;
+      if(isDiagonal(ord.dir)){
+        if(sq.p.x != u.p.x and sq.p.y != u.p.y and sq.painter() != sq.unit().player()){
+          fm = FightMode::Attacks;
+        }
+      }
+      int win = fight(u,info.unitsVector[sq.u->id()],fm);
+      return true;
+    }
+    
+    //If there is not, see if there was one before that has moved
+    Square sqold = info.old_square_map[attacked.x][attacked.y];
+    if(sqold.hasUnit()){
+      //If there was, see if it is in range
+      int uid = sqold.unit().id();
+      
+      Direction dirAux = Direction::null;
+      while(1){
+        if(info.square(sq.pos()+Direction::up).unit().id() == uid) dirAux = Direction::up;
+        else if(info.square(sq.pos()+Direction::left).unit().id() == uid) dirAux == Direction::left;
+        else if(info.square(sq.pos()+Direction::right).unit().id() == uid) dirAux == Direction::right;
+        else if(info.square(sq.pos()+Direction::down).unit().id() == uid) dirAux == Direction::down;
+        break;
+      }
+
+      if(dirAux != Direction::null){
+        //If it still is in range, attack
+
+        //Decide fairness
+        FightMode fm = FightMode::Fair;
+        if(isDiagonal(ord.dir)){
+          Square sqaux = info.square(sq.p+dirAux);
+          if(isDiagonal(sqaux.p.to(u.p)) and sqaux.painter() != sqaux.unit().player()){
+            fm = FightMode::Attacks;
+          }
+        }
+        int win = fight(u,info.unitsVector[sq.u->id()],fm);
+        return true;
+      }
+      else{
+        //Free attack: at the end of all turns, looks again to see if someone has moved here and attacks
+        return true;
+      }
+    }
+    break;
   }
-  else if(ord.type == OrderType::ability){
+  case OrderType::ability:{
+
     if(not info.unitsVector[u.id_].upg){
       cerr << "unit " << u.id_ << " is not upgraded and cannot use the ability" << endl;
       return false;
     }
     
     //The ability can be used
+    break;
   }
-  cerr << "didn't do shit" << endl;
+  default:{
+    cerr << "didn't do shit" << endl;
+    break;
+  }
+  }
   return false;
 }
 
@@ -534,6 +625,20 @@ void Board::respawn(){
   
 }
 
+void Board::computeEnergies(){
+  for(Unit& u : info.unitsVector){
+    if(u.player() < 0) continue;
+    else if(info.square(u.position()).painter() < 0) continue;
+    else if(u.player() == info.square(u.position()).painter()){
+      if(u.energ < info.energyMax) u.energ++;
+    }
+    else{
+      //Might want to change this when the unit is upgraded
+      if(not u.upgraded() and u.energ > info.energyMin) u.energ--;
+    }
+  }
+}
+
 void Board::executeRound(const vector<Player*>& pl){
   cerr << "Executing round " << info.round() << endl;
   info.old_square_map = info.square_map;
@@ -553,6 +658,8 @@ void Board::executeRound(const vector<Player*>& pl){
   getPlayerSquares();
   cerr << "respawning..." << endl;
   respawn();
+  cerr << "computing energies..." << endl;
+  computeEnergies();
   cerr << "giving board points..." << endl;
   giveBoardPoints();
 }

@@ -40,8 +40,13 @@ private:
   //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
   void draw(int plId, int uid, Position pnew, Position pant);
 
+  enum FightMode{
+    Fair,     //Both units can attack
+    Attacks, //Unit U1 can attack, Unit U2 can't
+  };
+
   //Executes the fight between u1 and u2 and its consequences... Returns the winner's uid
-  int fight(Unit& u1, Unit& u2);
+  int fight(Unit& u1, Unit& u2, FightMode fm);
 
   //Executes ord (if it is valid) and returns true if it succeeds
   bool executeOrder(int plId, Order ord);
@@ -54,6 +59,9 @@ private:
 
   //Tries to respawn player units, bubbles and bonuses
   void respawn();
+
+  //Adds or removes energy to all units
+  void computeEnergies();
 
   //Spawns a player, giving them the unit identified with plId
   void spawnPlayer(int i, int j, int plId);
