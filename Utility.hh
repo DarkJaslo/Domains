@@ -84,6 +84,8 @@ public:
 private:
   friend class Board;
   friend class GameInfo;
+  static int bonusId();
+  static int bonusid;
   int id;
   Position p;  //(-1,-1) means it is not spawned
   UnitType type;

@@ -508,7 +508,7 @@ void Board::respawn(){
 
   //Bonus
   if(++info.bonusCounter == info.roundsPerBonus){
-    if(info.bonus.p == Position(-1,-1)){
+    if(info.bonus.p != Position(-1,-1)){
       --info.bonusCounter;
     }
     else{
@@ -570,6 +570,13 @@ void Board::printRound(){
         //Prints painter id, drawer id and unit's player id
         cout << sq.plPainter << " " << sq.plDrawer << " ";
         if(sq.hasUnit()) cout << sq.unit().pl << " ";
+        else if(sq.hasBubble()){
+          cout << sq.bubble().pl*10+10 << " ";
+        }
+        else if(sq.hasBonus()){
+          cout << Bonus::bonusId() << " ";
+          //cerr << "PRINTING BONUS " << endl << endl;
+        } 
         else cout << -1 << " ";
       }
     }

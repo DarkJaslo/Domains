@@ -79,6 +79,7 @@ void GameInfo::readSettings(){
   bonusPlayers = vector<int>(numPlayers,0);
   player_squares = vector<vector<Position>>(numPlayers);
   bubbleCounters = vector<int>(numPlayers,0);
+  bubblesVector = vector<Bubble>(numPlayers*(roundsToPop+2));
   respawnCounters = vector<int>(numPlayers,0);
   bonusCounter = 0;
 }
@@ -187,11 +188,10 @@ void GameInfo::spawnBubble(int plId, Position p){
 
   if(in == bubblesVector.size()){
     //couldn't find a place, make vector bigger
-    bubblesVector.push_back(b);
+    cerr << "for some reason, bubble vector size is not enough" << endl;
+    exit(1);
   }
-  else{
-    bubblesVector[in] = b;
-  }
+  bubblesVector[in] = b;
 
   square_map[p.x][p.y].bb = &bubblesVector[in];
 }
