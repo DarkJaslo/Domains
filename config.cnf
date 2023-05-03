@@ -6,6 +6,8 @@ MIN_NUMBER_OF_UNITS         5
 MAX_NUMBER_OF_SQUARES       800     
 MAX_NUMBER_OF_BONUSES       1
 ROUNDS_PER_RESPAWN          3
+ROUNDS_PER_BUBBLE           3
+ROUNDS_PER_BONUS            3
 POINTS_PER_UNIT             30
 POINTS_PER_BUBBLE           30
 POINTS_PER_POP              50
@@ -16,3 +18,4 @@ MIN_ENERGY                  1
 ABILITY_SIZE                4
 BOARD_WIDTH                 50
 BOARD_HEIGHT                50
+ROUNDS_TO_POP               3
