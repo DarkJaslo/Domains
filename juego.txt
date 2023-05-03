@@ -113,11 +113,13 @@ recorres i,j de la caja contenedora y
 cosas que hay que hacer para poder programar un bot
 
 poder dar los 3 tipos de orden
+	en el ataque falta el free attack del final
 que se pueda interactuar con burbujas y bonus 
 que las burbujas se muevan 
 que las burbujas exploten
 que los bonus boosteen
 que la energía se gane y se pierda como toca
+	podria ser interesante SÍ perder energia cuando la unidad está mejorada: computeEnergies() gestiona eso
 
 
 
