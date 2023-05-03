@@ -129,7 +129,7 @@ private:
   int plPainter;  //Player
   int plDrawer;   //Player
   int uDrawer;
-  Unit* u;        //nullptr if there is not an unit
+  Unit* u;        //nullptr if there is not a unit
   Bonus* b;
   Bubble* bb;
 };
