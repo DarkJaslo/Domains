@@ -76,5 +76,5 @@ UnitType Bubble::type()const{return t;}
 
 //Bonus
 
-Bonus::Bonus(){id = 0; type = UnitType::bonus;}
+Bonus::Bonus(){id = 0; p = Position(-1,-1); type = UnitType::bonus;}
 Bonus::Bonus(Position pos){Bonus(); p = pos;}
