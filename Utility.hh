@@ -43,6 +43,7 @@ public:
 
 private:
   friend class Board;
+  friend class GameInfo;
 
   int id_;
   int pl;
@@ -111,6 +112,7 @@ public:
 
 private:
   friend class Board;
+  friend class GameInfo;
   Position p;
   bool isBorder;
   bool closes;
