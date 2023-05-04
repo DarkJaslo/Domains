@@ -354,16 +354,15 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
 
   int e1,e2;
   int winner = -1;
-  int energySub = 0;
-  if(fm == FightMode::Fair){  //Uses random numbers to decide
+  if(fm == FightMode::Fair)  //Uses random numbers to decide
+  {  
     e1 = GameInfo::randomNumber(0,u1.energ);
     e2 = GameInfo::randomNumber(0,u2.energ);
     winner = u1.id();
     if(e2 > e1) winner = u2.id();
-
-    energySub = winner == u1.id() ? GameInfo::randomNumber(0,e2) : GameInfo::randomNumber(0,e1);
   }
-  else if(fm == FightMode::Attacks){  //Attacks. Kills if e1>e2
+  else if(fm == FightMode::Attacks)  //Attacks. Kills if e1>e2
+  {  
     if(u1.energy() >= u2.energy()){
       winner = u1.id();
     }
@@ -374,9 +373,6 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
       }
     }
   }
-
-
-  
 
   //Kill unit, give points and subtract energy
   if(winner == u1.id()){
@@ -419,16 +415,12 @@ bool Board::executeOrder(int plId, Order ord){
   switch (ord.type){
   case OrderType::movement:{
     
-    bool diagonal = false;
     cerr << "movement" << endl;
     if(info.painter(u.p) != plId){ //Not on same-color domain
       if(isDiagonal(ord.dir)){
         cerr << "error: unit " << u.id_ << " cannot move diagonally here" << endl;
         return false;
       }
-    }
-    else if(isDiagonal(ord.dir)){
-      diagonal = true;
     }
 
     //Valid movement
@@ -487,7 +479,7 @@ bool Board::executeOrder(int plId, Order ord){
           fm = FightMode::Attacks;
         }
       }
-      int win = fight(u,info.unitsVector[sq.u->id()],fm);
+      fight(u,info.unitsVector[sq.u->id()],fm);
       return true;
     }
     
@@ -500,9 +492,9 @@ bool Board::executeOrder(int plId, Order ord){
       Direction dirAux = Direction::null;
       while(1){
         if(info.square(sq.pos()+Direction::up).unit().id() == uid) dirAux = Direction::up;
-        else if(info.square(sq.pos()+Direction::left).unit().id() == uid) dirAux == Direction::left;
-        else if(info.square(sq.pos()+Direction::right).unit().id() == uid) dirAux == Direction::right;
-        else if(info.square(sq.pos()+Direction::down).unit().id() == uid) dirAux == Direction::down;
+        else if(info.square(sq.pos()+Direction::left).unit().id() == uid) dirAux = Direction::left;
+        else if(info.square(sq.pos()+Direction::right).unit().id() == uid) dirAux = Direction::right;
+        else if(info.square(sq.pos()+Direction::down).unit().id() == uid) dirAux = Direction::down;
         break;
       }
 
@@ -517,7 +509,7 @@ bool Board::executeOrder(int plId, Order ord){
             fm = FightMode::Attacks;
           }
         }
-        int win = fight(u,info.unitsVector[sq.u->id()],fm);
+        fight(u,info.unitsVector[sq.u->id()],fm);
         return true;
       }
       else{
