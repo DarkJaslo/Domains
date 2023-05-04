@@ -45,8 +45,8 @@ vector<int> GameInfo::randomPermutation(){
 }
 
 //Board class
-Board::Board(){debug = false; view = true;}
-Board::Board(bool d, bool v){debug = d; view = v;}
+Board::Board(){debug = false; view = true; info.numPlayers = 4;}
+Board::Board(bool d, bool v, int nplayers){debug = d; view = v; info.numPlayers = nplayers;}
 
 void Board::iniBoard(int s){
   cerr << "Initializing board..." << endl;
@@ -681,32 +681,14 @@ void Board::executeRound(const vector<Player*>& pl){
 }
 
 void Board::printRound(){
-  //cout << endl << "Printing round " << info.round() << endl << endl;
+  //cerr << endl << "Printing round " << info.round() << endl << endl;
 
   //VIEWER FORMAT
   if(view){
-    /*cout << info.round() << " ";
-    for(int i = 0; i < info.boardHeight; ++i){
-      for(int j = 0; j < info.boardWidth; ++j){
-        
-        Square sq = info.square(Position(i,j));
-        //Prints painter id, drawer id and unit's player id
-        cout << sq.plPainter << " " << sq.plDrawer << " ";
-        if(sq.hasUnit()) cout << sq.unit().pl << " ";
-        else if(sq.hasBubble()){
-          cout << sq.bubble().pl*10+10 << " ";
-        }
-        else if(sq.hasBonus()){
-          cout << Bonus::bonusId() << " ";
-          //cerr << "PRINTING BONUS " << endl << endl;
-        } 
-        else cout << -1 << " ";
-      }
-    }
-    cout << endl;*/
-
-
     cout << info.round() << " ";
+    for(int i = 0; i < info.numPlayers; ++i){
+      cout << info.points[i] << " ";
+    }
     for(int i = 0; i < info.boardHeight; ++i){
       for(int j = 0; j < info.boardWidth; ++j){
         

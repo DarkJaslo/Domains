@@ -6,7 +6,7 @@ public:
   //Default constructor
   Board();
   //Debug and view constructor
-  Board(bool d, bool v);
+  Board(bool d, bool v, int nplayers);
   //Reads settings and initializes variables
   void iniBoard(int s);
   //Executes the orders given in this round

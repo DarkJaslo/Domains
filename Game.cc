@@ -10,7 +10,7 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
   string s;
   int rounds;
   cin >> s >> rounds;
-  Board b(false,true);
+  Board b(false,true,names.size());
   for(int i = 0; i < names.size(); ++i){
     pl.push_back(Register::newPlayer(names[i]));
     pl[i]->id_ = i;
@@ -66,6 +66,9 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
 
 */
   cout << rounds << " " << b.info.rows() << " " << b.info.cols() << endl;
+  cout << names.size();
+  for(const string& s : names) cout << " " << s;
+  cout << endl;
   b.printRound();
 
   for(int round = 0; round < rounds; ++round){

@@ -53,8 +53,7 @@ void GameInfo::printSettings(){
 
 void GameInfo::readSettings(){
   string s; //string to read and discard variable names
-  cin >> s >> numPlayers 
-  >> s >> unitsStart 
+  cin >> s >> unitsStart 
   >> s >> unitsMax 
   >> s >> unitsMin 
   >> s >> squaresMax 

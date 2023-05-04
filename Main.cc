@@ -9,21 +9,28 @@ int main(int argc, char** argv){
 
   t1 = GetTime();
 
+  //1:seed 2:pl1 3:pl2 4:pl3 5:pl4
+
   cerr << "hola soy el main" << endl;
-  Register::printPlayers();
-  if(argc < 3){
-    cerr << "not enough players" << endl;
+  //Register::printPlayers();
+
+  int nplayers = argc-2;
+  if(nplayers < 2){
+    cerr << "too few players/parameters" << endl;
     exit(1);
   }
-  if(argc < 4){
-    cerr << "missing seed" << endl;
+  else if(nplayers > 4){
+    cerr << "too many players/parameters" << endl;
     exit(1);
   }
+
   Game g;
-  vector<string> names(2);
-  names[0] = argv[1];
-  names[1] = argv[2];
-  g.play(names,atoi(argv[3]),true);
+  vector<string> names(nplayers);
+  for(int i = 2; i-2 < names.size(); ++i){
+    names[i-2] = argv[i];
+  }
+
+  g.play(names,atoi(argv[1]),true);
 
   cerr << "Fin main" << endl;
 
