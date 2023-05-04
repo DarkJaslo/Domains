@@ -76,11 +76,10 @@ private:
   Bonus bonus;
 
   //Spawn events management
+  vector<vector<Position>> player_squares;
   vector<int> respawnCounters;
   vector<int> bubbleCounters;
   int bonusCounter;
-  
-  vector<vector<Position>> player_squares;
 };
 
 #endif
