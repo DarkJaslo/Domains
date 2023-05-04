@@ -514,6 +514,7 @@ bool Board::executeOrder(int plId, Order ord){
       }
       else{
         //Free attack: at the end of all turns, looks again to see if someone has moved here and attacks
+        freeAttacks.push(FreeAttack(u.id(),u.position(),attacked));
         return true;
       }
     }
@@ -535,6 +536,26 @@ bool Board::executeOrder(int plId, Order ord){
   }
   }
   return false;
+}
+
+void Board::performFreeAttacks(){
+  while(not freeAttacks.empty()){
+    FreeAttack f = freeAttacks.front();
+    freeAttacks.pop();
+
+    if(killedUnits[f.uid]) continue;
+    if(not info.square(f.tPos).hasUnit()) continue;
+    if(info.square(f.tPos).unit().player() == info.square(f.uPos).unit().player()) continue;
+
+    FightMode fm = FightMode::Fair;
+    Square sqTarget = info.square(f.tPos);
+    Square sqAttacker = info.square(f.uPos);
+
+    if(isDiagonal(f.uPos.to(f.tPos)) and sqTarget.painter() != sqTarget.unit().player()){
+      fm = FightMode::Attacks;
+    }
+    fight(*(sqAttacker.u),*(sqTarget.u),fm);
+  }
 }
 
 void Board::giveBoardPoints(){
@@ -646,6 +667,8 @@ void Board::executeRound(const vector<Player*>& pl){
       }
     }
   }
+  cerr << "executing free attacks..." << endl;
+  performFreeAttacks();
   cerr << "getting player squares..." << endl;
   getPlayerSquares();
   cerr << "respawning..." << endl;

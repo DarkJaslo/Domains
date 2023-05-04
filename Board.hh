@@ -51,6 +51,9 @@ private:
   //Executes ord (if it is valid) and returns true if it succeeds
   bool executeOrder(int plId, Order ord);
 
+  //Performs all free attacks
+  void performFreeAttacks();
+
   //Gives points from painted squares
   void giveBoardPoints();
 
@@ -72,6 +75,19 @@ private:
   int seed;
   GameInfo info;
   vector<bool> killedUnits;
+    //Order management
+
+  struct FreeAttack{
+    int uid;
+    Position uPos;
+    Position tPos;
+    FreeAttack(int id, Position up, Position tp){
+      uid = id;
+      uPos = up;
+      tPos = tp;
+    }
+  };
+  queue<FreeAttack> freeAttacks; 
   vector<Position> attackedPositions;
   bool debug,view;
 };
