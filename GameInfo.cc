@@ -1,6 +1,6 @@
 #include "GameInfo.hh"
+
 int GameInfo::currentRound;
-vector<Unit> GameInfo::unitsVector;
 int GameInfo::numPlayers;
 int GameInfo::unitsStart;
 int GameInfo::unitsMax;
@@ -21,11 +21,35 @@ int GameInfo::abilitySize;
 int GameInfo::boardWidth;
 int GameInfo::boardHeight;
 int GameInfo::roundsToPop;
+vector<vector<char>> GameInfo::game_map;
+vector<vector<Square>> GameInfo::square_map;
+vector<vector<Square>> GameInfo::old_square_map;
+vector<int> GameInfo::whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
+vector<Unit> GameInfo::unitsVector;
+vector<Bubble> GameInfo::bubblesVector;
+vector<int> GameInfo::playerPoints;
+vector<int> GameInfo::bonusPlayers;
+Bonus GameInfo::bonus;
 
-int GameInfo::cols()const{return game_map[0].size();}
-int GameInfo::rows()const{return game_map.size();}
+//Spawn events management
+vector<vector<Position>> GameInfo::player_squares;
+vector<int> GameInfo::respawnCounters;
+vector<int> GameInfo::bubbleCounters;
+int GameInfo::bonusCounter;
+
+
+
+int GameInfo::cols(){return boardWidth;}
+int GameInfo::rows(){return boardHeight;}
 int GameInfo::round(){return GameInfo::currentRound;}
-Square GameInfo::square(const Position& p)const{
+int GameInfo::points(int pl){
+  if(pl < 0 or pl >= numPlayers){
+    cerr << "warning: asked for player " << pl << " who does not exist" << endl;
+    return -1;
+  }
+  return playerPoints[pl];
+}
+Square GameInfo::square(const Position& p){
   if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) cerr << "Position is not valid (sq)" << endl;
   return square_map[p.x][p.y];
 }
@@ -74,7 +98,7 @@ void GameInfo::readSettings(){
   >> s >> roundsToPop;
 
   whoHasWhat = vector<int>(unitsMax*numPlayers,-1);
-  points = vector<int>(numPlayers,0);
+  playerPoints = vector<int>(numPlayers,0);
   bonusPlayers = vector<int>(numPlayers,0);
   player_squares = vector<vector<Position>>(numPlayers);
   bubbleCounters = vector<int>(numPlayers,0);
@@ -83,13 +107,13 @@ void GameInfo::readSettings(){
   bonusCounter = 0;
 }
 
-bool GameInfo::posOk(const Position& p)const{
+bool GameInfo::posOk(const Position& p){
   if(p.x >= 0 and p.y >= 0 and p.x < boardHeight and p.y < boardWidth) return true;
   //else cerr << "checking position " << p.x << " " << p.y << endl;
   return false;
 }
 
-int GameInfo::painter(const Position& p)const{
+int GameInfo::painter(const Position& p){
   if(posOk(p)) return square_map[p.x][p.y].painter();
   else{
     cerr << "error: position (" << p.x << "," << p.y << ") is not valid" << endl;
@@ -97,7 +121,7 @@ int GameInfo::painter(const Position& p)const{
   }
 }
 
-int GameInfo::drawerPlayer(const Position& p)const{
+int GameInfo::drawerPlayer(const Position& p){
   if(posOk(p)) return square_map[p.x][p.y].drawer();
   else{
     cerr << "error: position (" << p.x << "," << p.y << ") is not valid" << endl;

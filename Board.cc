@@ -378,7 +378,7 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
   //Kill unit, give points and subtract energy
   if(winner == u1.id()){
     killUnit(u2);
-    info.points[u1.pl] += info.pointsPerUnit;
+    info.playerPoints[u1.pl] += info.pointsPerUnit;
     if(fm == FightMode::Fair){
       u1.energ -= GameInfo::randomNumber(0,e2/2);
       if(u1.energ < info.energyMin) u1.energ = info.energyMin;
@@ -386,7 +386,7 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
   }
   else if(winner == u2.id()){
     killUnit(u1);
-    info.points[u2.pl] += info.pointsPerUnit;
+    info.playerPoints[u2.pl] += info.pointsPerUnit;
     if(fm == FightMode::Fair){
       u2.energ -= GameInfo::randomNumber(0,e1/2);
       if(u2.energ < info.energyMin) u2.energ = info.energyMin;
@@ -561,7 +561,7 @@ void Board::performFreeAttacks(){
 
 void Board::giveBoardPoints(){
   for(int i = 0; i < info.numPlayers; ++i){
-    info.points[i] += info.pointsPerSquare * info.player_squares[i].size();
+    info.playerPoints[i] += info.pointsPerSquare * info.player_squares[i].size();
   }
 }
 
@@ -687,7 +687,7 @@ void Board::printRound(){
   if(view){
     cout << info.round() << " ";
     for(int i = 0; i < info.numPlayers; ++i){
-      cout << info.points[i] << " ";
+      cout << info.playerPoints[i] << " ";
     }
     for(int i = 0; i < info.boardHeight; ++i){
       for(int j = 0; j < info.boardWidth; ++j){

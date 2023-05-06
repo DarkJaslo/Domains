@@ -7,21 +7,23 @@ class GameInfo{
 public:
 
   //Returns the number of columns the board has
-  int cols() const;
+  static int cols();
   //returns the number of rows the board has
-  int rows() const;
+  static int rows();
   //returns the current round
   static int round();
+  //returns the points of player pl
+  static int points(int pl);
   //Returns the square located in position p
-  Square square(const Position& p) const;
+  static Square square(const Position& p);
   //Returns which player owns this position, -1 if it is blank
-  int painter(const Position& p) const;
+  static int painter(const Position& p);
   //Returns which player is drawing here, -1 if it is blank
-  int drawerPlayer(const Position& p) const;
+  static int drawerPlayer(const Position& p);
   //True if p is within the board, false if it is not
-  bool posOk(const Position& p)const;
+  static bool posOk(const Position& p);
   //Prints all game settings
-  void printSettings();
+  static void printSettings();
   //Returns a number inside  [l,r]
   static int randomNumber(int l, int r); //implemented in Board.cc
   //Returns a random permutation of 0,1,2,3
@@ -37,13 +39,13 @@ private:
   friend class Game;
 
   //Reads and initializes info
-  void readSettings();
+  static void readSettings();
   //Returns true and leaves the position of a free square owned by p. False if there is no free position
-  bool freeSquare(int plId, Position& p);
+  static bool freeSquare(int plId, Position& p);
   //Spawns a unit
-  void spawnUnit(int plId, Position p);
+  static void spawnUnit(int plId, Position p);
   //Spawns a bubble
-  void spawnBubble(int plId, Position p);
+  static void spawnBubble(int plId, Position p);
   static int numPlayers;
   static int unitsStart;
   static int unitsMax;
@@ -65,21 +67,21 @@ private:
   static int boardHeight;
   static int roundsToPop;
   static int currentRound;
-  vector<vector<char>> game_map;
-  vector<vector<Square>> square_map;
-  vector<vector<Square>> old_square_map;
-  vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
+  static vector<vector<char>> game_map;
+  static vector<vector<Square>> square_map;
+  static vector<vector<Square>> old_square_map;
+  static vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
   static vector<Unit> unitsVector;
-  vector<Bubble> bubblesVector;
-  vector<int> points;
-  vector<int> bonusPlayers;
-  Bonus bonus;
+  static vector<Bubble> bubblesVector;
+  static vector<int> playerPoints;
+  static vector<int> bonusPlayers;
+  static Bonus bonus;
 
   //Spawn events management
-  vector<vector<Position>> player_squares;
-  vector<int> respawnCounters;
-  vector<int> bubbleCounters;
-  int bonusCounter;
+  static vector<vector<Position>> player_squares;
+  static vector<int> respawnCounters;
+  static vector<int> bubbleCounters;
+  static int bonusCounter;
 };
 
 #endif
