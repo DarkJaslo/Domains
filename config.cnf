@@ -3,7 +3,7 @@ UNITS_AT_START              1
 MAX_NUMBER_OF_UNITS         15
 MIN_NUMBER_OF_UNITS         5
 MAX_NUMBER_OF_SQUARES       800     
-MAX_NUMBER_OF_BONUSES       1
+MAX_NUMBER_OF_BONUSES       10
 ROUNDS_PER_RESPAWN          3
 ROUNDS_PER_BUBBLE           3
 ROUNDS_PER_BONUS            4
@@ -14,7 +14,8 @@ POINTS_PER_SQUARE           5
 ENERGY_AT_START             5
 MAX_ENERGY                  20
 MIN_ENERGY                  1
-ABILITY_SIZE                4
+ABILITY_SIZE                5
+ABILITY_DURATION            4
 BOARD_WIDTH                 50
 BOARD_HEIGHT                50
 ROUNDS_TO_POP               3
