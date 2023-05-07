@@ -128,8 +128,8 @@ poder dar los 3 tipos de orden
 		te recorres todas las habilidades tiradas y miras con quien tiene conflictos
 	2. pa las habilidades que se tiran, mirar si estan pisando algo
 	3. activas 
-	
 
+que se pueda activar el respawn de las burbujas
 que se pueda interactuar con burbujas
 que las burbujas se muevan 
 que las burbujas exploten
