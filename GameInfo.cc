@@ -69,6 +69,8 @@ void GameInfo::printSettings(){
   << "MAX_NUMBER_OF_SQUARES" << '\t'  << squaresMax<< endl
   << "MAX_NUMBER_OF_BONUSES" << '\t'  << bonusMax << endl
   << "ROUNDS_PER_RESPAWN" << '\t'     << roundsPerRespawn << endl
+  << "ROUNDS_PER_BUBBLE" << '\t'      << roundsPerBubble << endl
+  << "MAX_ROUNDS_PER_BONUS" << '\t'   << roundsPerBonus << endl
   << "POINTS_PER_UNIT" << "\t\t"      << pointsPerUnit << endl
   << "POINTS_PER_BUBBLE" << '\t'      << pointsPerBubble << endl
   << "POINTS_PER_POP" << "\t\t"       << pointsPerPop << endl
@@ -77,8 +79,10 @@ void GameInfo::printSettings(){
   << "MAX_ENERGY" << "\t\t"           << energyMax << endl
   << "MIN_ENERGY" << "\t\t"           << energyMin << endl
   << "ABILITY SIZE" << "\t\t"         << abilitySize << endl
+  << "ABILITY DURATION" << '\t'       << abilityDuration << endl
   << "BOARD_WIDTH" << "\t\t"          << boardWidth << endl
-  << "BOARD_HEIGHT" << "\t\t"         << boardHeight << endl;
+  << "BOARD_HEIGHT" << "\t\t"         << boardHeight << endl
+  << "ROUNDS_TO_POP" << "\t"          << roundsToPop << endl;
   //<< "" << '\t' << << endl
 }
 
