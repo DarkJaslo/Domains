@@ -18,10 +18,12 @@ public:
   static Square square(const Position& p);
   //Returns the unit with id uid
   static Unit unit(int uid);
-  //Returns which player owns this position, -1 if it is blank
-  static int painter(const Position& p);
-  //Returns which player is drawing here, -1 if it is blank
-  static int drawerPlayer(const Position& p);
+  //Returns the unit with position p
+  static Unit unit(Position p);
+  //Returns the bubble with id bid
+  static Bubble bubble(int bid);
+  //Returns the bubble with position p
+  static Bubble bubble(Position p);
   //True if p is within the board, false if it is not
   static bool posOk(const Position& p);
   //Prints all game settings
@@ -48,13 +50,12 @@ private:
   static void spawnUnit(int plId, Position p);
   //Spawns a bubble
   static void spawnBubble(int plId, Position p);
+  static int maxRounds;
   static int numPlayers;
   static int unitsStart;
   static int unitsMax;
   static int unitsMin;
-  static int squaresMax;
   static int bonusMax;
-  static int bubblesMax;
   static int roundsPerRespawn;
   static int roundsPerBubble;
   static int roundsPerBonus;

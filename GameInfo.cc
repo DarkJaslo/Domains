@@ -1,11 +1,11 @@
 #include "GameInfo.hh"
 
+int GameInfo::maxRounds;
 int GameInfo::currentRound;
 int GameInfo::numPlayers;
 int GameInfo::unitsStart;
 int GameInfo::unitsMax;
 int GameInfo::unitsMin;
-int GameInfo::squaresMax;
 int GameInfo::bonusMax;
 int GameInfo::roundsPerRespawn;
 int GameInfo::roundsPerBubble;
@@ -57,16 +57,32 @@ Square GameInfo::square(const Position& p){
   return square_map[p.x][p.y];
 }
 Unit GameInfo::unit(int uid){
-  if(uid < 0 and uid >= unitsVector.size()){cerr << "warning: requested for a unit that doesn't exist" << endl; exit(1);}
+  if(uid < 0 or uid >= unitsVector.size()){cerr << "warning: requested for a unit that doesn't exist" << endl; exit(1);}
   return unitsVector[uid];
 }
+Unit GameInfo::unit(Position p){
+  if(not posOk(p)){ cerr << "warning: position " << p.x << " " << p.y << " is outside the board" << endl; exit(1);}
+  Square sq = square(p);
+  if(sq.u == nullptr){cerr << "warning: position " << p.x << " " << p.y << " does not have any unit" << endl; exit(1);}
+  return sq.unit();
+}
+Bubble GameInfo::bubble(int bid){
+  if(bid < 0 or bid >= bubblesVector.size()){cerr << "warning: requested for a bubble that doesn't exist" << endl; exit(1);}
+  return bubblesVector[bid];
+}
+Bubble GameInfo::bubble(Position p){
+  if(not posOk(p)){ cerr << "warning: position " << p.x << " " << p.y << " is outside the board" << endl;exit(1);}
+  Square sq = square(p);
+  if(sq.bb == nullptr){ cerr << "warning: position " << p.x << " " << p.y << " does not have any bubble" << endl; exit(1); }
+  return sq.bubble();
+}
+
 
 void GameInfo::printSettings(){
   cout << "NUMBER_OF_PLAYERS" << '\t' << numPlayers << endl
   << "UNITS_AT_START" << "\t\t"       << unitsStart << endl
   << "MAX_NUMBER_OF_UNITS" << '\t'    << unitsMax << endl
   << "MIN_NUMBER_OF_UNITS" << '\t'    << unitsMin << endl
-  << "MAX_NUMBER_OF_SQUARES" << '\t'  << squaresMax<< endl
   << "MAX_NUMBER_OF_BONUSES" << '\t'  << bonusMax << endl
   << "ROUNDS_PER_RESPAWN" << '\t'     << roundsPerRespawn << endl
   << "ROUNDS_PER_BUBBLE" << '\t'      << roundsPerBubble << endl
@@ -90,8 +106,7 @@ void GameInfo::readSettings(){
   string s; //string to read and discard variable names
   cin >> s >> unitsStart 
   >> s >> unitsMax 
-  >> s >> unitsMin 
-  >> s >> squaresMax 
+  >> s >> unitsMin
   >> s >> bonusMax 
   >> s >> roundsPerRespawn 
   >> s >> roundsPerBubble
@@ -114,7 +129,8 @@ void GameInfo::readSettings(){
   bonusPlayers = vector<int>(numPlayers,0);
   player_squares = vector<vector<Position>>(numPlayers);
   bubbleCounters = vector<int>(numPlayers,0);
-  bubblesVector = vector<Bubble>(numPlayers*(roundsToPop+2));
+  bubblesVector = vector<Bubble>(numPlayers*((maxRounds/roundsPerBubble)+1));
+  for(int i = 0; i < bubblesVector.size(); ++i) bubblesVector[i] = Bubble(i,-1,Position(-1,-1),0);
   respawnCounters = vector<int>(numPlayers,0);
   bonusVector = vector<Bonus>(bonusMax);
   for(int i = 0; i < bonusVector.size(); ++i) bonusVector[i] = Bonus(i,Position(-1,-1));
@@ -126,22 +142,6 @@ bool GameInfo::posOk(const Position& p){
   if(p.x >= 0 and p.y >= 0 and p.x < boardHeight and p.y < boardWidth) return true;
   //else cerr << "checking position " << p.x << " " << p.y << endl;
   return false;
-}
-
-int GameInfo::painter(const Position& p){
-  if(posOk(p)) return square_map[p.x][p.y].painter();
-  else{
-    cerr << "error: position (" << p.x << "," << p.y << ") is not valid" << endl;
-    return -1;
-  }
-}
-
-int GameInfo::drawerPlayer(const Position& p){
-  if(posOk(p)) return square_map[p.x][p.y].drawer();
-  else{
-    cerr << "error: position (" << p.x << "," << p.y << ") is not valid" << endl;
-    return -1;
-  }
 }
 
 vector<int> GameInfo::units(int player){
@@ -222,7 +222,7 @@ void GameInfo::spawnBubble(int plId, Position p){
     }
   }
 
-  Bubble b = Bubble(in,plId,p,roundsToPop);
+  Bubble b = Bubble(in,plId,p,0);
 
   if(in == bubblesVector.size()){
     //couldn't find a place, make vector bigger
