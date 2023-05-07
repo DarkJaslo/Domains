@@ -71,13 +71,13 @@ private:
   friend class Board;
   friend class GameInfo;
 
-  int id_;
-  int pl;
   Position p;
   UnitType t;
+  short id_;
+  int8 pl;
 
   //bubble params
-  int rtp;
+  int8 rtp;
 };
 
 struct Bonus{
@@ -88,11 +88,11 @@ public:
 private:
   friend class Board;
   friend class GameInfo;
-  static int bonusId();
-  static int bonusid;
-  int id;
+
   Position p;  //(-1,-1) means it is not spawned
   UnitType type;
+  short id;
+  
 };
 
 enum OrderType{ movement, attack, ability };

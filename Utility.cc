@@ -2,7 +2,7 @@
 
 //Position
 Position::Position(){ x = 0; y = 0;};
-Position::Position(int posx, int posy){ x = posx; y = posy; }
+Position::Position(int posx, int posy){ x = static_cast<int8>(posx); y = static_cast<int8>(posy); }
 bool Position::operator== (const Position& p) const{return x == p.x and y == p.y;}
 bool Position::operator!= (const Position& p) const{return x != p.x or y != p.y;}
 bool Position::operator<(const Position& p) const{
@@ -88,10 +88,10 @@ UnitType Unit::type()const{return t;}
 //Bubble
 
 Bubble::Bubble(){pl = -1; t = UnitType::bubble;}
-Bubble::Bubble(int id){Bubble(); id_ = id;}
-Bubble::Bubble(int id, int player, Position pos, int roundsToPop){ id_ = id; pl = player; p = pos; rtp = roundsToPop;}
-int Bubble::roundsToPop()const{return rtp;}
-int Bubble::player()const{return pl;}
+Bubble::Bubble(int id){Bubble(); id_ = static_cast<short>(id);}
+Bubble::Bubble(int id, int player, Position pos, int roundsToPop){ id_ = static_cast<short>(id); pl = player; p = pos; rtp = roundsToPop;}
+int Bubble::roundsToPop()const{return static_cast<int>(rtp);}
+int Bubble::player()const{return static_cast<int>(pl);}
 Position Bubble::position()const{return p;}
 UnitType Bubble::type()const{return t;}
 
@@ -99,4 +99,3 @@ UnitType Bubble::type()const{return t;}
 Bonus::Bonus(){id = 0; p = Position(-1,-1); type = UnitType::bonus;}
 Bonus::Bonus(Position pos){Bonus(); p = pos;}
 Bonus::Bonus(int bid, Position pos){id = bid; p = pos; type = UnitType::bonus;}
-int Bonus::bonusId(){return 99;}
