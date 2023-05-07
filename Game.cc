@@ -17,7 +17,7 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
   }
 
   //Hay que inicializar bien el tablero
-  b.iniBoard(seed);
+  b.iniBoard(seed,rounds);
 
 
 /* CODE TO TEST THE RANDOMIZER
