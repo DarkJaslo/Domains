@@ -6,7 +6,7 @@
 #include <queue>
 #include <set>
 
-typedef unsigned char int8;
+typedef char int8;
 using namespace std;
 
 /**
@@ -15,8 +15,8 @@ using namespace std;
 enum Direction{null,up,down,left,right,UL,UR,DL,DR};
 
 struct Position{
-  int x;
-  int y;
+  int8 x;
+  int8 y;
   Position();
   Position(int posx, int posy);
   bool operator== (const Position& p) const;
@@ -29,7 +29,7 @@ struct Position{
   Direction to(Position p);
 };
 
-enum UnitType{ unit, bubble,bonus };
+enum UnitType{ unit, bubble ,bonus };
 
 struct Unit{
 public:
@@ -84,6 +84,7 @@ struct Bonus{
 public:
   Bonus();
   Bonus(Position pos);
+  Bonus(int bid, Position pos);
 private:
   friend class Board;
   friend class GameInfo;
@@ -107,36 +108,56 @@ struct Order{
 struct Square{
 public:
 
+  //Square's position
   Position pos() const;
+  //True if square is painted by some player, false otherwise
   bool painted() const;
-  bool drawed() const;
-  bool border() const;
+  //Pre: Square is painted
+  //Returns the id of the painter player
   int painter() const;
-  //Returns an uid
+  //True if square is drawed by some player, false otherwise
+  bool drawed() const;
+  //Pre: Square is drawed
+  //Returns the id of the drawer player
   int drawer() const;
+  //Returns true if this Square separates territories
+  bool border() const;
+
+  //Returns true if the Square is empty, false otherwise
   bool empty() const;
+  //Returns true if the Square has specifically a Unit, false otherwise
   bool hasUnit() const;
+  //Pre: Square has a Unit
+  //Returns such Unit
   Unit unit() const;
+  //Returns true if the Square has specifically a Bonus, false otherwise
   bool hasBonus() const;
+  //Pre: Square has a Bonus
+  //Returns such bonus
   Bonus bonus() const;
+  //Returns true if the Square has specifically a Bubble, false otherwise
   bool hasBubble() const;
+  //Pre: Square has a Bubble
+  //Returns such Bubble
   Bubble bubble() const;
+  
+  //Default constructor
   Square();
 
 private:
+
   friend class Board;
   friend class GameInfo;
-  Position p;
-  bool isBorder;
-  bool closes;
-  int plPainter;  //Player
-  int plDrawer;   //Player
-  int uDrawer;
   Unit* u;        //nullptr if there is not a unit
-  Bonus* b;
-  Bubble* bb;
+  Bonus* b;       //nullptr if there is not a bonus
+  Bubble* bb;     //nullptr if there is not a bubble
+  Position p;
+  int8 plPainter;  //Player
+  int8 plDrawer;   //Player
+  int8 uDrawer;    //Unit id
+  bool isBorder;
+  bool closes;    //Used only for painting
+  bool isAbility;
+  int8 counter;   //Tells rounds before wearing off. -1 means no counter
 };
-
-
-
 #endif

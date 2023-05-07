@@ -18,9 +18,12 @@ int GameInfo::energyStart;
 int GameInfo::energyMax;
 int GameInfo::energyMin;
 int GameInfo::abilitySize;
+int GameInfo::abilityDuration;
 int GameInfo::boardWidth;
 int GameInfo::boardHeight;
 int GameInfo::roundsToPop;
+int GameInfo::currentBubbles;
+int GameInfo::currentBonuses;
 vector<vector<char>> GameInfo::game_map;
 vector<vector<Square>> GameInfo::square_map;
 vector<vector<Square>> GameInfo::old_square_map;
@@ -29,13 +32,13 @@ vector<Unit> GameInfo::unitsVector;
 vector<Bubble> GameInfo::bubblesVector;
 vector<int> GameInfo::playerPoints;
 vector<int> GameInfo::bonusPlayers;
-Bonus GameInfo::bonus;
+vector<Bonus> GameInfo::bonusVector;
 
 //Spawn events management
 vector<vector<Position>> GameInfo::player_squares;
 vector<int> GameInfo::respawnCounters;
 vector<int> GameInfo::bubbleCounters;
-int GameInfo::bonusCounter;
+vector<int> GameInfo::bonusCounters;
 
 
 
@@ -52,6 +55,10 @@ int GameInfo::points(int pl){
 Square GameInfo::square(const Position& p){
   if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) cerr << "Position is not valid (sq)" << endl;
   return square_map[p.x][p.y];
+}
+Unit GameInfo::unit(int uid){
+  if(uid < 0 and uid >= unitsVector.size()){cerr << "warning: requested for a unit that doesn't exist" << endl; exit(1);}
+  return unitsVector[uid];
 }
 
 void GameInfo::printSettings(){
@@ -93,6 +100,7 @@ void GameInfo::readSettings(){
   >> s >> energyMax 
   >> s >> energyMin 
   >> s >> abilitySize
+  >> s >> abilityDuration
   >> s >> boardWidth
   >> s >> boardHeight
   >> s >> roundsToPop;
@@ -104,7 +112,10 @@ void GameInfo::readSettings(){
   bubbleCounters = vector<int>(numPlayers,0);
   bubblesVector = vector<Bubble>(numPlayers*(roundsToPop+2));
   respawnCounters = vector<int>(numPlayers,0);
-  bonusCounter = 0;
+  bonusVector = vector<Bonus>(bonusMax);
+  for(int i = 0; i < bonusVector.size(); ++i) bonusVector[i] = Bonus(i,Position(-1,-1));
+  bonusCounters = vector<int>(bonusMax);
+  for(int& c : bonusCounters) c = randomNumber(0,roundsPerBonus)-1;
 }
 
 bool GameInfo::posOk(const Position& p){

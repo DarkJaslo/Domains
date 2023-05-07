@@ -16,6 +16,8 @@ public:
   static int points(int pl);
   //Returns the square located in position p
   static Square square(const Position& p);
+  //Returns the unit with id uid
+  static Unit unit(int uid);
   //Returns which player owns this position, -1 if it is blank
   static int painter(const Position& p);
   //Returns which player is drawing here, -1 if it is blank
@@ -52,6 +54,7 @@ private:
   static int unitsMin;
   static int squaresMax;
   static int bonusMax;
+  static int bubblesMax;
   static int roundsPerRespawn;
   static int roundsPerBubble;
   static int roundsPerBonus;
@@ -63,6 +66,7 @@ private:
   static int energyMax;
   static int energyMin;
   static int abilitySize;
+  static int abilityDuration;
   static int boardWidth;
   static int boardHeight;
   static int roundsToPop;
@@ -73,15 +77,17 @@ private:
   static vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
   static vector<Unit> unitsVector;
   static vector<Bubble> bubblesVector;
+  static int currentBubbles;
   static vector<int> playerPoints;
   static vector<int> bonusPlayers;
-  static Bonus bonus;
+  static vector<Bonus> bonusVector;
+  static int currentBonuses;
 
   //Spawn events management
   static vector<vector<Position>> player_squares;
   static vector<int> respawnCounters;
   static vector<int> bubbleCounters;
-  static int bonusCounter;
+  static vector<int> bonusCounters;
 };
 
 #endif

@@ -49,13 +49,13 @@ Direction Position::to(Position p){
 }
 
 //Square
-Square::Square(){p=Position(-1,-1); plPainter=-1; plDrawer=-1;}
+Square::Square(){p=Position(-1,-1); plPainter=-1; plDrawer=-1; isAbility = false; counter = 0;}
 Position Square::pos()const{return p;}
 bool Square::painted()const{return plPainter != -1;}
 bool Square::drawed()const{return uDrawer != -1;}
 bool Square::border()const{return isBorder;}
-int Square::painter()const{return plPainter;}
-int Square::drawer()const{return uDrawer;}
+int Square::painter()const{return static_cast<int>(plPainter);}
+int Square::drawer()const{return static_cast<int>(uDrawer);}
 bool Square::empty()const{return u == nullptr and b == nullptr and bb == nullptr;}
 bool Square::hasUnit()const{return u != nullptr;}
 Unit Square::unit()const{return *u;}
@@ -96,4 +96,5 @@ UnitType Bubble::type()const{return t;}
 //Bonus
 Bonus::Bonus(){id = 0; p = Position(-1,-1); type = UnitType::bonus;}
 Bonus::Bonus(Position pos){Bonus(); p = pos;}
+Bonus::Bonus(int bid, Position pos){id = bid; p = pos; type = UnitType::bonus;}
 int Bonus::bonusId(){return 99;}

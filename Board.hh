@@ -54,10 +54,16 @@ private:
   //Performs all free attacks
   void performFreeAttacks();
 
+  //Uses ability
+  void useAbility(int plId, Position p);
+
+  //Decides if queued abilities are used or not and uses them
+  void resolveAbilities();
+
   //Gives points from painted squares
   void giveBoardPoints();
 
-  //Saves all squares owned by each player
+  //Saves all squares owned by each player and decrements ability counters
   void getPlayerSquares();
 
   //Tries to respawn player units, bubbles and bonuses
@@ -75,6 +81,7 @@ private:
   int seed;
   GameInfo info;
   vector<bool> killedUnits;
+  vector<int> abilityUnits; //Stores which units have used the ability
     //Order management
 
   struct FreeAttack{
