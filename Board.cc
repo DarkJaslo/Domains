@@ -48,12 +48,13 @@ vector<int> GameInfo::randomPermutation(){
 Board::Board(){debug = false; view = true; info.numPlayers = 4;}
 Board::Board(bool d, bool v, int nplayers){debug = d; view = v; info.numPlayers = nplayers;}
 
-void Board::iniBoard(int s){
+void Board::iniBoard(int s, int rounds){
   cerr << "Initializing board..." << endl;
   seed = s;
   randind = seed%randsize();
   jump = seed%randjump()+1;   //+1 to avoid jump = 0
   cerr << "Reading settings..." << endl;
+  info.maxRounds = rounds;
   info.readSettings();
   //cerr << "Read all settings" << endl;
 
@@ -417,7 +418,7 @@ bool Board::executeOrder(int plId, Order ord){
   case OrderType::movement:{
     
     cerr << "movement" << endl;
-    if(info.painter(u.p) != plId){ //Not on same-color domain
+    if(info.square(u.p).painter() != plId){ //Not on same-color domain
       if(isDiagonal(ord.dir)){
         cerr << "error: unit " << u.id_ << " cannot move diagonally here" << endl;
         return false;
@@ -565,6 +566,91 @@ void Board::performFreeAttacks(){
       fm = FightMode::Attacks;
     }
     fight(*(sqAttacker.u),*(sqTarget.u),fm);
+  }
+}
+
+void Board::popBubble(Position p, bool isForced){
+  if(not info.posOk(p)) return;
+  Square sq = info.square(p);
+  if(not sq.hasBubble()) return;
+  Bubble b = info.bubble(p);
+
+  queue<Position> affected;
+
+  vector<Position> toPaint = {p, p+Direction::up, p+Direction::down, p+Direction::left, p+Direction::right};
+
+  for(int i = 0; i < toPaint.size(); ++i){
+    Position aux = toPaint[i];
+    if(not info.posOk(aux)) continue;
+    Square sqaux = info.square(aux);
+    if(sqaux.ability()) continue;
+
+    affected.push(aux);
+    
+    if(sqaux.painter() != b.player()){
+      info.square_map[aux.x][aux.y].plPainter = b.player();
+    }
+    if(sqaux.drawed()){
+      if(sqaux.drawer() == b.player()){
+        cerr << "painting from bubble pop" << endl;
+        paint(b.player(),sqaux.uDrawer,aux);
+      }
+      else if(sqaux.drawer() != -1){
+        erasePath(sqaux.uDrawer,aux);
+      }
+    }
+  }
+
+  vector<Position> affPos = {p+Direction::UL, p+Direction::UR, p+Direction::DL, p+Direction::DR, Position(p.x-2,p.y), 
+    Position(p.x+2,p.y), Position(p.x,p.y-2), Position(p.x,p.y+2)};
+
+  for(Position p : affPos){
+    if(info.posOk(p)) affected.push(p);
+  }
+
+  vector<Direction> dirs = {Direction::up, Direction::down, Direction::left, Direction::right};
+
+  while(not affected.empty()){
+    Square sq = info.square(affected.front());
+    affected.pop();
+
+    for(int i = 0; i < dirs.size(); ++i){
+      Position aux = sq.pos()+dirs[i];
+      if(not info.posOk(aux)) continue;
+      Square sqaux = info.square(aux);
+      if(sq.painter() != sqaux.painter()){
+        info.square_map[sq.pos().x][sq.pos().y].isBorder = true;
+        info.square_map[aux.x][aux.y].isBorder = true;
+        break;
+      }
+    }
+  }
+
+  if(isForced){ //Done by someone else
+    info.playerPoints[b.player()] += info.pointsPerPop;
+  }
+  else{
+    info.playerPoints[b.player()] += info.pointsPerBubble;
+  }
+
+  info.square_map[b.position().x][b.position().y].bb = nullptr;
+  b.pl = -1;
+  b.p = Position(-1,-1);
+  b.rtp = 0;
+  info.bubblesVector[b.id_] = b;
+  
+
+}
+
+void Board::popBubbles(){
+  for(int i = 0; i < info.bubblesVector.size(); ++i){
+    if(info.bubblesVector[i].player() == -1) continue;
+    if(info.bubblesVector[i].rtp == 0) continue;
+    else if(--info.bubblesVector[i].rtp == 0){
+      //Pop bubble
+      Position p = info.bubblesVector[i].position();
+      popBubble(p,true);
+    }
   }
 }
 
@@ -850,19 +936,20 @@ void Board::respawn(){
     }
   }
 
-  /*//Bubbles
+  //Bubbles
   for(int i = 0; i < info.bubbleCounters.size(); ++i){
     if(++info.bubbleCounters[i] < info.roundsPerBubble) continue;
     
+
     Position p;
-    if(info.freeSquare(i,p)){//found free bubble
+    if(info.freeSquare(i,p)){//found free square
       info.bubbleCounters[i] = 0;
       info.spawnBubble(i,p);
     }
     else{
       info.bubbleCounters[i]--;
     }
-  }*/
+  }
 
   //Bonus
   for(int i = 0; i < info.bonusCounters.size(); ++i){
@@ -937,9 +1024,11 @@ void Board::executeRound(const vector<Player*>& pl){
   }
   cerr << "executing free attacks..." << endl;
   performFreeAttacks();
-  //pop bubbles
+  cerr << "popping bubbles..." << endl;
+  popBubbles();
   cerr << "resolving abilities..." << endl;
   resolveAbilities();
+  //move bubbles
   cerr << "getting player squares..." << endl;
   getPlayerSquares();
   cerr << "respawning..." << endl;

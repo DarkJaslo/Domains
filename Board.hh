@@ -8,7 +8,7 @@ public:
   //Debug and view constructor
   Board(bool d, bool v, int nplayers);
   //Reads settings and initializes variables
-  void iniBoard(int s);
+  void iniBoard(int s, int rounds);
   //Executes the orders given in this round
   void executeRound(const vector<Player*>& pl);
   //Prints the results of this round
@@ -53,6 +53,12 @@ private:
 
   //Performs all free attacks
   void performFreeAttacks();
+
+  //Pops Bubble with bubble id = bid
+  void popBubble(Position p, bool isForced);
+
+  //Decreases all Bubbles' rtps and pops them if needed
+  void popBubbles();
 
   //Invalidates the isAbility stat of a grid made by an ability
   void invalidateAbility(int plId, Position p);

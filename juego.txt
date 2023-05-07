@@ -32,6 +32,7 @@ aparecen cosas (burbujas?) que puedes atacar y petar para puntos
 	...
 	 .
 	 y reaparece una unidad de su equipo en su zona (si u < umax)
+	tirar la habilidad peta todas las burbujas en rango (además, del color de la habilidad)
 	 
 energía:
 cada ronda pasada en una casilla de mi zona +1 puntos
