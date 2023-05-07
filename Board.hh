@@ -54,6 +54,9 @@ private:
   //Performs all free attacks
   void performFreeAttacks();
 
+  //Invalidates the isAbility stat of a grid made by an ability
+  void invalidateAbility(int plId, Position p);
+
   //Uses ability
   void useAbility(int plId, Position p);
 

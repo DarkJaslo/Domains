@@ -568,6 +568,20 @@ void Board::performFreeAttacks(){
   }
 }
 
+void Board::invalidateAbility(int plId, Position p){
+  if(info.posOk(p) and info.square(p).ability() and info.square(p).painter() == plId){
+    Square sq = info.square(p);
+    sq.isAbility = false;
+    sq.counter = 0;
+    info.square_map[p.x][p.y] = sq;
+
+    invalidateAbility(plId,p+Direction::up);
+    invalidateAbility(plId,p+Direction::down);
+    invalidateAbility(plId,p+Direction::left);
+    invalidateAbility(plId,p+Direction::right);
+  }
+}
+
 void Board::useAbility(int plId, Position p){
   int xmin = p.x-info.abilitySize/2;
   int xmax = p.x+info.abilitySize/2;
@@ -582,6 +596,9 @@ void Board::useAbility(int plId, Position p){
       Position pos(i,j);
       if(info.posOk(pos)){
         Square sq = info.square(pos);
+        if(sq.ability() and sq.painter() != plId){
+          invalidateAbility(sq.painter(),pos);
+        }
         if(sq.drawed()){
           if(sq.drawer() != plId) erasePath(sq.uDrawer,pos);
           else if(sq.drawer() == plId){

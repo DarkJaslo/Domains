@@ -122,6 +122,10 @@ public:
   int drawer() const;
   //Returns true if this Square separates territories
   bool border() const;
+  //Returns true if this Square is currently from an ability
+  bool ability() const;
+  //Returns the number of rounds left for the ability
+  int roundsUntilAbilityEnd() const;
 
   //Returns true if the Square is empty, false otherwise
   bool empty() const;
