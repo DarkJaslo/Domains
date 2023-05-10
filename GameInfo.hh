@@ -58,6 +58,7 @@ private:
   static int bonusMax;
   static int roundsPerRespawn;
   static int roundsPerBubble;
+  static int roundsPerBubbleMove;
   static int roundsPerBonus;
   static int pointsPerUnit;
   static int pointsPerBubble;
@@ -88,6 +89,7 @@ private:
   static vector<vector<Position>> player_squares;
   static vector<int> respawnCounters;
   static vector<int> bubbleCounters;
+  static vector<int> bubbleMovementCounters;
   static vector<int> bonusCounters;
 };
 

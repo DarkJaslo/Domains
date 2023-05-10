@@ -113,8 +113,9 @@ recorres i,j de la caja contenedora y
 
 cosas que hay que hacer para poder programar un bot
 
-que se pueda interactuar con burbujas
-que las burbujas se muevan
+
+
+
 podria ser interesante SÍ perder energia cuando la unidad está mejorada: computeEnergies() gestiona eso
 
 

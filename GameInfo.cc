@@ -9,6 +9,7 @@ int GameInfo::unitsMin;
 int GameInfo::bonusMax;
 int GameInfo::roundsPerRespawn;
 int GameInfo::roundsPerBubble;
+int GameInfo::roundsPerBubbleMove;
 int GameInfo::roundsPerBonus;
 int GameInfo::pointsPerUnit;
 int GameInfo::pointsPerBubble;
@@ -38,6 +39,7 @@ vector<Bonus> GameInfo::bonusVector;
 vector<vector<Position>> GameInfo::player_squares;
 vector<int> GameInfo::respawnCounters;
 vector<int> GameInfo::bubbleCounters;
+vector<int> GameInfo::bubbleMovementCounters;
 vector<int> GameInfo::bonusCounters;
 
 
@@ -86,6 +88,7 @@ void GameInfo::printSettings(){
   << "MAX_NUMBER_OF_BONUSES" << '\t'  << bonusMax << endl
   << "ROUNDS_PER_RESPAWN" << '\t'     << roundsPerRespawn << endl
   << "ROUNDS_PER_BUBBLE" << '\t'      << roundsPerBubble << endl
+  << "ROUNDS_PER_BUBBLE_MOVE"         << roundsPerBubbleMove << endl
   << "MAX_ROUNDS_PER_BONUS" << '\t'   << roundsPerBonus << endl
   << "POINTS_PER_UNIT" << "\t\t"      << pointsPerUnit << endl
   << "POINTS_PER_BUBBLE" << '\t'      << pointsPerBubble << endl
@@ -110,6 +113,7 @@ void GameInfo::readSettings(){
   >> s >> bonusMax 
   >> s >> roundsPerRespawn 
   >> s >> roundsPerBubble
+  >> s >> roundsPerBubbleMove
   >> s >> roundsPerBonus
   >> s >> pointsPerUnit 
   >> s >> pointsPerBubble
@@ -130,6 +134,7 @@ void GameInfo::readSettings(){
   player_squares = vector<vector<Position>>(numPlayers);
   bubbleCounters = vector<int>(numPlayers,0);
   bubblesVector = vector<Bubble>(numPlayers*((maxRounds/roundsPerBubble)+1));
+  bubbleMovementCounters = vector<int>(bubblesVector.size(),0);
   for(int i = 0; i < bubblesVector.size(); ++i) bubblesVector[i] = Bubble(i,-1,Position(-1,-1),0);
   respawnCounters = vector<int>(numPlayers,0);
   bonusVector = vector<Bonus>(bonusMax);

@@ -436,8 +436,20 @@ bool Board::executeOrder(int plId, Order ord){
     }
     
     Square sq = info.square(newPos);
+    Square act = info.square(u.p);
+    if(act.ability() and not sq.ability() and act.painted() and act.painter() != u.player()){
+      return false;
+    }
+    if(((not act.ability()) or (act.ability() and act.painter() == u.player())) and sq.ability() and sq.painted() and sq.painter() != u.player()){
+      return false;
+    }
 
     if(sq.hasUnit()){
+
+      if(sq.unit().player() == u.player()){
+        return false;
+      }
+
       FightMode fm = FightMode::Fair;
       if(isDiagonal(sq.p.to(u.p)) and sq.unit().player() != sq.painter())
         fm = FightMode::Attacks;
@@ -457,6 +469,19 @@ bool Board::executeOrder(int plId, Order ord){
       int bid = sq.bonus().id;
       info.bonusVector[bid].p = Position(-1,-1);
       info.bonusCounters[bid] = GameInfo::randomNumber(0,info.roundsPerBonus)-1;
+    }
+    else if(sq.hasBubble()){
+      Bubble bb = sq.bubble();
+
+      if(bb.player() == u.player()){
+        popBubble(bb.position(),false);
+      }
+      else{
+        bb.pl = u.player();
+        bb.rtp = info.roundsToPop;
+        info.bubblesVector[bb.id_] = bb;
+        return false;
+      }
     }
     info.unitsVector[u.id()].p = newPos;
     info.square_map[newPos.x][newPos.y].u = &info.unitsVector[u.id()];
@@ -478,6 +503,10 @@ bool Board::executeOrder(int plId, Order ord){
     //If there is an enemy unit, attack
     if(sq.hasUnit()){
 
+      if(sq.unit().player() == u.player()){
+        return false;
+      }
+
       //Decide fairness
       FightMode fm = FightMode::Fair;
       if(isDiagonal(ord.dir)){
@@ -486,6 +515,19 @@ bool Board::executeOrder(int plId, Order ord){
         }
       }
       fight(u,info.unitsVector[sq.u->id()],fm);
+      return true;
+    }
+    else if(sq.hasBubble()){
+      Bubble bb = sq.bubble();
+
+      if(bb.player() == u.player()){
+        popBubble(bb.position(),false);
+      }
+      else{
+        bb.pl = u.player();
+        bb.rtp = info.roundsToPop;
+        info.bubblesVector[bb.id_] = bb;
+      }
       return true;
     }
     
@@ -637,9 +679,8 @@ void Board::popBubble(Position p, bool isForced){
   b.pl = -1;
   b.p = Position(-1,-1);
   b.rtp = 0;
+  info.bubbleMovementCounters[b.id_] = 0;
   info.bubblesVector[b.id_] = b;
-  
-
 }
 
 void Board::popBubbles(){
@@ -897,6 +938,41 @@ void Board::giveBoardPoints(){
   }
 }
 
+void Board::moveBubbles(){
+  for(int i = 0; i < info.bubblesVector.size(); ++i){
+    if(info.bubblesVector[i].player() == -1) continue;
+    if(++info.bubbleMovementCounters[i] < info.roundsPerBubbleMove) continue;
+
+    info.bubbleMovementCounters[i] = 0;
+
+    Bubble b = info.bubblesVector[i];
+
+    vector<Position> opts;
+    opts.reserve(4);
+    const Direction DIRS_STRAIGHT[4] = {Direction::left, Direction::right, Direction::up, Direction::down};
+    for(int j = 0; j < 4; ++j){
+      Position aux = b.position()+DIRS_STRAIGHT[j];
+      if(info.posOk(aux)){
+        Square sq = info.square(aux);
+        if(not sq.empty()) continue;
+        bool ability = info.square(b.position()).ability();
+        if(ability and not sq.ability()) continue;
+        if(not ability and sq.ability()) continue;
+        opts.emplace_back(aux);
+      }
+    }
+
+    if(opts.size() == 0) continue;
+
+    Position movPos = opts[GameInfo::randomNumber(0,opts.size()-1)];
+
+    info.square_map[b.position().x][b.position().y].bb = nullptr;
+    b.p = movPos;
+    info.bubblesVector[i] = b;
+    info.square_map[movPos.x][movPos.y].bb = &info.bubblesVector[i];
+  }
+}
+
 void Board::getPlayerSquares(){
   for(int i = 0; i < info.numPlayers; ++i){
     info.player_squares[i].clear();
@@ -1028,8 +1104,9 @@ void Board::executeRound(const vector<Player*>& pl){
   popBubbles();
   cerr << "\tresolving abilities..." << endl;
   resolveAbilities();
-  //move bubbles
+  
   cerr << "\tmoving bubbles..." << endl;
+  moveBubbles();
   cerr << "\tgetting player squares..." << endl;
   getPlayerSquares();
   cerr << "\trespawning..." << endl;

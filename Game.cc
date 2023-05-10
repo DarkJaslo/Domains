@@ -3,7 +3,7 @@
 //Game
 
 Game::Game(){}
-void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view, bool debug = true){
+void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view, bool debug){
   cerr << "starting game with seed " << seed << endl;
   vector<Player*> pl;
   //vector<string> names = {"Player1", "Player2"};

@@ -15,6 +15,7 @@ public:
   void printRound();
   //Prints all game settings
   void printSettings();
+
 private:
   friend class Game;
   //True if uid is a valid unit, false if it is not
@@ -72,6 +73,9 @@ private:
   //Gives points from painted squares
   void giveBoardPoints();
 
+  //Moves all bubbles
+  void moveBubbles();
+
   //Saves all squares owned by each player and decrements ability counters
   void getPlayerSquares();
 
@@ -103,6 +107,7 @@ private:
       tPos = tp;
     }
   };
+
   queue<FreeAttack> freeAttacks; 
   vector<Position> attackedPositions;
   bool debug,view;
