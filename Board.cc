@@ -1022,20 +1022,21 @@ void Board::executeRound(const vector<Player*>& pl){
       }
     }
   }
-  cerr << "executing free attacks..." << endl;
+  cerr << "\texecuting free attacks..." << endl;
   performFreeAttacks();
-  cerr << "popping bubbles..." << endl;
+  cerr << "\tpopping bubbles..." << endl;
   popBubbles();
-  cerr << "resolving abilities..." << endl;
+  cerr << "\tresolving abilities..." << endl;
   resolveAbilities();
   //move bubbles
-  cerr << "getting player squares..." << endl;
+  cerr << "\tmoving bubbles..." << endl;
+  cerr << "\tgetting player squares..." << endl;
   getPlayerSquares();
-  cerr << "respawning..." << endl;
+  cerr << "\trespawning..." << endl;
   respawn();
-  cerr << "computing energies..." << endl;
+  cerr << "\tcomputing energies..." << endl;
   computeEnergies();
-  cerr << "giving board points..." << endl;
+  cerr << "\tgiving board points..." << endl;
   giveBoardPoints();
 }
 

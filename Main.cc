@@ -14,7 +14,7 @@ int main(int argc, char** argv){
   cerr << "hola soy el main" << endl;
   //Register::printPlayers();
 
-  int nplayers = argc-2;
+  int nplayers = argc-3;
   if(nplayers < 2){
     cerr << "too few players/parameters" << endl;
     exit(1);
@@ -26,11 +26,14 @@ int main(int argc, char** argv){
 
   Game g;
   vector<string> names(nplayers);
-  for(int i = 2; i-2 < names.size(); ++i){
-    names[i-2] = argv[i];
+  for(int i = 3; i-3 < names.size(); ++i){
+    names[i-3] = argv[i];
   }
 
-  g.play(names,atoi(argv[1]),true);
+  string arg2 = argv[2];
+  bool show = arg2 == "y";
+
+  g.play(names,atoi(argv[1]),false,show /*,true*/);
 
   cerr << "Fin main" << endl;
 

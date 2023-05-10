@@ -3,14 +3,14 @@
 //Game
 
 Game::Game(){}
-void Game::play(const vector<string>& names, int seed, bool showInfo){
+void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view, bool debug = true){
   cerr << "starting game with seed " << seed << endl;
   vector<Player*> pl;
   //vector<string> names = {"Player1", "Player2"};
   string s;
   int rounds;
   cin >> s >> rounds;
-  Board b(false,true,names.size());
+  Board b(fullDebug,view,names.size());
   for(int i = 0; i < names.size(); ++i){
     pl.push_back(Register::newPlayer(names[i]));
     pl[i]->id_ = i;
@@ -75,18 +75,18 @@ void Game::play(const vector<string>& names, int seed, bool showInfo){
 
     b.info.currentRound = round;
 
-    if(showInfo) cerr << "starting round " << round << endl << endl;
+    if(debug) cerr << "starting round " << round << endl << endl;
     for(int i = 0; i < pl.size(); ++i){
-      if(showInfo) cerr << "player " << names[i] << endl;
+      if(debug) cerr << "player " << names[i] << endl;
       pl[i]->resetList();
       pl[i]->play();
-      if(showInfo) cerr << "end player " << names[i] << endl << endl;
+      if(debug) cerr << "end player " << names[i] << endl << endl;
     }
 
     //Hay que empezar a ejecutar rondas
     b.executeRound(pl);
     b.printRound();
-    if(showInfo) cerr << "ending round " << round << endl << endl << endl;
+    if(debug) cerr << "ending round " << round << endl << endl << endl;
   }
 
   b.printSettings();

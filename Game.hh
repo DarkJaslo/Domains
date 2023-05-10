@@ -10,7 +10,7 @@ class Game{
 public:
   Game();
   //Plays the whole game
-  void play(const vector<string>& vnames, int seed, bool showInfo);
+  void play(const vector<string>& vnames, int seed, bool fullDebug, bool view, bool debug = true);
 
 private:
   int rounds;
