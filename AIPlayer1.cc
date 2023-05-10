@@ -65,10 +65,13 @@ struct PLAYER_NAME : public Player{
   }
 
   bool bfs(Position& target, Position start, 
-    bool(*found)(const Square&, Position st, BFSInfo inf), 
-    bool(*stop) (const Square&, Position st, BFSInfo inf) = nullptr, 
+    bool(*found)(Square&, Position, BFSInfo), 
+    bool(*stop) (Square&, Position, BFSInfo) = nullptr, 
       bool tryDiagonal = false, int plId = -1, int radius = 2*rows())
   {
+    //Might want to add another function for after posOk()
+
+
     set<Position> visited;
     visited.insert(start);
     queue<BFSInfo> toVisit;
@@ -78,8 +81,11 @@ struct PLAYER_NAME : public Player{
       BFSInfo info = toVisit.front();
       toVisit.pop();
 
+      if(info.distance > radius) return false;
+
       if(contains(visited,info.pos)) continue;
       visited.insert(info.pos);
+      //the function would execute here with a continue
 
       Square sq = square(info.pos);
       if(found(sq,start,info)){
@@ -96,13 +102,11 @@ struct PLAYER_NAME : public Player{
     return false;
   }
 
+  static bool playerHasBubble(Square& sq, Position st, BFSInfo inf){
+    return sq.hasBubble();
+  }
+
   virtual void play(){
-
-    Position example;
-
-    auto lambda = [](const Square& sq,Position st, BFSInfo inf )->bool{return sq.empty();};
-    auto lambdastop = [](const Square& sq,Position st, BFSInfo inf )->bool{return not sq.empty();};
-    bool b = bfs(example, Position(0,0),lambda,lambdastop);
 
     //changing player
 
@@ -122,7 +126,7 @@ struct PLAYER_NAME : public Player{
       move(u[0],Direction::UL);
     }*/
 
-    Position bonusPos = Position(12,20);
+    Position bonusPos = Position(12,21);
 
     if(unit(u[0]).upgraded()){
       cerr << "UNIT IS UPGRADED" << endl;
@@ -135,6 +139,26 @@ struct PLAYER_NAME : public Player{
       else if(unit(u[0]).position().x > bonusPos.x){
         move(u[0],Direction::up);
       }      
+    }
+
+    for(int i = 1; i < u.size(); ++i){
+      Position target;
+      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBubble,nullptr,true,me(),10);
+      if(doesbfs){
+        Position aux = unit(u[i]).position();
+        if(target.x > aux.x){
+          move(u[i],Direction::down);
+        }
+        else if(target.x < aux.x){
+          move(u[i],Direction::up);
+        }
+        else if(target.y > aux.y){
+          move(u[i],Direction::right);
+        }
+        else if(target.y < aux.y){
+          move(u[i],Direction::left);
+        }
+      }
     }
 
     
