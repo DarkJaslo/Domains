@@ -1,7 +1,7 @@
 #include "PlayerOrders.hh"
 
 void PlayerOrders::move(int unitId, Direction dir){
-  cerr << "ordering move to unit " << unitId << endl;
+  //cerr << "ordering move to unit " << unitId << endl;
   if(orderedUnits.find(unitId) != orderedUnits.end()){
     cerr << "error: unit " << unitId << " has already been given an order" << endl;
     return;
@@ -16,10 +16,10 @@ void PlayerOrders::move(int unitId, Direction dir){
   else{
     orderList[index] = o;
   }
-  cerr << "finished ordering unit " << unitId << endl;
+  //cerr << "finished ordering unit " << unitId << endl;
 }
 void PlayerOrders::attack(int unitId, Direction dir){
-  cerr << "ordering attack to unit " << unitId << endl;
+  //cerr << "ordering attack to unit " << unitId << endl;
   if(orderedUnits.find(unitId) != orderedUnits.end()){
     cerr << "error: unit " << unitId << " has already been given an order" << endl;
     return;
@@ -36,7 +36,7 @@ void PlayerOrders::attack(int unitId, Direction dir){
   }
 }
 void PlayerOrders::ability(int unitId){
-  cerr << "ordering ability to unit " << unitId << endl;
+  //cerr << "ordering ability to unit " << unitId << endl;
   if(orderedUnits.find(unitId) != orderedUnits.end()){
     cerr << "error: unit " << unitId << " has already been given an order" << endl;
     return;

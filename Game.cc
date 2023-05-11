@@ -1,4 +1,5 @@
 #include "Game.hh"
+#include "Timer.hh"
 
 //Game
 
@@ -77,6 +78,7 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
 
     if(debug) cerr << "starting round " << round << endl << endl;
     for(int i = 0; i < pl.size(); ++i){
+      Timer timer("player time",&playerTimes[i],false);
       if(debug) cerr << "player " << names[i] << endl;
       pl[i]->resetList();
       pl[i]->play();
@@ -90,6 +92,10 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
   }
 
   b.printSettings();
+
+  for(int i = 0; i < 4; ++i){
+    cerr << "player " << i << " time: " << playerTimes[i] << "ms" << endl;
+  }
 
 /*order test
   cout << "Playing p0" << endl;

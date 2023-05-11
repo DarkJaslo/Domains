@@ -111,4 +111,10 @@ private:
   queue<FreeAttack> freeAttacks; 
   vector<Position> attackedPositions;
   bool debug,view;
+
+  void iniTimers();
+
+  double timePrint;
+  double timeOrders;
+  double timeCopy;
 };

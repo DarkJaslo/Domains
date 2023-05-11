@@ -1,4 +1,5 @@
 #include "Player.hh"
+#include "Timer.hh"
 
 #define PLAYER_NAME Player1
 
@@ -28,6 +29,8 @@ struct PLAYER_NAME : public Player{
   const Direction DIRS_STRAIGHT[4] = {Direction::left, Direction::right, Direction::up, Direction::down};
   const Direction DIRS_ALL[8] = {Direction::left, Direction::right, Direction::up, Direction::down,
                                  Direction::UL, Direction::UR, Direction::DL, Direction::DR};
+
+  double time = 0;
 
   void queueAdjacentPositions(BFSInfo info, queue<BFSInfo>& toVisit, set<Position>& visited, bool tryDiagonal = false, int plId = -1)
   {
@@ -107,17 +110,18 @@ struct PLAYER_NAME : public Player{
   }
 
   virtual void play(){
+    Timer timer("play()",&time,false);
 
     //changing player
 
     //Collect units    
     vector<int> u = units(me());
-    cerr << "u.size() = " << u.size() << endl;
+    /*cerr << "u.size() = " << u.size() << endl;
     cerr << "player " << me() << ", printing units:" << endl;
     for(int i = 0; i < u.size(); ++i){
       cerr << u[i] << " ";
     }
-    cerr << endl;
+    cerr << endl;*/
 
     /*if(round() == 0){ //first round, few local options
       move(u[0],Direction::up);
@@ -129,7 +133,7 @@ struct PLAYER_NAME : public Player{
     Position bonusPos = Position(12,21);
 
     if(unit(u[0]).upgraded()){
-      cerr << "UNIT IS UPGRADED" << endl;
+      //cerr << "UNIT IS UPGRADED" << endl;
       ability(u[0]);
     }
     else{
@@ -143,7 +147,7 @@ struct PLAYER_NAME : public Player{
 
     for(int i = 1; i < u.size(); ++i){
       Position target;
-      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBubble,nullptr,true,me(),10);
+      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBubble,nullptr,true,me(),50);
       if(doesbfs){
         Position aux = unit(u[i]).position();
         if(target.x > aux.x){
@@ -161,7 +165,10 @@ struct PLAYER_NAME : public Player{
       }
     }
 
-    
+
+    if(round() == 499){
+      cerr << "time for PLAYER1: " << time << endl;
+    }    
   }
 };
 

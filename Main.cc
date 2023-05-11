@@ -1,13 +1,18 @@
 #include <iostream>
 #include "Game.hh"
-#include "time.cc"
+#include "Timer.hh"
 #include <unistd.h>
 using namespace std;
 
 int main(int argc, char** argv){
-  float t1,t2;
 
-  t1 = GetTime();
+  cout.setf(ios::fixed);
+  cout.precision(3);
+
+  //float t1,t2;
+
+  //t1 = GetTime();
+  Timer timer("main",nullptr);
 
   //1:seed 2:pl1 3:pl2 4:pl3 5:pl4
 
@@ -37,7 +42,7 @@ int main(int argc, char** argv){
 
   cerr << "Fin main" << endl;
 
-  t2 = GetTime();
-  cerr << "Tiempo: " << t2-t1 << "ms" << endl;
-  exit(0);
+  //t2 = GetTime();
+  //cerr << "Tiempo: " << t2-t1 << "ms" << endl;
+  //exit(0);
 }
