@@ -31,8 +31,10 @@ int GameInfo::roundsToPop;
 int GameInfo::currentBubbles;
 int GameInfo::currentBonuses;
 vector<vector<char>> GameInfo::game_map;
-vector<vector<Square>> GameInfo::square_map;
-vector<vector<Square>> GameInfo::old_square_map;
+Matrix<Square> GameInfo::square_map;
+Matrix<Square> GameInfo::old_square_map;
+//vector<vector<Square>> GameInfo::square_map;
+//vector<vector<Square>> GameInfo::old_square_map;
 vector<int> GameInfo::whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
 vector<Unit> GameInfo::unitsVector;
 vector<Bubble> GameInfo::bubblesVector;
@@ -62,7 +64,7 @@ int GameInfo::points(int pl){
 Square GameInfo::square(const Position& p){
   Timer posTimer("square", &squareTime,false);
   if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) cerr << "Position is not valid (sq)" << endl;
-  return square_map[p.x][p.y];
+  return square_map[p];
 }
 Unit GameInfo::unit(int uid){
   if(uid < 0 or uid >= unitsVector.size()){cerr << "warning: requested for a unit that doesn't exist" << endl; exit(1);}
@@ -222,7 +224,7 @@ void GameInfo::spawnUnit(int plId, Position p){
   u.energ = energyStart;
   unitsVector[in] = u;
 
-  square_map[p.x][p.y].u = &unitsVector[in];
+  square_map[p].u = &unitsVector[in];
 }
 
 void GameInfo::spawnBubble(int plId, Position p){
@@ -246,5 +248,5 @@ void GameInfo::spawnBubble(int plId, Position p){
   }
   bubblesVector[in] = b;
 
-  square_map[p.x][p.y].bb = &bubblesVector[in];
+  square_map[p].bb = &bubblesVector[in];
 }

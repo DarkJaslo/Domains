@@ -74,8 +74,10 @@ private:
   static int roundsToPop;
   static int currentRound;
   static vector<vector<char>> game_map;
-  static vector<vector<Square>> square_map;
-  static vector<vector<Square>> old_square_map;
+  static Matrix<Square> square_map;
+  //static vector<vector<Square>> square_map;
+  static Matrix<Square> old_square_map;
+  //static vector<vector<Square>> old_square_map;
   static vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
   static vector<Unit> unitsVector;
   static vector<Bubble> bubblesVector;

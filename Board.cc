@@ -60,20 +60,27 @@ void Board::iniBoard(int s, int rounds){
 
   cerr << "Initializing squares..." << endl;
   info.game_map = vector<vector<char>>(info.boardHeight,vector<char>(info.boardWidth,'.'));
-  info.square_map = vector<vector<Square>>(info.boardHeight,vector<Square>(info.boardWidth));
-  for(int i = 0; i < info.boardHeight; ++i){
-    for(int j = 0; j < info.boardWidth; ++j){
-      info.square_map[i][j].p = Position(i,j);
-      info.square_map[i][j].uDrawer = -1;
-      info.square_map[i][j].plPainter = -1;
-      info.square_map[i][j].isBorder = false;
-      info.square_map[i][j].plDrawer = -1;
-      info.square_map[i][j].u = nullptr;
-      info.square_map[i][j].b = nullptr;
-      info.square_map[i][j].bb = nullptr;
-      info.square_map[i][j].closes = false;
+  //info.square_map = vector<vector<Square>>(info.boardHeight,vector<Square>(info.boardWidth));
+  Matrix<Square> aux(info.boardHeight,info.boardWidth);
+  info.square_map = aux;
+  for(int i = 0; i < info.square_map.rows(); ++i){
+    for(int j = 0; j < info.square_map.cols(); ++j){
+      Square sq;
+      Position ij(i,j);
+      sq.p = ij;
+      sq.uDrawer = -1;
+      sq.plPainter = -1;
+      sq.isBorder = false;
+      sq.isAbility = false;
+      sq.plDrawer = -1;
+      sq.u = nullptr;
+      sq.b = nullptr;
+      sq.bb = nullptr;
+      sq.closes = false;
+      info.square_map[ij] = sq;
     }
   }
+  cerr << "sqmap  " << info.square_map[Position(0,36)].painter() << endl;
 
   cerr << "Initializing units..." << endl;
   //Size may change when other unit types are introduced
@@ -96,15 +103,16 @@ void Board::iniBoard(int s, int rounds){
   
   
   cerr << "Board successfully initialized" << endl;
+
 }
 
 bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
 
 void Board::erasePath(int uid, Position p){
   if(debug) cerr << "erasing path" << endl;
-  if(info.posOk(p) and info.square_map[p.x][p.y].uDrawer == uid){
-    info.square_map[p.x][p.y].uDrawer = -1;
-    info.square_map[p.x][p.y].plDrawer = -1;
+  if(info.posOk(p) and info.square_map[p].uDrawer == uid){
+    info.square_map[p].uDrawer = -1;
+    info.square_map[p].plDrawer = -1;
     Position pp;
     pp = p+Direction::up;
     erasePath(uid,pp);
@@ -119,7 +127,7 @@ void Board::erasePath(int uid, Position p){
 
 void Board::killUnit(Unit& u){
   u.pl = -1;
-  info.square_map[u.p.x][u.p.y].u = nullptr;
+  info.square_map[u.p].u = nullptr;
   erasePath(u.id_,u.p);
   killedUnits[u.id_] = true;
 }
@@ -127,7 +135,7 @@ void Board::killUnit(Unit& u){
 void Board::deenclose(Position p){
   if(info.posOk(p)){
     if(info.square(p).closes){
-      info.square_map[p.x][p.y].closes = false;
+      info.square_map[p].closes = false;
       Position pp = p+Direction::up;
       deenclose(pp);
       pp = p+Direction::down;
@@ -144,9 +152,9 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
   //cerr << "enclosing " << p.x << "," << p.y  << endl;
   if(info.posOk(p)){
     if(not info.square(p).closes and (info.square(p).border() or info.square(p).drawer() == uid)){
-      info.square_map[p.x][p.y].closes = true;
+      info.square_map[p].closes = true;
       if(not info.square(p).border()){
-        info.square_map[p.x][p.y].isBorder = true;
+        info.square_map[p].isBorder = true;
       }
       if(debug) cerr << p.x << "," << p.y << " is border" << endl;
       if(p.x < xmin) xmin = p.x;
@@ -208,7 +216,7 @@ void Board::paint(int plId, int uid, Position p){
   //Copy the container box
   for(int i = xmin; i <= xmax; ++i){
     for(int j = ymin; j <= ymax; ++j){
-      box[i-xmin][j-ymin] = info.square_map[i][j];
+      box[i-xmin][j-ymin] = info.square_map[Position(i,j)];
     }
   }
   int colIndex = COLORINDEX;
@@ -275,7 +283,7 @@ void Board::paint(int plId, int uid, Position p){
   //Copies the box back to the main grid
   for(int i = xmin; i <= xmax; ++i){
     for(int j = ymin; j <= ymax; ++j){
-      if(box[i-xmin][j-ymin].plPainter < COLORINDEX) info.square_map[i][j] = box[i-xmin][j-ymin];
+      if(box[i-xmin][j-ymin].plPainter < COLORINDEX) info.square_map[Position(i,j)] = box[i-xmin][j-ymin];
     }
   }
 
@@ -285,36 +293,36 @@ void Board::paint(int plId, int uid, Position p){
     for(int j = ymin-1; j <= ymax+1; ++j){
       Position pos = Position(i,j);
       if(info.posOk(pos)){
-        if(info.square_map[pos.x][pos.y].drawed() and i >= xmin and i <= xmax and info.square_map[pos.x][pos.y].plPainter == plId){
+        if(info.square_map[pos].drawed() and i >= xmin and i <= xmax and info.square_map[pos].plPainter == plId){
           if(debug) cerr << "erasing drawing starting at " << i << "," << j << endl;
-          erasePath(info.square_map[pos.x][pos.y].drawer(),pos);
+          erasePath(info.square_map[pos].drawer(),pos);
         }
-        if(info.square_map[pos.x][pos.y].plPainter == plId){
+        if(info.square_map[pos].plPainter == plId){
           bool border = false;
           for(int i = 0; i < 1; ++i){
             Position pos2 = pos+Direction::UL;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::up;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::UR;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::left;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::right;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::DL;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::down;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
             pos2 = pos+Direction::DR;
-            if(info.posOk(pos2) and info.square_map[pos2.x][pos2.y].plPainter != plId){border = true;break;}
+            if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
           }
           
           if(border){
-            if(not info.square_map[pos.x][pos.y].border()) info.square_map[pos.x][pos.y].isBorder = true;
+            if(not info.square_map[pos].border()) info.square_map[pos].isBorder = true;
           }
           else{
-            if(info.square_map[pos.x][pos.y].border()) info.square_map[pos.x][pos.y].isBorder = false;
+            if(info.square_map[pos].border()) info.square_map[pos].isBorder = false;
           }
         }
       }
@@ -336,8 +344,8 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
   }
   if(sant.uDrawer == uid){
     //draws if behind you is a drawing
-    info.square_map[pnew.x][pnew.y].uDrawer = uid;
-    info.square_map[pnew.x][pnew.y].plDrawer = plId;
+    info.square_map[pnew].uDrawer = uid;
+    info.square_map[pnew].plDrawer = plId;
     //if behind you is a drawing and you enter a secure painted area, enclose and paint
     if(snew.plPainter == plId){
       paint(plId, uid, sant.p);
@@ -345,8 +353,8 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
   }
   if(sant.plPainter == plId and snew.plPainter != plId){
     //draws if exiting a secure painted area
-    info.square_map[pnew.x][pnew.y].uDrawer = uid;
-    info.square_map[pnew.x][pnew.y].plDrawer = plId;
+    info.square_map[pnew].uDrawer = uid;
+    info.square_map[pnew].plDrawer = plId;
   }
 }
 
@@ -464,7 +472,7 @@ bool Board::executeOrder(int plId, Order ord){
         info.bonusPlayers[plId]++;
         info.unitsVector[u.id_].upg = true;
       }
-      info.square_map[newPos.x][newPos.y].b = nullptr;
+      info.square_map[newPos].b = nullptr;
       info.currentBonuses--;
       int bid = sq.bonus().id;
       info.bonusVector[bid].p = Position(-1,-1);
@@ -484,8 +492,8 @@ bool Board::executeOrder(int plId, Order ord){
       }
     }
     info.unitsVector[u.id()].p = newPos;
-    info.square_map[newPos.x][newPos.y].u = &info.unitsVector[u.id()];
-    info.square_map[u.p.x][u.p.y].u = nullptr;
+    info.square_map[newPos].u = &info.unitsVector[u.id()];
+    info.square_map[u.position()].u = nullptr;
     draw(plId,u.id_,newPos,u.p);
     return true;
     break;
@@ -532,7 +540,7 @@ bool Board::executeOrder(int plId, Order ord){
     }
     
     //If there is not, see if there was one before that has moved
-    Square sqold = info.old_square_map[attacked.x][attacked.y];
+    Square sqold = info.old_square_map[attacked];
     if(sqold.hasUnit()){
       //If there was, see if it is in range
       int uid = sqold.unit().id();
@@ -630,7 +638,7 @@ void Board::popBubble(Position p, bool isForced){
     affected.push(aux);
     
     if(sqaux.painter() != b.player()){
-      info.square_map[aux.x][aux.y].plPainter = b.player();
+      info.square_map[aux].plPainter = b.player();
     }
     if(sqaux.drawed()){
       if(sqaux.drawer() == b.player()){
@@ -661,8 +669,8 @@ void Board::popBubble(Position p, bool isForced){
       if(not info.posOk(aux)) continue;
       Square sqaux = info.square(aux);
       if(sq.painter() != sqaux.painter()){
-        info.square_map[sq.pos().x][sq.pos().y].isBorder = true;
-        info.square_map[aux.x][aux.y].isBorder = true;
+        info.square_map[sq.pos()].isBorder = true;
+        info.square_map[aux].isBorder = true;
         break;
       }
     }
@@ -675,7 +683,7 @@ void Board::popBubble(Position p, bool isForced){
     info.playerPoints[b.player()] += info.pointsPerBubble;
   }
 
-  info.square_map[b.position().x][b.position().y].bb = nullptr;
+  info.square_map[b.position()].bb = nullptr;
   b.pl = -1;
   b.p = Position(-1,-1);
   b.rtp = 0;
@@ -700,7 +708,7 @@ void Board::invalidateAbility(int plId, Position p){
     Square sq = info.square(p);
     sq.isAbility = false;
     sq.counter = 0;
-    info.square_map[p.x][p.y] = sq;
+    info.square_map[p] = sq;
 
     invalidateAbility(plId,p+Direction::up);
     invalidateAbility(plId,p+Direction::down);
@@ -739,7 +747,7 @@ void Board::useAbility(int plId, Position p){
         sq.plPainter = plId;
         sq.isAbility = true;
         sq.counter = info.abilityDuration+1; //+1 because unfortunately, counter is decremented after using abilities
-        info.square_map[i][j] = sq;
+        info.square_map[Position(i,j)] = sq;
       }
     }
   }
@@ -758,7 +766,7 @@ void Board::useAbility(int plId, Position p){
           }
           if(sq.painter() != -1){
             sq.isBorder = true;
-            info.square_map[up.x][up.y] = sq;
+            info.square_map[up] = sq;
           }
         }
       }
@@ -776,11 +784,11 @@ void Board::useAbility(int plId, Position p){
                 sq.isBorder = true;
               }
             }
-            info.square_map[spec.x][spec.y] = sq;
+            info.square_map[spec] = sq;
           }
         }
       }
-      info.square_map[p1.x][p1.y] = s1;
+      info.square_map[p1] = s1;
     }
 
     p1 = Position(xmax,i);
@@ -797,7 +805,7 @@ void Board::useAbility(int plId, Position p){
             sq.isBorder = true;
           }
         }
-        info.square_map[down.x][down.y] = sq;
+        info.square_map[down] = sq;
       }
 
       if(i == xmin or i == xmax){ //Special case for corners
@@ -813,11 +821,11 @@ void Board::useAbility(int plId, Position p){
                 sq.isBorder = true;
               }
             }
-            info.square_map[spec.x][spec.y] = sq;
+            info.square_map[spec] = sq;
           }
         }
       }
-      info.square_map[p1.x][p1.y] = s1;
+      info.square_map[p1] = s1;
     }  
   }
   for(int i = xmin+1; i <= xmax-1; ++i){
@@ -829,10 +837,10 @@ void Board::useAbility(int plId, Position p){
         Square sq = info.square(left);
         if(s1.painter() != sq.painter()){
           if(s1.painter() != -1){
-            info.square_map[p1.x][p1.y].isBorder = true;
+            info.square_map[p1].isBorder = true;
           }
           if(sq.painter() != -1){
-            info.square_map[left.x][left.y].isBorder = true;
+            info.square_map[left].isBorder = true;
           }
         }
       }
@@ -846,10 +854,10 @@ void Board::useAbility(int plId, Position p){
         Square sq = info.square(right);
         if(s1.painter() != sq.painter()){
           if(s1.painter() != -1){
-            info.square_map[p1.x][p1.y].isBorder = true;
+            info.square_map[p1].isBorder = true;
           }
           if(sq.painter() != -1){
-            info.square_map[right.x][right.y].isBorder = true;
+            info.square_map[right].isBorder = true;
           }
         }
       }
@@ -869,7 +877,7 @@ void Board::useAbility(int plId, Position p){
         else if(sq.drawed()){ //Specific case
           sq.uDrawer = -1;
           sq.plDrawer = -1;
-          info.square_map[pos.x][pos.y] = sq;
+          info.square_map[pos] = sq;
         }
       }
     }
@@ -966,10 +974,10 @@ void Board::moveBubbles(){
 
     Position movPos = opts[GameInfo::randomNumber(0,opts.size()-1)];
 
-    info.square_map[b.position().x][b.position().y].bb = nullptr;
+    info.square_map[b.position()].bb = nullptr;
     b.p = movPos;
     info.bubblesVector[i] = b;
-    info.square_map[movPos.x][movPos.y].bb = &info.bubblesVector[i];
+    info.square_map[movPos].bb = &info.bubblesVector[i];
   }
 }
 
@@ -980,14 +988,15 @@ void Board::getPlayerSquares(){
 
   for(int i = 0; i < info.rows(); ++i){
     for(int j = 0; j < info.cols(); ++j){
-      int painter = info.square_map[i][j].plPainter;
+      Position ij(i,j);
+      int painter = info.square_map[ij].painter();
       if(painter >= 0){
         info.player_squares[painter].push_back(Position(i,j));
 
         //Decrement ability counter
-        if(info.square_map[i][j].isAbility){
-          if(--info.square_map[i][j].counter == 0){
-            info.square_map[i][j].isAbility = false;
+        if(info.square_map[ij].isAbility){
+          if(--info.square_map[ij].counter == 0){
+            info.square_map[ij].isAbility = false;
           }
         }
       }
@@ -1037,7 +1046,7 @@ void Board::respawn(){
     while(not foundPos){ //Looks for an empty random position
       x = GameInfo::randomNumber(0,info.rows()-1);
       y = GameInfo::randomNumber(0,info.cols()-1);
-      if(info.square_map[x][y].empty()){
+      if(info.square_map[Position(x,y)].empty()){
         foundPos = true;
       }
     }
@@ -1060,8 +1069,9 @@ void Board::respawn(){
       cerr << " at least one bonus should be free (position -1,-1), but it isn't" << endl;
       exit(1);
     }
-    info.bonusVector[index].p = Position(x,y);
-    info.square_map[x][y].b = &info.bonusVector[index];
+    Position xy(x,y);
+    info.bonusVector[index].p = xy;
+    info.square_map[xy].b = &info.bonusVector[index];
     info.bonusCounters[index] = 0;
     ++info.currentBonuses;
  }
@@ -1084,10 +1094,8 @@ void Board::computeEnergies(){
 }
 
 void Board::executeRound(const vector<Player*>& pl){
-  {
-    Timer tCopy("copyboard",&timeCopy,false);
-    info.old_square_map = info.square_map;
-  }
+
+  info.old_square_map = info.square_map;
 
   Timer tOrders("orders",&timeOrders,false);
   cerr << "Executing round " << info.round() << endl;
@@ -1129,7 +1137,7 @@ void Board::printRound(){
 
   //VIEWER FORMAT
   if(view){
-    Timer timer("print",&timePrint,false);
+    //Timer timer("print",&timePrint,false);
     cout << info.round() << " ";
     for(int i = 0; i < info.numPlayers; ++i){
       cout << info.playerPoints[i] << " ";
@@ -1183,7 +1191,7 @@ void Board::printSettings(){
 
 void Board::spawnPlayer(int i, int j, int plId){
   Position p(i,j);
-  info.square_map[i][j].plPainter = plId;
+  info.square_map[p].plPainter = plId;
 
   Unit u = info.unitsVector[plId];
   u.pl = plId;
@@ -1191,15 +1199,15 @@ void Board::spawnPlayer(int i, int j, int plId){
   info.unitsVector[plId] = u;
 
   //Center square
-  info.square_map[i][j].u = &info.unitsVector[plId];
-  info.square_map[i][j].isBorder = false;
-  info.square_map[i][j].plPainter = plId;
+  info.square_map[p].u = &info.unitsVector[plId];
+  info.square_map[p].isBorder = false;
+  info.square_map[p].plPainter = plId;
 
   const vector<Direction> DIRS = {DL,Direction::left,UL,down,up,DR,Direction::right,UR};
   for(int k = 0; k < DIRS.size(); ++k){
     Position aux = p+DIRS[k];
-    info.square_map[aux.x][aux.y].isBorder = true;
-    info.square_map[aux.x][aux.y].plPainter = plId;
+    info.square_map[aux].isBorder = true;
+    info.square_map[aux].plPainter = plId;
   }
 }
 
@@ -1253,3 +1261,14 @@ void Board::iniTimers(){
   timeOrders = 0;
   timeCopy = 0;
 }
+
+void Board::printPainters(){
+  for(int i = 0; i < info.rows(); ++i){
+    for(int j = 0; j < info.cols(); ++j){
+      cerr << info.square_map[Position(i,j)].painter() << " ";
+    }
+    cerr << endl;
+  }
+  cerr << endl;
+}
+

@@ -35,6 +35,7 @@ struct PLAYER_NAME : public Player{
   double whileTime = 0;
   double whileValid = 0;
   double timeSet = 0;
+  double queueTime = 0;
 
   void queueAdjacentPositions(BFSInfo info, queue<BFSInfo>& toVisit, set<Position>& visited, bool tryDiagonal = false, int plId = -1)
   {
@@ -56,7 +57,6 @@ struct PLAYER_NAME : public Player{
     for(int i = 0; i < permNormal.size(); ++i){
       permutation.emplace_back(DIRS_STRAIGHT[permNormal[i]]);
     }
-
     for(int i = 0; i < permutation.size(); ++i){
       Position aux = info.pos+permutation[i];
       if(posOk(aux) and not contains(visited,aux)){
@@ -76,7 +76,6 @@ struct PLAYER_NAME : public Player{
     bool(*stop) (Square&, Position, BFSInfo) = nullptr, 
       bool tryDiagonal = false, int plId = -1, int radius = 2*rows())
   {
-    //Timer bfstimer("bfs",&bfsTime,false);
     //Might want to add another function for after posOk()
 
 
@@ -86,20 +85,14 @@ struct PLAYER_NAME : public Player{
     queueAdjacentPositions(BFSInfo(start,0),toVisit,visited,tryDiagonal,plId);
 
     while(not toVisit.empty()){
-      //Timer whiletimer("while",&whileTime,false);
       BFSInfo info = toVisit.front();
       toVisit.pop();
 
       if(info.distance > radius) return false;
 
-      {
-        Timer setTimer("set",&timeSet,false);
-        if(contains(visited,info.pos)) continue;
-      }
-      
-
-      //Timer whileValidIteration("while",&whileValid,false);
+      if(contains(visited,info.pos)) continue;
       visited.insert(info.pos);
+      
       //the function would execute here with a continue
 
       Square sq = square(info.pos);
@@ -128,19 +121,6 @@ struct PLAYER_NAME : public Player{
 
     //Collect units    
     vector<int> u = units(me());
-    /*cerr << "u.size() = " << u.size() << endl;
-    cerr << "player " << me() << ", printing units:" << endl;
-    for(int i = 0; i < u.size(); ++i){
-      cerr << u[i] << " ";
-    }
-    cerr << endl;*/
-
-    /*if(round() == 0){ //first round, few local options
-      move(u[0],Direction::up);
-    }
-    else if(round() == 1){  //same here
-      move(u[0],Direction::UL);
-    }*/
 
     Position bonusPos = Position(12,21);
 
@@ -184,6 +164,7 @@ struct PLAYER_NAME : public Player{
       cerr << "while time: " << whileTime << endl;
       cerr << "valid while: " << whileValid << endl;
       cerr << "set time: " << timeSet  << endl;
+      cerr << "queue time: " << queueTime << endl;
     }    
   }
 };

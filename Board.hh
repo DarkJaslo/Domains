@@ -16,6 +16,8 @@ public:
   //Prints all game settings
   void printSettings();
 
+  void printPainters();
+
 private:
   friend class Game;
   //True if uid is a valid unit, false if it is not

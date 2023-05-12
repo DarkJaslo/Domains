@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <array>
 #include <set>
 #include "Timer.hh"
 
@@ -148,6 +149,8 @@ public:
   
   //Default constructor
   Square();
+  //Copy constructor
+  Square(const Square& sq);
 
 private:
 
@@ -170,53 +173,36 @@ template<typename T>
 //Matrix indexed by Position
 class Matrix{
 public:
+  Matrix();
   Matrix(int rows, int cols);
-  Matrix(const Matrix& m);
-  ~Matrix();
   T& operator[](Position);
   int rows()const;
   int cols()const;
 
 private:
   int r,c;
-  T* pointer;
+  std::vector<T> data;
   size_t size;
 };
 
 //Matrix
 template<typename T>
+Matrix<T>::Matrix(){
+  r = 0; c = 0;
+  size = 0;
+}
+template<typename T>
 Matrix<T>::Matrix(int rows, int cols){
-  //cout << "constructora" << endl;
-  //cout << pointer << endl;
   r = rows;   c = cols;
   size = r*c;
-  //cout << "allocate pre" << endl;
-  pointer = new T[size];
-  //cout << "allocated" << endl;
-}
-template<typename T>
-Matrix<T>::Matrix(const Matrix<T>& m){
-  //cout << "constructora copia" << endl;
-  if(pointer != nullptr) delete [] pointer;
-  r = m.r;
-  c = m.c;
-  size = m.size;
-  pointer = new T[size];
-  for(int i = 0; i < size; ++i){
-    pointer[i] = m.pointer[i];
-  }
-}
-template<typename T>
-Matrix<T>::~Matrix(){
-  //cout << "destructora" << endl;
-  delete [] pointer;
+  data = vector<T>(size);
 }
 template<typename T>
 T& Matrix<T>::operator[](Position index){
   //cout << "operador" << endl;
   if(index.x < 0 or index.x >= r) __throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
   if(index.y < 0 or index.y >= c) __throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
-  return pointer[index.x*c+index.y];
+  return data[index.x*c+index.y];
 }
 template<typename T>
 int Matrix<T>::rows()const{return r;}

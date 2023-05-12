@@ -15,7 +15,6 @@ public:
 private:
   int rounds;
   Board board;
-  double playerTimes[4];
 };
 
 #endif

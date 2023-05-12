@@ -1,4 +1,5 @@
 #include "Game.hh"
+#include <thread>
 
 //Game
 
@@ -15,7 +16,6 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
     pl.push_back(Register::newPlayer(names[i]));
     pl[i]->id_ = i;
   }
-
   //Hay que inicializar bien el tablero
   b.iniBoard(seed,rounds);
 
@@ -69,32 +69,41 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
   cout << names.size();
   for(const string& s : names) cout << " " << s;
   cout << endl;
-  b.printRound();
+  //b.printRound();
+
+  thread print([&b](){b.printRound();});
 
   for(int round = 0; round < rounds; ++round){
 
     b.info.currentRound = round;
+    
+    //vector<thread> threads;
 
     if(debug) cerr << "starting round " << round << endl << endl;
     for(int i = 0; i < pl.size(); ++i){
-      Timer timer("player time",&playerTimes[i],false);
       if(debug) cerr << "player " << names[i] << endl;
       pl[i]->resetList();
+      //Player* aux = pl[i];
+      //threads.emplace_back(thread([aux](){ aux->play(); } ));
       pl[i]->play();
       if(debug) cerr << "end player " << names[i] << endl << endl;
     }
 
+    /*for(auto& t : threads){
+      t.join();
+    }*/
+
     //Hay que empezar a ejecutar rondas
     b.executeRound(pl);
-    b.printRound();
+    print.join();
+    print = thread([&b](){b.printRound();});
+    //b.printRound();
     if(debug) cerr << "ending round " << round << endl << endl << endl;
   }
 
-  b.printSettings();
+  print.join();
 
-  for(int i = 0; i < 4; ++i){
-    cerr << "player " << i << " time: " << playerTimes[i] << "ms" << endl;
-  }
+  b.printSettings();
 
 /*order test
   cout << "Playing p0" << endl;

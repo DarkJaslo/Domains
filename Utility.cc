@@ -50,6 +50,19 @@ Direction Position::to(Position p){
 
 //Square
 Square::Square(){p=Position(-1,-1); plPainter=-1; plDrawer=-1; isAbility = false; counter = 0;}
+Square::Square(const Square& sq){
+  u = sq.u;
+  b = sq.b;     
+  bb = sq.bb;
+  p = sq.p;
+  plPainter = sq.plPainter;
+  plDrawer = sq.plDrawer;
+  uDrawer = sq.uDrawer;
+  isBorder = sq.isBorder;
+  closes = sq.closes;
+  isAbility = sq.isAbility;
+  counter = sq.counter;
+}
 Position Square::pos()const{return p;}
 bool Square::painted()const{return plPainter != -1;}
 bool Square::drawed()const{return uDrawer != -1;}
