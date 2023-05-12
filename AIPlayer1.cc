@@ -31,6 +31,10 @@ struct PLAYER_NAME : public Player{
                                  Direction::UL, Direction::UR, Direction::DL, Direction::DR};
 
   double time = 0;
+  double bfsTime = 0;
+  double whileTime = 0;
+  double whileValid = 0;
+  double timeSet = 0;
 
   void queueAdjacentPositions(BFSInfo info, queue<BFSInfo>& toVisit, set<Position>& visited, bool tryDiagonal = false, int plId = -1)
   {
@@ -72,6 +76,7 @@ struct PLAYER_NAME : public Player{
     bool(*stop) (Square&, Position, BFSInfo) = nullptr, 
       bool tryDiagonal = false, int plId = -1, int radius = 2*rows())
   {
+    //Timer bfstimer("bfs",&bfsTime,false);
     //Might want to add another function for after posOk()
 
 
@@ -81,12 +86,19 @@ struct PLAYER_NAME : public Player{
     queueAdjacentPositions(BFSInfo(start,0),toVisit,visited,tryDiagonal,plId);
 
     while(not toVisit.empty()){
+      //Timer whiletimer("while",&whileTime,false);
       BFSInfo info = toVisit.front();
       toVisit.pop();
 
       if(info.distance > radius) return false;
 
-      if(contains(visited,info.pos)) continue;
+      {
+        Timer setTimer("set",&timeSet,false);
+        if(contains(visited,info.pos)) continue;
+      }
+      
+
+      //Timer whileValidIteration("while",&whileValid,false);
       visited.insert(info.pos);
       //the function would execute here with a continue
 
@@ -147,7 +159,7 @@ struct PLAYER_NAME : public Player{
 
     for(int i = 1; i < u.size(); ++i){
       Position target;
-      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBubble,nullptr,true,me(),50);
+      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBubble,nullptr,true,me(),10);
       if(doesbfs){
         Position aux = unit(u[i]).position();
         if(target.x > aux.x){
@@ -168,6 +180,10 @@ struct PLAYER_NAME : public Player{
 
     if(round() == 499){
       cerr << "time for PLAYER1: " << time << endl;
+      cerr << "bfs time: " << bfsTime << endl;
+      cerr << "while time: " << whileTime << endl;
+      cerr << "valid while: " << whileValid << endl;
+      cerr << "set time: " << timeSet  << endl;
     }    
   }
 };

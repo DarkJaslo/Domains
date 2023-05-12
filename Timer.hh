@@ -2,9 +2,11 @@
 #define Timer_hh
 
 #include <chrono>
+
 class Timer{
+
 public:
-  Timer(string s, double* accumulator, bool pr = true)
+  Timer(std::string s, double* accumulator, bool pr = true)
   {
     print = pr;
     acc = accumulator;
@@ -33,7 +35,7 @@ public:
   }
 private:
   bool print;
-  string whatAmI;
+  std::string whatAmI;
   double* acc;
   std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTimepoint;
 };

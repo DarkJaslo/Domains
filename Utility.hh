@@ -5,6 +5,7 @@
 #include <vector>
 #include <queue>
 #include <set>
+#include "Timer.hh"
 
 typedef char int8;
 using namespace std;
@@ -164,4 +165,61 @@ private:
   bool isAbility;
   int8 counter;   //Tells rounds before wearing off. -1 means no counter
 };
+
+template<typename T>
+//Matrix indexed by Position
+class Matrix{
+public:
+  Matrix(int rows, int cols);
+  Matrix(const Matrix& m);
+  ~Matrix();
+  T& operator[](Position);
+  int rows()const;
+  int cols()const;
+
+private:
+  int r,c;
+  T* pointer;
+  size_t size;
+};
+
+//Matrix
+template<typename T>
+Matrix<T>::Matrix(int rows, int cols){
+  //cout << "constructora" << endl;
+  //cout << pointer << endl;
+  r = rows;   c = cols;
+  size = r*c;
+  //cout << "allocate pre" << endl;
+  pointer = new T[size];
+  //cout << "allocated" << endl;
+}
+template<typename T>
+Matrix<T>::Matrix(const Matrix<T>& m){
+  //cout << "constructora copia" << endl;
+  if(pointer != nullptr) delete [] pointer;
+  r = m.r;
+  c = m.c;
+  size = m.size;
+  pointer = new T[size];
+  for(int i = 0; i < size; ++i){
+    pointer[i] = m.pointer[i];
+  }
+}
+template<typename T>
+Matrix<T>::~Matrix(){
+  //cout << "destructora" << endl;
+  delete [] pointer;
+}
+template<typename T>
+T& Matrix<T>::operator[](Position index){
+  //cout << "operador" << endl;
+  if(index.x < 0 or index.x >= r) __throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
+  if(index.y < 0 or index.y >= c) __throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
+  return pointer[index.x*c+index.y];
+}
+template<typename T>
+int Matrix<T>::rows()const{return r;}
+template<typename T>
+int Matrix<T>::cols()const{return c;}
 #endif

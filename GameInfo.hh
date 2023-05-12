@@ -91,6 +91,8 @@ private:
   static vector<int> bubbleCounters;
   static vector<int> bubbleMovementCounters;
   static vector<int> bonusCounters;
+
+  static double squareTime;
 };
 
 #endif
