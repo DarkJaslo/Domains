@@ -175,6 +175,7 @@ class Matrix{
 public:
   Matrix();
   Matrix(int rows, int cols);
+  ~Matrix();
   T& operator[](Position);
   int rows()const;
   int cols()const;
@@ -196,6 +197,10 @@ Matrix<T>::Matrix(int rows, int cols){
   r = rows;   c = cols;
   size = r*c;
   data = vector<T>(size);
+}
+template<typename T>
+Matrix<T>::~Matrix(){
+  cerr << "destructing matrix" << endl;
 }
 template<typename T>
 T& Matrix<T>::operator[](Position index){

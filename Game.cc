@@ -4,6 +4,9 @@
 //Game
 
 Game::Game(){}
+Game::~Game(){
+  cerr << "deleting game" << endl;
+}
 void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view, bool debug){
   cerr << "starting game with seed " << seed << endl;
   vector<Player*> pl;
@@ -69,9 +72,9 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
   cout << names.size();
   for(const string& s : names) cout << " " << s;
   cout << endl;
-  //b.printRound();
+  b.printRound();
 
-  thread print([&b](){b.printRound();});
+  //thread print([&b](){b.printRound();});
 
   for(int round = 0; round < rounds; ++round){
 
@@ -95,13 +98,13 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
 
     //Hay que empezar a ejecutar rondas
     b.executeRound(pl);
-    print.join();
-    print = thread([&b](){b.printRound();});
-    //b.printRound();
+    //print.join();
+    //print = thread([&b](){b.printRound();});
+    b.printRound();
     if(debug) cerr << "ending round " << round << endl << endl << endl;
   }
 
-  print.join();
+  //print.join();
 
   b.printSettings();
 
