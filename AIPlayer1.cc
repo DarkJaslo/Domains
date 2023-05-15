@@ -72,8 +72,8 @@ struct PLAYER_NAME : public Player{
   }
 
   bool bfs(Position& target, Position start, 
-    bool(*found)(Square&, Position, BFSInfo), 
-    bool(*stop) (Square&, Position, BFSInfo) = nullptr, 
+    bool(*found)(const Square&, Position, BFSInfo), 
+    bool(*stop) (const Square&, Position, BFSInfo) = nullptr, 
       bool tryDiagonal = false, int plId = -1, int radius = 2*rows())
   {
     //Might want to add another function for after posOk()
@@ -110,8 +110,12 @@ struct PLAYER_NAME : public Player{
     return false;
   }
 
-  static bool playerHasBubble(Square& sq, Position st, BFSInfo inf){
+  static bool playerHasBubble(const Square& sq, Position st, BFSInfo inf){
     return sq.hasBubble();
+  }
+
+  static bool playerHasBonus(const Square& sq, Position st, BFSInfo inf){
+    return sq.hasBonus();
   }
 
   virtual void play(){
@@ -121,25 +125,20 @@ struct PLAYER_NAME : public Player{
 
     //Collect units    
     vector<int> u = units(me());
-
-    Position bonusPos = Position(12,21);
-
-    if(unit(u[0]).upgraded()){
-      //cerr << "UNIT IS UPGRADED" << endl;
-      ability(u[0]);
+    cerr << "unit list: " << endl;
+    for(int un : u){
+      cerr << un << " at ";
+      cerr << int(unit(un).position().x) << "," << int(unit(un).position().y) << " ";
     }
-    else{
-      if(unit(u[0]).position().y < bonusPos.y){
-        move(u[0],Direction::right);
+    cerr << endl;
+
+    for(int i = 0; i < u.size(); ++i){
+      if(unit(u[i]).upgraded()){
+        ability(u[i]);
+        continue;
       }
-      else if(unit(u[0]).position().x > bonusPos.x){
-        move(u[0],Direction::up);
-      }      
-    }
-
-    for(int i = 1; i < u.size(); ++i){
       Position target;
-      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBubble,nullptr,true,me(),10);
+      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBonus,nullptr,true,me(),100);
       if(doesbfs){
         Position aux = unit(u[i]).position();
         if(target.x > aux.x){
