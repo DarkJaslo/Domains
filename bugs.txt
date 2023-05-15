@@ -1,1 +1,6 @@
-a veces al pintar se borran dibujos que "no tienen nada que ver" pero están en la caja contenedora
+petar burbujas dentro de rango de habilidad
+
+
+aCkShUaLlY, si pintas una zona y justo habia un simio con un dibujo que salia de un cuadrado que estas pintando
+  y justo esta puto fuera de la zona que estas pintando sigue dibujando aunque no tenga root
+  posible solucion: te guardas el cuadrado del que sales cuando dibujas y luego haces bullshit con eso

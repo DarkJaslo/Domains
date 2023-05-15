@@ -62,7 +62,7 @@ int GameInfo::points(int pl){
   return playerPoints[pl];
 }
 Square GameInfo::square(const Position& p){
-  Timer posTimer("square", &squareTime,false);
+  //Timer posTimer("square", &squareTime,false);
   if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) cerr << "Position is not valid (sq)" << endl;
   return square_map[p];
 }

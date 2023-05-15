@@ -37,8 +37,17 @@ private:
 
   void flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid);
 
+  void floodv2(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid);
+
+  void perpendicularDirections(Direction dir, Direction& res1, Direction& res2);
+
+  Position followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid);
+
   //Seriously how the fuck do you do this
+
   void paint(int plId, int uid, Position p);
+
+  void paintv2(int plId, int uid, Position in, Position out);
 
   //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
   void draw(int plId, int uid, Position pnew, Position pant);
