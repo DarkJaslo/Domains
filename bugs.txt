@@ -9,5 +9,8 @@ aCkShUaLlY, si pintas una zona y justo habia un simio con un dibujo que salia de
 
 
 quizás las habilidades no pinten SIEMPRE bien los dibujos de su team que tienen dentro
-puede incluir malos bordes o algo
+  puede incluir malos bordes o algo
+
 petar burbujas genera dibujos del color incorrecto?
+
+hace enclose del tablero entero "tirando al final" (sin verificar esto último)
