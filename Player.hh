@@ -9,7 +9,7 @@ class Player : public PlayerOrders, public GameInfo{
 
   public:
   int me() const;
-  virtual void play(); 
+  virtual void play() = 0; 
 
   private:
   int id_;
