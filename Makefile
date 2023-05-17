@@ -3,7 +3,7 @@
 PLAYERS_SRC = $(wildcard AI*.cc)
 PLAYERS_OBJ = $(patsubst %.cc, %.o, $(PLAYERS_SRC)) #$(EXTRA_OBJ) $(DUMMY_OBJ)
 
-#Rules
+# Rules
 COMP = g++
 CC = Register.cc Player.cc Board.cc Utility.cc PlayerOrders.cc GameInfo.cc Game.cc Main.cc
 OBJ = Register.o Player.o Board.o Utility.o PlayerOrders.o GameInfo.o Game.o Main.o 
