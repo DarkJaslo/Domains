@@ -10,7 +10,7 @@ public:
   //Reads settings and initializes variables
   void iniBoard(int s, int rounds);
   //Executes the orders given in this round
-  void executeRound(const vector<Player*>& pl);
+  void executeRound(const std::vector<Player*>& pl);
   //Prints the results of this round
   void printRound();
   //Prints all game settings
@@ -35,7 +35,7 @@ private:
   //Saves a rectangle (Position(xmin,ymin),Position(xmax,ymax)) to paint
   void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
 
-  void flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid);
+  void flood(int plId, int col, Position p, bool& flooded, bool& ok, std::vector<std::vector<Square>>& grid);
 
   void floodv2(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid);
 
@@ -54,7 +54,7 @@ private:
 
   enum FightMode{
     Fair,     //Both units can attack
-    Attacks, //Unit U1 can attack, Unit U2 can't
+    Attacks,  //Unit U1 can attack, Unit U2 can't
   };
 
   //Executes the fight between u1 and u2 and its consequences... Returns the winner's uid
@@ -104,8 +104,8 @@ private:
 
   int seed;
   GameInfo info;
-  vector<bool> killedUnits;
-  vector<int> abilityUnits; //Stores which units have used the ability
+  std::vector<bool> killedUnits;
+  std::vector<int> abilityUnits; //Stores which units have used the ability
     //Order management
 
   struct FreeAttack{
@@ -119,8 +119,8 @@ private:
     }
   };
 
-  queue<FreeAttack> freeAttacks; 
-  vector<Position> attackedPositions;
+  std::queue<FreeAttack> freeAttacks; 
+  std::vector<Position> attackedPositions;
   bool debug,view;
 
   void iniTimers();

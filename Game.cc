@@ -5,15 +5,15 @@
 
 Game::Game(){}
 Game::~Game(){
-  cerr << "deleting game" << endl;
+  std::cerr << "deleting game" << std::endl;
 }
-void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view, bool debug){
-  cerr << "starting game with seed " << seed << endl;
-  vector<Player*> pl;
+void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug, bool view, bool debug){
+  std::cerr << "starting game with seed " << seed << std::endl;
+  std::vector<Player*> pl;
   //vector<string> names = {"Player1", "Player2"};
-  string s;
+  std::string s;
   int rounds;
-  cin >> s >> rounds;
+  std::cin >> s >> rounds;
   Board b(fullDebug,view,names.size());
   for(int i = 0; i < names.size(); ++i){
     pl.push_back(Register::newPlayer(names[i]));
@@ -23,7 +23,7 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
   b.iniBoard(seed,rounds);
 
 
-/* CODE TO TEST THE RANDOMIZER
+  /* CODE TO TEST THE RANDOMIZER
   
   int ntests = 1000000;
   int q1,q2,q3,q4;
@@ -67,11 +67,11 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
   double error = (qmax-qmin)/double(ntests);
   cout << "error: " << error*100 << "%" << endl;
 
-*/
-  cout << rounds << " " << b.info.rows() << " " << b.info.cols() << endl;
-  cout << names.size();
-  for(const string& s : names) cout << " " << s;
-  cout << endl;
+  */
+  std::cout << rounds << " " << b.info.rows() << " " << b.info.cols() << std::endl;
+  std::cout << names.size();
+  for(const std::string& s : names) std::cout << " " << s;
+  std::cout << std::endl;
   b.printRound();
 
   //thread print([&b](){b.printRound();});
@@ -82,14 +82,14 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
     
     //vector<thread> threads;
 
-    if(debug) cerr << "starting round " << round << endl << endl;
+    if(debug) std::cerr << "starting round " << round << std::endl << std::endl;
     for(int i = 0; i < pl.size(); ++i){
-      if(debug) cerr << "player " << names[i] << endl;
+      if(debug) std::cerr << "player " << names[i] << std::endl;
       pl[i]->resetList();
       //Player* aux = pl[i];
       //threads.emplace_back(thread([aux](){ aux->play(); } ));
       pl[i]->play();
-      if(debug) cerr << "end player " << names[i] << endl << endl;
+      if(debug) std::cerr << "end player " << names[i] << std::endl << std::endl;
     }
 
     /*for(auto& t : threads){
@@ -101,23 +101,10 @@ void Game::play(const vector<string>& names, int seed, bool fullDebug, bool view
     //print.join();
     //print = thread([&b](){b.printRound();});
     b.printRound();
-    if(debug) cerr << "ending round " << round << endl << endl << endl;
+    if(debug) std::cerr << "ending round " << round << std::endl << std::endl << std::endl;
   }
 
   //print.join();
 
   b.printSettings();
-
-/*order test
-  cout << "Playing p0" << endl;
-  pl[0]->play();
-  cout << "Ords p0" << endl;
-  pl[0]->printOrderIds();
-  cout << "Ords p1" << endl;
-  pl[1]->printOrderIds();
-  cout << "Playing p1" << endl;
-  pl[1]->play();
-  cout << "Ords p1" << endl;
-  pl[1]->printOrderIds();
-  */
 }

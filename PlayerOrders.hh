@@ -16,8 +16,8 @@ private:
   void resetList();
   int maxSize;
   int index; //orderList[0,index] has valid orders. If index == -1, no orders
-  vector<Order> orderList;
-  set<int> orderedUnits;
+  std::vector<Order> orderList;
+  std::set<int> orderedUnits;
 };
 
 #endif

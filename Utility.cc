@@ -2,7 +2,7 @@
 
 //Position
 Position::Position(){ x = 0; y = 0;};
-Position::Position(int posx, int posy){ x = static_cast<int8>(posx); y = static_cast<int8>(posy); }
+Position::Position(int posx, int posy){ x = static_cast<int8_t>(posx); y = static_cast<int8_t>(posy); }
 bool Position::operator== (const Position& p) const{return x == p.x and y == p.y;}
 bool Position::operator!= (const Position& p) const{return x != p.x or y != p.y;}
 bool Position::operator<(const Position& p) const{

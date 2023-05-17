@@ -4,12 +4,10 @@
 #include <iostream>
 #include <vector>
 #include <queue>
-#include <array>
 #include <set>
 #include "Timer.hh"
 
-typedef char int8;
-using namespace std;
+//using namespace std;
 
 /**
  * Defines all directions
@@ -17,8 +15,8 @@ using namespace std;
 enum Direction{null,up,down,left,right,UL,UR,DL,DR};
 
 struct Position{
-  int8 x;
-  int8 y;
+  int8_t x;
+  int8_t y;
   Position();
   Position(int posx, int posy);
   bool operator== (const Position& p) const;
@@ -76,10 +74,10 @@ private:
   Position p;
   UnitType t;
   short id_;
-  int8 pl;
+  int8_t pl;
 
   //bubble params
-  int8 rtp;
+  int8_t rtp;
 };
 
 struct Bonus{
@@ -160,13 +158,13 @@ private:
   Bonus* b;       //nullptr if there is not a bonus
   Bubble* bb;     //nullptr if there is not a bubble
   Position p;
-  int8 plPainter;  //Player
-  int8 plDrawer;   //Player
-  int8 uDrawer;    //Unit id
+  int8_t plPainter;  //Player
+  int8_t plDrawer;   //Player
+  int8_t uDrawer;    //Unit id
   bool isBorder;
   bool closes;    //Used only for painting
   bool isAbility;
-  int8 counter;   //Tells rounds before wearing off. -1 means no counter
+  int8_t counter;   //Tells rounds before wearing off. -1 means no counter
 };
 
 template<typename T>
@@ -196,11 +194,11 @@ template<typename T>
 Matrix<T>::Matrix(int rows, int cols){
   r = rows;   c = cols;
   size = r*c;
-  data = vector<T>(size);
+  data = std::vector<T>(size);
 }
 template<typename T>
 Matrix<T>::~Matrix(){
-  cerr << "destructing matrix" << endl;
+  //cerr << "destructing matrix" << endl;
 }
 template<typename T>
 T& Matrix<T>::operator[](Position index){

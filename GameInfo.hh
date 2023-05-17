@@ -31,11 +31,11 @@ public:
   //Returns a number inside  [l,r]
   static int randomNumber(int l, int r); //implemented in Board.cc
   //Returns a random permutation of 0,1,2,3
-  static vector<int> randomPermutation(); //implemented in Board.cc
+  static std::vector<int> randomPermutation(); //implemented in Board.cc
   //Returns all unit ids the player p possesses
-  static vector<int> units(int p);
+  static std::vector<int> units(int p);
   //Returns the number of units belonging to each player
-  static vector<int> numberOfUnits();
+  static std::vector<int> numberOfUnits();
 
 
 private:
@@ -73,26 +73,26 @@ private:
   static int boardHeight;
   static int roundsToPop;
   static int currentRound;
-  static vector<vector<char>> game_map;
+  static std::vector<std::vector<char>> game_map;
   static Matrix<Square> square_map;
   //static vector<vector<Square>> square_map;
   static Matrix<Square> old_square_map;
   //static vector<vector<Square>> old_square_map;
-  static vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
-  static vector<Unit> unitsVector;
-  static vector<Bubble> bubblesVector;
+  static std::vector<int> whoHasWhat;  //if v[0] = 1, player 1 has unit with id 0
+  static std::vector<Unit> unitsVector;
+  static std::vector<Bubble> bubblesVector;
   static int currentBubbles;
-  static vector<int> playerPoints;
-  static vector<int> bonusPlayers;
-  static vector<Bonus> bonusVector;
+  static std::vector<int> playerPoints;
+  static std::vector<int> bonusPlayers;
+  static std::vector<Bonus> bonusVector;
   static int currentBonuses;
 
   //Spawn events management
-  static vector<vector<Position>> player_squares;
-  static vector<int> respawnCounters;
-  static vector<int> bubbleCounters;
-  static vector<int> bubbleMovementCounters;
-  static vector<int> bonusCounters;
+  static std::vector<std::vector<Position>> player_squares;
+  static std::vector<int> respawnCounters;
+  static std::vector<int> bubbleCounters;
+  static std::vector<int> bubbleMovementCounters;
+  static std::vector<int> bonusCounters;
 
   static double squareTime;
 };

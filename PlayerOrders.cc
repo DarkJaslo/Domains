@@ -3,7 +3,7 @@
 void PlayerOrders::move(int unitId, Direction dir){
   //cerr << "ordering move to unit " << unitId << endl;
   if(orderedUnits.find(unitId) != orderedUnits.end()){
-    cerr << "error: unit " << unitId << " has already been given an order" << endl;
+    std::cerr << "error: unit " << unitId << " has already been given an order" << std::endl;
     return;
   }
   else{orderedUnits.insert(unitId);}
@@ -21,7 +21,7 @@ void PlayerOrders::move(int unitId, Direction dir){
 void PlayerOrders::attack(int unitId, Direction dir){
   //cerr << "ordering attack to unit " << unitId << endl;
   if(orderedUnits.find(unitId) != orderedUnits.end()){
-    cerr << "error: unit " << unitId << " has already been given an order" << endl;
+    std::cerr << "error: unit " << unitId << " has already been given an order" << std::endl;
     return;
   }
   else{orderedUnits.insert(unitId);}
@@ -38,7 +38,7 @@ void PlayerOrders::attack(int unitId, Direction dir){
 void PlayerOrders::ability(int unitId){
   //cerr << "ordering ability to unit " << unitId << endl;
   if(orderedUnits.find(unitId) != orderedUnits.end()){
-    cerr << "error: unit " << unitId << " has already been given an order" << endl;
+    std::cerr << "error: unit " << unitId << " has already been given an order" << std::endl;
     return;
   }
   else{orderedUnits.insert(unitId);}
@@ -59,7 +59,7 @@ PlayerOrders::PlayerOrders(){
 
 void PlayerOrders::printOrderIds(){
   for(const Order& o : orderList){
-    cerr << o.unitId << endl;
+    std::cerr << o.unitId << std::endl;
   }
 }
 
