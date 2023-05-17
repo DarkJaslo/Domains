@@ -1,5 +1,6 @@
 #include "Player.hh"
 #include "Timer.hh"
+using namespace std;
 
 #define PLAYER_NAME Player1
 
