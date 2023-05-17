@@ -30,7 +30,7 @@ int main(int argc, char** argv){
   }
 
   Game g;
-  vector<string> names(nplayers);
+  std::vector<string> names(nplayers);
   for(int i = 3; i-3 < names.size(); ++i){
     names[i-3] = argv[i];
   }
