@@ -115,7 +115,7 @@ void Board::iniBoard(int s, int rounds){
 
 bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
 
-void Board::erasePath(int uid, Position p){
+void Board::i_erasePath(int uid, Position p){
   if(info.posOk(p) and info.square_map[p].uDrawer == uid){
     std::cerr << "erased drawing in " << int(p.x) << "," << int(p.y) << endl;
     Square sq = info.square(p);
@@ -124,14 +124,33 @@ void Board::erasePath(int uid, Position p){
     info.square_map[p] = sq;
     Position pp;
     pp = p+Direction::up;
-    erasePath(uid,pp);
+    i_erasePath(uid,pp);
     pp = p+Direction::down;
-    erasePath(uid,pp);
+    i_erasePath(uid,pp);
     pp = p+Direction::left;
-    erasePath(uid,pp);
+    i_erasePath(uid,pp);
     pp = p+Direction::right;
-    erasePath(uid,pp);
+    i_erasePath(uid,pp);
   }
+}
+
+void Board::erasePath(int uid, Position p){
+  cerr << "erasing in " << int(p.x) << "," << int(p.y) << endl;
+  map<Position,pair<int,Position>>::iterator it;
+  for(it = drawStartSquares.begin(); it != drawStartSquares.end(); ++it){
+    if(it->second.first == uid){
+      break;
+    }
+  }
+  if(it == drawStartSquares.end()){
+    cerr << "drawing start square not found" << endl;
+    //exit(1);
+  }
+  else{
+    drawStartSquares.erase(it);
+  }
+  
+  i_erasePath(uid,p);
 }
 
 void Board::killUnit(Unit& u){
@@ -161,7 +180,7 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
   //std::cerr << "enclosing " << int(p.x) << "," << int(p.y)  << endl;
   if(info.posOk(p)){
     if(info.square(p).closes) return;
-    if(info.square(p).border() or info.square(p).drawer() == uid)
+    if(info.square(p).border() or info.square(p).uDrawer == uid)
     {
       info.square_map[p].closes = true;
       if(not info.square(p).border()){
@@ -190,7 +209,7 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
 
 void Board::flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid){
 
-  if(p.x >= 0 and p.y >= 0 and p.x < static_cast<int>(grid.size()) and p.y < static_cast<int>(grid[0].size()) and (not grid[p.x][p.y].border() or (grid[p.x][p.y].plPainter != plId and grid[p.x][p.y].drawer() != plId)) and grid[p.x][p.y].plPainter < COLORINDEX){
+  if(p.x >= 0 and p.y >= 0 and p.x < static_cast<int>(grid.size()) and p.y < static_cast<int>(grid[0].size()) and (not grid[p.x][p.y].border() or (grid[p.x][p.y].plPainter != plId and grid[p.x][p.y].plDrawer != plId)) and grid[p.x][p.y].plPainter < COLORINDEX){
 
     //This region must not be painted
     if(p.x == 0 or p.y == 0 or p.x == static_cast<int>(grid.size()-1) or p.y == static_cast<int>(grid[0].size()-1)){
@@ -244,6 +263,8 @@ void Board::perpendicularDirections(Direction dir, Direction& res1, Direction& r
 }
 
 Position Board::followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid){
+  cerr << "following drawing from " << int(act.x) << "," << int(act.y) << endl;
+  if(act == Position(-1,-1)) return act;
   Direction d = act.to(ant);
   Position next;
   for(int i = 0; i < 4; ++i){
@@ -252,6 +273,7 @@ Position Board::followDrawing(int uid, Position act, Position ant, Matrix<Square
     if(aux.x < 0 or aux.y < 0 or aux.x >= grid.rows() or aux.y >= grid.cols()) continue;
     Square sq = grid[aux];
     if(sq.uDrawer == uid){
+      cerr << "found next: " << int(aux.x) << "," << int(aux.y) << endl;
       return aux;
     }
   }
@@ -385,7 +407,7 @@ void Board::paint(int plId, int uid, Position p){
         info.square_map[pos].closes = false;
         if(info.square_map[pos].drawed()){
           if(debug) std::cerr << "erasing drawing starting at " << i << "," << j << endl;
-          erasePath(info.square_map[pos].drawer(),pos);
+          erasePath(info.square_map[pos].uDrawer,pos);
         }
       }
     }
@@ -498,14 +520,14 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   //Follows the drawings and tries to flood
   int intingcounter = 0;
 
-  if(next == Position(-1,-1)){
+  if(act == Position(-1,-1)){
     cerr << "el hormiguero" << endl;
   }
-  bool iterated = false;
-  while(next != Position(-1,-1) and not visitedNext[next.x][next.y]){
+  //bool iterated = false;
+  while(act != Position(-1,-1) and not visitedNext[act.x][act.y]){
     
-    if(not iterated) iterated = true;
-    visitedNext[next.x][next.y] = true;
+    //if(not iterated) iterated = true;
+    visitedNext[act.x][act.y] = true;
     Direction d1 = Direction::null;
     Direction d2 = Direction::null;
     perpendicularDirections(act.to(ant),d1,d2);
@@ -539,7 +561,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     next = followDrawing(uid,act,ant,map);
   }
 
-  if(not iterated){
+  if(false){
     //Bloated
     Direction d1 = Direction::null;
     Direction d2 = Direction::null;
@@ -575,6 +597,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   for(int i = 0; i < map.rows(); ++i){
     for(int j = 0; j < map.cols(); ++j){
       Position pos(i,j);
+      Position sqpos(i+xmin,j+ymin);
       Square sq = map[pos];
       if(sq.uDrawer == uid){
         map[pos].plPainter = plId;
@@ -586,10 +609,17 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       
       if(findInVector(sq.painter(),validColors)){
         map[pos].plPainter = plId;
+
+        //Checks if a drawing starts here
+        auto it = drawStartSquares.find(pos);
+        if(it != drawStartSquares.end()){
+          erasePath(it->second.first,it->second.second);
+        }
+
         //Erases all drawings
-        if(sq.drawed() and sq.uDrawer != uid){
+        if(info.square(sqpos).drawed() and info.square(sqpos).uDrawer != uid){
           cerr << "ERASING PATH AT " << i <<"," << j << endl;
-          erasePath(sq.uDrawer,Position(i+xmin,j+ymin));
+          erasePath(info.square(sqpos).uDrawer,sqpos);
         }
       }
     }
@@ -609,7 +639,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
         sq.uDrawer = -1;
         sq.plDrawer = -1;
       }
-      if(sq.painter() == plId and sq.drawer() == plId){
+      if(sq.painter() == plId and sq.plDrawer == plId){
         sq.uDrawer = -1;
         sq.plDrawer = -1;
       }
@@ -683,6 +713,9 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
     //draws if exiting a secure painted area
     info.square_map[pnew].uDrawer = uid;
     info.square_map[pnew].plDrawer = plId;
+
+    //Adds to the map
+    drawStartSquares.insert(make_pair(pant,make_pair(uid,pnew)));
   }
 }
 
@@ -970,7 +1003,7 @@ void Board::popBubble(Position p, bool isForced){
       info.square_map[aux].plPainter = b.player();
     }
     if(sqaux.drawed()){
-      if(sqaux.drawer() == b.player()){
+      if(sqaux.plDrawer == b.player()){
 
         std::cerr << "painting from bubble pop at " << int(aux.x) << "," << int(aux.y) << endl;
 
@@ -994,7 +1027,10 @@ void Board::popBubble(Position p, bool isForced){
         paintv2(b.player(),sqaux.uDrawer,aux,drawingOut);
         //paint(b.player(),sqaux.uDrawer,aux);
       }
-      else if(sqaux.drawer() != -1){
+      else if(sqaux.plDrawer != -1){
+        cerr << "at pos " << int(sqaux.pos().x) << "," << int(sqaux.pos().y) << ": "; 
+        cerr << "call to erasePath from popBubble because plDrawer is " << int(sqaux.plDrawer);
+        cerr << " and bubble is " << b.player() << endl;
         erasePath(sqaux.uDrawer,aux);
       }
     }
@@ -1089,12 +1125,12 @@ void Board::useAbility(int plId, Position p){
         }
         if(sq.drawed()){
           if(sq.plDrawer != plId){
-            std::cerr << "square drawer is " << sq.drawer() << " but plId is " << plId << endl;
+            std::cerr << "square drawer is " << sq.plDrawer << " but plId is " << plId << endl;
             erasePath(sq.uDrawer,pos);
             sq.plDrawer = -1;
             sq.uDrawer = -1;
           }
-          else if(sq.drawer() == plId){
+          else if(sq.plDrawer == plId){
             if(i != xmin and i != xmax and j != ymin and j != ymax){
               sq.plDrawer = -1;
               sq.uDrawer = -1;
@@ -1502,6 +1538,8 @@ void Board::computeEnergies(){
 }
 
 void Board::executeRound(const vector<Player*>& pl){
+
+  //if(info.round() == 282) exit(1);
 
   info.old_square_map = info.square_map;
 

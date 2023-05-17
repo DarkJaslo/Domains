@@ -23,6 +23,9 @@ private:
   //True if uid is a valid unit, false if it is not
   bool unitOk(int uid)const;
 
+  //Recursive func for erasePath
+  void i_erasePath(int uid, Position p);
+
   //Erases all drawings made by uid in p and all connected squares
   void erasePath(int uid, Position p);
 
@@ -121,6 +124,7 @@ private:
 
   std::queue<FreeAttack> freeAttacks; 
   std::vector<Position> attackedPositions;
+  std::map<Position,std::pair<int,Position>> drawStartSquares;
   bool debug,view;
 
   void iniTimers();

@@ -4,3 +4,10 @@ petar burbujas dentro de rango de habilidad
 aCkShUaLlY, si pintas una zona y justo habia un simio con un dibujo que salia de un cuadrado que estas pintando
   y justo esta puto fuera de la zona que estas pintando sigue dibujando aunque no tenga root
   posible solucion: te guardas el cuadrado del que sales cuando dibujas y luego haces bullshit con eso
+
+    no he comprobado que se arregle, pero se ha hecho algo ya para evitarlo
+
+
+quizás las habilidades no pinten SIEMPRE bien los dibujos de su team que tienen dentro
+puede incluir malos bordes o algo
+petar burbujas genera dibujos del color incorrecto?
