@@ -8,9 +8,13 @@ aCkShUaLlY, si pintas una zona y justo habia un simio con un dibujo que salia de
     no he comprobado que se arregle, pero se ha hecho algo ya para evitarlo
 
 
-quizás las habilidades no pinten SIEMPRE bien los dibujos de su team que tienen dentro
-  puede incluir malos bordes o algo
-
 petar burbujas genera dibujos del color incorrecto?
+
+usar la habilidad genera dibujos del color incorrecto?
+o quizás no los borra (caso vertical lados)
+
+los dibujos de otra unidad de mi team cuentan como frontera para el flood cuando se usa habilidad por ejemplo
+  pero quizás no están dentro aun sino que están fuera 
+    guardar qué uids son "correctos" para usar como frontera
 
 hace enclose del tablero entero "tirando al final" (sin verificar esto último)

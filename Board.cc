@@ -240,10 +240,12 @@ void Board::floodv2(int plId, int uid, int col, Position p, bool& correct, Matri
     return;
   }
   Square sq = grid[p];
-  if((sq.painter() >= COLORINDEX) or (sq.uDrawer == uid) or (sq.painter() == plId)){
-    if(sq.painter() == plId) cerr << "found border at " << int(p.x) << "," << int(p.y) << endl;
+  if((sq.painter() >= COLORINDEX) or (sq.plDrawer == plId) or (sq.painter() == plId)){
+    //if(sq.painter() == plId) cerr << "found border at " << int(p.x) << "," << int(p.y) << endl;
+    //else if(sq.plDrawer == plId) cerr << "found drawing at " << int(p.x) << "," << int(p.y) << endl;
     return;
   }
+  cerr << "flooded position " << int(p.x) << "," << int(p.y) << " with col " << col << endl;
   grid[p].plPainter = col;
   floodv2(plId,uid,col,p+NORMAL_DIRS[0],correct,grid);
   floodv2(plId,uid,col,p+NORMAL_DIRS[1],correct,grid);
@@ -453,6 +455,30 @@ void Board::paint(int plId, int uid, Position p){
   std::cerr << "paint func end " << endl;
 }
 
+void printMatrix(Matrix<Square>& map){
+  cerr << "   ";
+  for(int i = 0; i < map.cols(); ++i){
+    cerr << i << " ";
+  }
+  cerr << endl;
+  for(int i = 0; i < map.rows(); ++i){
+    cerr << i;
+    if(i < 10) cerr << " ";
+    cerr << " ";
+    for(int j = 0; j < map.cols(); ++j){
+      if(map[Position(i,j)].drawed()){
+        cerr << 'd';
+      }
+      else if(map[Position(i,j)].painter() == -1) cerr << '.';
+      else cerr << map[Position(i,j)].painter();
+      cerr << " ";
+      if(j >= 9) cerr << " ";
+    }
+    cerr << endl;
+  }
+  cerr << endl;
+}
+
 void Board::paintv2(int plId, int uid, Position in, Position out){
   /*Seguir el dibujo pa atras
     Intentar floodear pa los dos lados
@@ -482,24 +508,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     }
   }
 
-  cerr << "   ";
-  for(int i = 0; i < map.cols(); ++i){
-    cerr << i << " ";
-  }
-  cerr << endl;
-  for(int i = 0; i < map.rows(); ++i){
-    cerr << i;
-    if(i < 10) cerr << " ";
-    cerr << " ";
-    for(int j = 0; j < map.cols(); ++j){
-      if(map[Position(i,j)].painter() == -1) cerr << 9;
-      else cerr << map[Position(i,j)].painter();
-      cerr << " ";
-      if(j >= 9) cerr << " ";
-    }
-    cerr << endl;
-  }
-  cerr << endl;
+  printMatrix(map);
 
 
 
@@ -547,6 +556,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       if(floodPos.x < 0 or floodPos.y < 0 or floodPos.x >= map.rows() or floodPos.y >= map.cols()) continue;
       if(map[floodPos].uDrawer == uid) continue;
       bool valid = true;
+      cerr << "floodingv2: colAct = " << colAct << ", pos = " << int(floodPos.x) << "," << int(floodPos.y) <<endl;
       floodv2(plId,uid,colAct,floodPos,valid,map);
       if(valid){
         validColors.push_back(colAct);
@@ -625,6 +635,8 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     }
   }
 
+  //printMatrix(map);
+
   //Copies the painted squares back
   for(int i = xmin; i <= xmax; ++i){
     for(int j = ymin; j <= ymax; ++j){
@@ -636,10 +648,6 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       }
       if(sq.uDrawer == uid){
         sq.plPainter = plId;
-        sq.uDrawer = -1;
-        sq.plDrawer = -1;
-      }
-      if(sq.painter() == plId and sq.plDrawer == plId){
         sq.uDrawer = -1;
         sq.plDrawer = -1;
       }
@@ -683,7 +691,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       }
     }
   }
-
+  std::cerr << "paintv2 func end" << std::endl;
 }
 
 void Board::draw(int plId, int uid, Position pnew, Position pant){
@@ -1002,38 +1010,45 @@ void Board::popBubble(Position p, bool isForced){
     if(sqaux.painter() != b.player()){
       info.square_map[aux].plPainter = b.player();
     }
-    if(sqaux.drawed()){
-      if(sqaux.plDrawer == b.player()){
+  }
 
-        std::cerr << "painting from bubble pop at " << int(aux.x) << "," << int(aux.y) << endl;
+  for(int i = 0; i < toPaint.size(); ++i){
+    Position aux = toPaint[i];
+    if(not info.posOk(aux)) continue;
+    Square sqaux = info.square(aux);
+    if(not sqaux.drawed()) continue;
+    
+    if(sqaux.plDrawer == b.player()){
 
-        //Find out drawing
-        Position drawingOut(-1,-1);
-        for(int i = 0; i < NORMAL_DIRS.size(); ++i){
-          Position aux2 = aux+NORMAL_DIRS[i];
-          if(not info.posOk(aux2)) continue;
-          Square sqaux2 = info.square_map[aux2];
-          if(sqaux2.uDrawer == sqaux.uDrawer){
-            drawingOut = aux2;
-            break;
-          }
+      std::cerr << "painting from bubble pop at " << int(aux.x) << "," << int(aux.y) << endl;
+
+      //Find out drawing
+      Position drawingOut(-1,-1);
+      for(int i = 0; i < NORMAL_DIRS.size(); ++i){
+        Position aux2 = aux+NORMAL_DIRS[i];
+        if(not info.posOk(aux2)) continue;
+        Square sqaux2 = info.square_map[aux2];
+        if(sqaux2.uDrawer == sqaux.uDrawer){
+          drawingOut = aux2;
+          break;
         }
-        if(drawingOut == Position(-1,-1)){
-          continue;
-          std::cerr << "wtf is happening, there should be a position" << endl;
-          
-        }
+      }
+      if(drawingOut == Position(-1,-1)){
+        continue;
+        std::cerr << "wtf is happening, there should be a position" << endl;
+        
+      }
 
-        paintv2(b.player(),sqaux.uDrawer,aux,drawingOut);
-        //paint(b.player(),sqaux.uDrawer,aux);
-      }
-      else if(sqaux.plDrawer != -1){
-        cerr << "at pos " << int(sqaux.pos().x) << "," << int(sqaux.pos().y) << ": "; 
-        cerr << "call to erasePath from popBubble because plDrawer is " << int(sqaux.plDrawer);
-        cerr << " and bubble is " << b.player() << endl;
-        erasePath(sqaux.uDrawer,aux);
-      }
+      paintv2(b.player(),sqaux.uDrawer,aux,drawingOut);
+      //paint(b.player(),sqaux.uDrawer,aux);
     }
+    else if(sqaux.plDrawer != -1){
+      std::cerr << "at pos " << int(sqaux.pos().x) << "," << int(sqaux.pos().y) << ": "; 
+      std::cerr << "call to erasePath from popBubble because plDrawer is " << int(sqaux.plDrawer);
+      std::cerr << " and bubble is " << b.player() << std::endl;
+      erasePath(sqaux.uDrawer,aux);
+    }
+    
   }
 
   vector<Position> affPos = {p+Direction::UL, p+Direction::UR, p+Direction::DL, p+Direction::DR, Position(p.x-2,p.y), 
@@ -1127,8 +1142,6 @@ void Board::useAbility(int plId, Position p){
           if(sq.plDrawer != plId){
             std::cerr << "square drawer is " << sq.plDrawer << " but plId is " << plId << endl;
             erasePath(sq.uDrawer,pos);
-            sq.plDrawer = -1;
-            sq.uDrawer = -1;
           }
           else if(sq.plDrawer == plId){
             if(i != xmin and i != xmax and j != ymin and j != ymax){
@@ -1278,6 +1291,7 @@ void Board::useAbility(int plId, Position p){
       if(info.posOk(pos)){
         Square sq = info.square(pos);
         if(sq.border() and sq.drawed()){
+          std::cerr << "pos " << i << "," << j << ", ";
           std::cerr << "Painting from ability" << endl;
           std::cerr << "plId = " << plId << ", uid = " << int(sq.uDrawer) << ", p = " << int(pos.x) << "," << int(pos.y) << endl;
           std::cerr << int(sq.plDrawer) << endl;
@@ -1298,6 +1312,8 @@ void Board::useAbility(int plId, Position p){
           }
 
           paintv2(plId,sq.uDrawer,pos,drawingOut);
+          cerr << endl << "printing map..." << endl;
+          printMatrix(info.square_map);
           //paint(plId,sq.uDrawer,pos);
         }
         else if(sq.drawed()){ //Specific case
@@ -1539,7 +1555,7 @@ void Board::computeEnergies(){
 
 void Board::executeRound(const vector<Player*>& pl){
 
-  //if(info.round() == 282) exit(1);
+  //if(info.round() == 81) exit(1);
 
   info.old_square_map = info.square_map;
 
