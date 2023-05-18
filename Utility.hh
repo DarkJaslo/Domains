@@ -175,6 +175,7 @@ public:
   Matrix(int rows, int cols);
   ~Matrix();
   T& operator[](Position);
+  T& operator[](Position)const;
   int rows()const;
   int cols()const;
 
@@ -203,6 +204,12 @@ Matrix<T>::~Matrix(){
 template<typename T>
 T& Matrix<T>::operator[](Position index){
   //cout << "operador" << endl;
+  if(index.x < 0 or index.x >= r) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
+  if(index.y < 0 or index.y >= c) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
+  return data[index.x*c+index.y];
+}
+template<typename T>
+T& Matrix<T>::operator[](Position index)const{
   if(index.x < 0 or index.x >= r) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
   if(index.y < 0 or index.y >= c) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
   return data[index.x*c+index.y];
