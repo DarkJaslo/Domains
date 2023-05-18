@@ -1,5 +1,6 @@
 #include "Game.hh"
 #include <thread>
+#include <unistd.h>
 
 //Game
 
@@ -8,6 +9,7 @@ Game::~Game(){
   std::cerr << "deleting game" << std::endl;
 }
 void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug, bool view, bool debug){
+  
   std::cerr << "starting game with seed " << seed << std::endl;
   std::vector<Player*> pl;
   //vector<string> names = {"Player1", "Player2"};

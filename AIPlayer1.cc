@@ -139,7 +139,7 @@ struct PLAYER_NAME : public Player{
         continue;
       }
       Position target;
-      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBonus,nullptr,true,me(),100);
+      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBonus,nullptr,true,me(),35);
       if(doesbfs){
         Position aux = unit(u[i]).position();
         if(target.x > aux.x){

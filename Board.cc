@@ -186,7 +186,6 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
       if(not info.square(p).border()){
         info.square_map[p].isBorder = true;
       }
-      if(debug) std::cerr << p.x << "," << p.y << " is border" << endl;
       if(p.x < xmin) xmin = p.x;
       if(p.x > xmax) xmax = p.x;
       if(p.y < ymin) ymin = p.y;
@@ -207,35 +206,10 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
 //used to flood
 #define COLORINDEX 10
 
-void Board::flood(int plId, int col, Position p, bool& flooded, bool& ok, vector<vector<Square>>& grid){
-
-  if(p.x >= 0 and p.y >= 0 and p.x < static_cast<int>(grid.size()) and p.y < static_cast<int>(grid[0].size()) and (not grid[p.x][p.y].border() or (grid[p.x][p.y].plPainter != plId and grid[p.x][p.y].plDrawer != plId)) and grid[p.x][p.y].plPainter < COLORINDEX){
-
-    //This region must not be painted
-    if(p.x == 0 or p.y == 0 or p.x == static_cast<int>(grid.size()-1) or p.y == static_cast<int>(grid[0].size()-1)){
-      if(debug) std::cerr << "don't need to flood here: ";
-      if(ok) ok = false;
-    }
-
-    if(debug) std::cerr << "flooding position " << p.x << "," << p.y << " with color " << col << endl;
-    grid[p.x][p.y].plPainter = col;
-    if(not flooded) flooded = true;
-    Position pp;
-    pp = p+Direction::up;
-    flood(plId,col,pp,flooded,ok,grid);
-    pp = p+Direction::down;
-    flood(plId,col,pp,flooded,ok,grid);
-    pp = p+Direction::left;
-    flood(plId,col,pp,flooded,ok,grid);
-    pp = p+Direction::right;
-    flood(plId,col,pp,flooded,ok,grid);
-  }
-}
-
 void Board::floodv2(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid){
   //borders are drawings and painted squares
   if(p.x < 0 or p.y < 0 or p.x >= grid.rows() or p.y >= grid.cols()){
-    cerr << "flood is bad. position: " << int(p.x) << "," << int(p.y) << ". Color = " << col << endl;
+    //cerr << "flood is bad. position: " << int(p.x) << "," << int(p.y) << ". Color = " << col << endl;
     if(correct) correct = false;
     return;
   }
@@ -245,7 +219,7 @@ void Board::floodv2(int plId, int uid, int col, Position p, bool& correct, Matri
     //else if(sq.plDrawer == plId) cerr << "found drawing at " << int(p.x) << "," << int(p.y) << endl;
     return;
   }
-  cerr << "flooded position " << int(p.x) << "," << int(p.y) << " with col " << col << endl;
+  //cerr << "flooded position " << int(p.x) << "," << int(p.y) << " with col " << col << endl;
   grid[p].plPainter = col;
   floodv2(plId,uid,col,p+NORMAL_DIRS[0],correct,grid);
   floodv2(plId,uid,col,p+NORMAL_DIRS[1],correct,grid);
@@ -265,7 +239,7 @@ void Board::perpendicularDirections(Direction dir, Direction& res1, Direction& r
 }
 
 Position Board::followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid){
-  cerr << "following drawing from " << int(act.x) << "," << int(act.y) << endl;
+  //cerr << "following drawing from " << int(act.x) << "," << int(act.y) << endl;
   if(act == Position(-1,-1)) return act;
   Direction d = act.to(ant);
   Position next;
@@ -275,184 +249,13 @@ Position Board::followDrawing(int uid, Position act, Position ant, Matrix<Square
     if(aux.x < 0 or aux.y < 0 or aux.x >= grid.rows() or aux.y >= grid.cols()) continue;
     Square sq = grid[aux];
     if(sq.uDrawer == uid){
-      cerr << "found next: " << int(aux.x) << "," << int(aux.y) << endl;
+      //cerr << "found next: " << int(aux.x) << "," << int(aux.y) << endl;
       return aux;
     }
   }
 
   //If it has not returned, end of drawing
   return Position(-1,-1);
-}
-
-void Board::paint(int plId, int uid, Position p){
-  std::cerr << "painting" << endl;
-  int xmin,xmax,ymin,ymax;
-  xmin = xmax = p.x;
-  ymin = ymax = p.y;
-  enclose(plId,uid,p,xmin,xmax,ymin,ymax);
-  std::cerr << "xmin: " << xmin << " xmax: " << xmax << " ymin: " << ymin << " ymax: " << ymax << endl;
-  deenclose(p);
-
-  vector<vector<Square>> box(xmax-xmin+1,vector<Square>(ymax-ymin+1));
-
-  //Copy the container box
-  for(int i = xmin; i <= xmax; ++i){
-    for(int j = ymin; j <= ymax; ++j){
-      box[i-xmin][j-ymin] = info.square_map[Position(i,j)];
-    }
-  }
-  int colIndex = COLORINDEX;
-  vector<int> colors; //stores all used colors
-  bool flooded = false;
-  bool correct = true;
-
-  //Floods all positions and stores which colors flooded a closed zone
-  for(int i = 1; i < static_cast<int>(box.size()-1); ++i){
-    for(int j = 1; j < static_cast<int>(box[0].size()-1); ++j){
-      if(box[i][j].plPainter != plId){
-        //std::cerr << "Flooding..." << endl;
-        flood(plId,colIndex,Position(i,j),flooded,correct,box);
-        if(flooded){
-          //std::cerr << "Flooded" << endl;
-
-
-
-          /*for(int ii = 0; ii < box.size(); ++ii){
-            for(int jj= 0; jj < box[ii].size(); ++jj){
-              std::cerr << box[ii][jj].painter() << " ";             
-            }
-            std::cerr << endl;
-          }*/
-
-
-
-
-          flooded = false;
-          if(correct){
-            /*if(debug)*/ std::cerr << "color " << colIndex << " flooded" << endl;
-            colors.push_back(colIndex);
-          }
-          else correct = true;
-          colIndex++;
-        }
-      }
-    }
-  }
-
-  if(debug) std::cerr << box.size() << " " << box[0].size() << endl;
-
-  //Paints all correctly flooded zones.
-  for(int i = 0; i < static_cast<int>(box.size()); ++i){
-    for(int j = 0; j < static_cast<int>(box[0].size()); ++j){
-      if(box[i][j].border() and box[i][j].plDrawer == plId){
-        /*if(debug)*/ std::cerr << "painting position " << xmin+i << "," << ymin+j << endl;
-        box[i][j].plPainter = plId;
-        box[i][j].plDrawer = -1;
-        box[i][j].uDrawer = -1;
-        continue;
-      }
-      if(box[i][j].plPainter >= info.numPlayers){
-        //std::cerr << "plpainter > 0" << endl;
-        bool found = false;
-        //std::cerr << "size: " << colors.size() << endl;
-        int k = 0;
-        while(not found and k < colors.size()){
-          //std::cerr << colors[k] << " ";
-          if(colors[k] == box[i][j].plPainter) found = true;
-          ++k;
-        }
-        //std::cerr << endl;
-        if(found){
-          std::cerr << "found valid color" << endl;
-          box[i][j].plPainter = plId;
-          if(box[i][j].drawed() and box[i][j].plDrawer != plId){
-            box[i][j].closes = true; //Used to identify to-be-erased squares
-          }
-          /*if(debug)*/ std::cerr << "painting position " << xmin+i << "," << ymin+j << endl;
-        }
-        else if(box[i][j].plDrawer == plId){
-          /*if(debug)*/ std::cerr << "painting position " << xmin+i << "," << ymin+j << endl;
-          box[i][j].plPainter = plId;
-          box[i][j].plDrawer = -1;
-          box[i][j].uDrawer = -1;
-        }
-      }
-    }
-  }
-
-
-  /*
-    for(int ii = 0; ii < box.size(); ++ii){
-      for(int jj= 0; jj < box[ii].size(); ++jj){
-        std::cerr << box[ii][jj].painter() << " ";             
-      }
-      std::cerr << endl;
-    }
-  */
-
-
-
-  //Copies the box back to the main grid
-  for(int i = xmin; i <= xmax; ++i){
-    for(int j = ymin; j <= ymax; ++j){
-      if(box[i-xmin][j-ymin].plPainter < info.numPlayers) info.square_map[Position(i,j)] = box[i-xmin][j-ymin];
-    }
-  }
-
-
-  std::cerr << "erasing drawings..." << endl;
-  //Erases drawings
-  for(int i = xmin; i <= xmax; ++i){
-    for(int j = ymin; j <= ymax; ++j){
-      Position pos(i,j);
-      if(info.square_map[pos].closes){
-        info.square_map[pos].closes = false;
-        if(info.square_map[pos].drawed()){
-          if(debug) std::cerr << "erasing drawing starting at " << i << "," << j << endl;
-          erasePath(info.square_map[pos].uDrawer,pos);
-        }
-      }
-    }
-  }
-
-
-  //Updates borders
-  std::cerr << "updating borders..." << endl;
-  for(int i = xmin-1; i <= xmax+1; ++i){
-    for(int j = ymin-1; j <= ymax+1; ++j){
-      Position pos = Position(i,j);
-      if(not info.posOk(pos)) continue;
-      if(info.square_map[pos].plPainter != plId) continue;
-      
-      bool border = false;
-      for(int i = 0; i < 1; ++i){
-        Position pos2 = pos+Direction::UL;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::up;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::UR;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::left;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::right;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::DL;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::down;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::DR;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-      }
-      
-      if(border){
-        if(not info.square_map[pos].border()) info.square_map[pos].isBorder = true;
-      }
-      else{
-        if(info.square_map[pos].border()) info.square_map[pos].isBorder = false;
-      }
-    }
-  }
-  std::cerr << "paint func end " << endl;
 }
 
 void printMatrix(Matrix<Square>& map){
@@ -484,7 +287,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     Intentar floodear pa los dos lados
     Pintar solo los dibujos del que pinta*/
 
-  cerr << "Painting at " << int(in.x) << "," << int(in.y) << endl;
+  if(paintDebug) cerr << "Painting at " << int(in.x) << "," << int(in.y) << endl;
 
   //Calculates the maximum subsection of the grid to paint
   int xmin,xmax,ymin,ymax;
@@ -493,7 +296,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   enclose(plId,uid,out,xmin,xmax,ymin,ymax);
   deenclose(out);
 
-  cerr << "Enclosed perimeter: " << xmin << "," << ymin << " " << xmax << "," << ymax << endl;
+  if(paintDebug) cerr << "Enclosed perimeter: " << xmin << "," << ymin << " " << xmax << "," << ymax << endl;
 
   int rows = xmax-xmin+1;
   int cols = ymax-ymin+1;
@@ -508,7 +311,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     }
   }
 
-  printMatrix(map);
+  if(paintDebug) printMatrix(map);
 
 
 
@@ -519,7 +322,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   Position ant = Position(in.x-xmin,in.y-ymin);
   Position next = followDrawing(uid,act,ant,map);
 
-  cerr << "Followed drawing #1" << endl;
+  if(paintDebug) cerr << "Followed drawing #1" << endl;
 
   vector<vector<bool>> visitedNext(xmax-xmin+1,vector<bool>(ymax-ymin+1,false));
 
@@ -527,7 +330,6 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   int colAct = COLORINDEX;
 
   //Follows the drawings and tries to flood
-  int intingcounter = 0;
 
   if(act == Position(-1,-1)){
     cerr << "el hormiguero" << endl;
@@ -556,51 +358,17 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       if(floodPos.x < 0 or floodPos.y < 0 or floodPos.x >= map.rows() or floodPos.y >= map.cols()) continue;
       if(map[floodPos].uDrawer == uid) continue;
       bool valid = true;
-      cerr << "floodingv2: colAct = " << colAct << ", pos = " << int(floodPos.x) << "," << int(floodPos.y) <<endl;
+      //cerr << "floodingv2: colAct = " << colAct << ", pos = " << int(floodPos.x) << "," << int(floodPos.y) <<endl;
       floodv2(plId,uid,colAct,floodPos,valid,map);
       if(valid){
         validColors.push_back(colAct);
-        cerr << "flood worked " << endl;
-        ++intingcounter;
-        if(intingcounter == 100) exit(1);
+        //cerr << "flood worked " << endl;
       }
       ++colAct;
     }
     ant = act;
     act = next;
     next = followDrawing(uid,act,ant,map);
-  }
-
-  if(false){
-    //Bloated
-    Direction d1 = Direction::null;
-    Direction d2 = Direction::null;
-    perpendicularDirections(act.to(ant),d1,d2);
-    if(d1 == Direction::null or d2 == Direction::null){
-      std::cerr << "wrong perpendicularDirections output, wtf" << endl;
-      exit(1);
-    }
-    vector<Direction> floodDirs;
-    floodDirs.reserve(2);
-    floodDirs.emplace_back(d1);
-    floodDirs.emplace_back(d2);
-
-    //Tries to flood
-    for(Direction d : floodDirs){
-      if(d == act.to(ant)) continue;
-      Position floodPos = act+d;
-      if(floodPos.x < 0 or floodPos.y < 0 or floodPos.x >= map.rows() or floodPos.y >= map.cols()) continue;
-      if(map[floodPos].uDrawer == uid) continue;
-      bool valid = true;
-      floodv2(plId,uid,colAct,floodPos,valid,map);
-      if(valid){
-        validColors.push_back(colAct);
-        cerr << "flood worked " << endl;
-        ++intingcounter;
-        if(intingcounter == 100) exit(1);
-      }
-      ++colAct;
-    }
   }
 
   //Paints correctly flooded squares
@@ -656,7 +424,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   }
 
   //Updates borders
-  std::cerr << "updating borders..." << endl;
+  if(paintDebug) std::cerr << "updating borders..." << endl;
   for(int i = xmin-1; i <= xmax+1; ++i){
     for(int j = ymin-1; j <= ymax+1; ++j){
       Position pos = Position(i,j);
@@ -695,7 +463,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
 }
 
 void Board::draw(int plId, int uid, Position pnew, Position pant){
-  if(debug) std::cerr << "drawing" << endl;
+  if(debug) std::cerr << "unit " << uid << " of player " << plId << " drawing" << endl;
   
   Square sant = info.square(pant);
   Square snew = info.square(pnew);
@@ -794,7 +562,6 @@ bool Board::executeOrder(int plId, Order ord){
   switch (ord.type){
   case OrderType::movement:{
     
-    if(debug) std::cerr << "movement" << endl;
     if(info.square(u.p).painter() != plId){ //Not on same-color domain
       if(isDiagonal(ord.dir)){
         std::cerr << "error: unit " << u.id_ << " cannot move diagonally here" << endl;
@@ -1312,8 +1079,8 @@ void Board::useAbility(int plId, Position p){
           }
 
           paintv2(plId,sq.uDrawer,pos,drawingOut);
-          cerr << endl << "printing map..." << endl;
-          printMatrix(info.square_map);
+          //cerr << endl << "printing map..." << endl;
+          //printMatrix(info.square_map);
           //paint(plId,sq.uDrawer,pos);
         }
         else if(sq.drawed()){ //Specific case
@@ -1595,7 +1362,11 @@ void Board::executeRound(const vector<Player*>& pl){
 void Board::printRound(){
   //std::cerr << endl << "Printing round " << info.round() << endl << endl;
 
-  if(info.round()==0) iniTimers();
+  if(info.round()==0){
+    iniTimers();
+    paintDebug = true;
+    debug = true;
+  }
 
   //VIEWER FORMAT
   if(view){
@@ -1629,7 +1400,7 @@ void Board::printRound(){
   //std::cerr << "totaltimer: " << fullTime << endl;
 
   //CONSOLE FORMAT
-  if(true){
+  if(debug){
     std::cerr << endl;
     for(int i = 0; i < info.boardHeight; ++i){
       for(int j = 0; j < info.boardWidth; ++j){

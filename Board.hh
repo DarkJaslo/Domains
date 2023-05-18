@@ -38,8 +38,6 @@ private:
   //Saves a rectangle (Position(xmin,ymin),Position(xmax,ymax)) to paint
   void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
 
-  void flood(int plId, int col, Position p, bool& flooded, bool& ok, std::vector<std::vector<Square>>& grid);
-
   void floodv2(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid);
 
   void perpendicularDirections(Direction dir, Direction& res1, Direction& res2);
@@ -47,8 +45,6 @@ private:
   Position followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid);
 
   //Seriously how the fuck do you do this
-
-  void paint(int plId, int uid, Position p);
 
   void paintv2(int plId, int uid, Position in, Position out);
 
@@ -126,6 +122,7 @@ private:
   std::vector<Position> attackedPositions;
   std::map<Position,std::pair<int,Position>> drawStartSquares;
   bool debug,view;
+  bool paintDebug;
 
   void iniTimers();
 
