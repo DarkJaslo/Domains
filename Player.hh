@@ -10,6 +10,7 @@ class Player : public PlayerOrders, public GameInfo{
   public:
   int me() const;
   virtual void play() = 0; 
+  ~Player();
 
   private:
   int id_;

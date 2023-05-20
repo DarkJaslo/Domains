@@ -24,7 +24,6 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
   //Hay que inicializar bien el tablero
   b.iniBoard(seed,rounds);
 
-
   /* CODE TO TEST THE RANDOMIZER
   
   int ntests = 1000000;

@@ -94,7 +94,6 @@ private:
   static std::vector<int> bubbleMovementCounters;
   static std::vector<int> bonusCounters;
 
-  static double squareTime;
 };
 
 #endif

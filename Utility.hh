@@ -177,7 +177,6 @@ public:
   Matrix(const Matrix& other);
   Matrix& operator=(const Matrix& other);
   //Move constructor
-  Matrix(Matrix&& other)noexcept;
   ~Matrix();
   inline T& operator[](Position);
   inline const T& operator[](Position)const;
@@ -232,18 +231,10 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other){
   return *this;
 }
 template<typename T>
-Matrix<T>::Matrix(Matrix&& other)noexcept{
-  r = other.r;
-  c = other.c;
-  size = other.size;
-  _ptr = other._ptr;
-
-  other._ptr = nullptr;
-  other.size = 0;
-}
-template<typename T>
 Matrix<T>::~Matrix(){
+  std::cerr << "destroy Matrix" << std::endl;
   delete[] _ptr;
+  std::cerr << "destroyed Matrix" << std::endl;
 }
 template<typename T>
 T& Matrix<T>::operator[](Position index){

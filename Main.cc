@@ -8,10 +8,7 @@ int main(int argc, char** argv){
 
   cout.setf(ios::fixed);
   cout.precision(3);
-
-  //float t1,t2;
-
-  //t1 = GetTime();
+  
   Timer timer("main",nullptr);
 
   //1:seed 2:pl1 3:pl2 4:pl3 5:pl4
@@ -41,8 +38,5 @@ int main(int argc, char** argv){
   g.play(names,atoi(argv[1]),false,show /*,true*/);
 
   cerr << "Fin main" << endl;
-
-  //t2 = GetTime();
-  //cerr << "Tiempo: " << t2-t1 << "ms" << endl;
   //exit(0);
 }

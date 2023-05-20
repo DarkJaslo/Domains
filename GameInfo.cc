@@ -1,7 +1,6 @@
 #include "GameInfo.hh"
 
 //Debug
-double GameInfo::squareTime;
 
 //Release
 int GameInfo::maxRounds;
@@ -61,7 +60,6 @@ int GameInfo::points(int pl){
   return playerPoints[pl];
 }
 Square GameInfo::square(const Position& p){
-  //Timer posTimer("square", &squareTime,false);
   if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) std::cerr << "Position is not valid (sq)" << std::endl;
   return square_map[p];
 }
@@ -148,10 +146,6 @@ void GameInfo::readSettings(){
   for(int i = 0; i < bonusVector.size(); ++i) bonusVector[i] = Bonus(i,Position(-1,-1));
   bonusCounters = std::vector<int>(bonusMax);
   for(int& c : bonusCounters) c = randomNumber(0,roundsPerBonus)-1;
-
-
-  //Debug
-  squareTime = 0;
 }
 
 bool GameInfo::posOk(const Position& p){
