@@ -101,6 +101,9 @@ private:
   //Spawns players
   void spawnPlayers();
 
+  //Prints the start squares of all units
+  void printStartSquares(const std::vector<std::pair<Position,Position>>& sqs);
+
   int seed;
   GameInfo info;
   std::vector<bool> killedUnits;
@@ -120,13 +123,9 @@ private:
 
   std::queue<FreeAttack> freeAttacks; 
   std::vector<Position> attackedPositions;
-  std::map<Position,std::pair<int,Position>> drawStartSquares;
+  std::vector<std::pair<Position,Position>> drawStarts;  //First position is origin, second is first drawed Square
   bool debug,view;
   bool paintDebug;
-
-  void iniTimers();
-
-  double timePrint;
-  double timeOrders;
-  double timeCopy;
+  bool debugDrawErase;
+  bool debugOrders;
 };
