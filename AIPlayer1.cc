@@ -18,6 +18,41 @@ struct PLAYER_NAME : public Player{
   };
 
   bool isDiagonal(Direction d){return d >= Direction::UL;}
+  Direction decide(Position pos){
+    if(pos.x < 0 and pos.y < 0){
+      int rand = randomNumber(0,1);
+      if(rand == 0){return Direction::up;}
+      return Direction::left;
+    }
+    else if(pos.x > 0 and pos.y > 0){
+      int rand = randomNumber(0,1);
+      if(rand == 0){return Direction::down;}
+      return Direction::right;
+    }
+    else if(pos.x < 0){
+      int rand = randomNumber(0,1);
+      if(rand == 0){return Direction::up;}
+      return Direction::right;
+    }
+    else if(pos.y < 0){
+      int rand = randomNumber(0,1);
+      if(rand == 0){return Direction::down;}
+      return Direction::left;
+    }
+    else if(pos.x == 0){
+      if(pos.y < 0){
+        return Direction::left;
+      }
+      return Direction::right;
+    }
+    else if(pos.y == 0){
+      if(pos.x < 0){
+        return Direction::up;
+      }
+      return Direction::down;
+    }
+    return Direction::null;
+  }
 
   template<typename T>
   bool contains(set<T>& set, const T& value){
@@ -139,24 +174,16 @@ struct PLAYER_NAME : public Player{
         continue;
       }
       Position target;
-      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBonus,nullptr,true,me(),35);
+      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBonus,nullptr,true,me(),50);
       if(doesbfs){
         Position aux = unit(u[i]).position();
-        if(target.x > aux.x){
-          move(u[i],Direction::down);
-        }
-        else if(target.x < aux.x){
-          move(u[i],Direction::up);
-        }
-        else if(target.y > aux.y){
-          move(u[i],Direction::right);
-        }
-        else if(target.y < aux.y){
-          move(u[i],Direction::left);
-        }
+
+        Position vector = Position(target.x-aux.x,target.y-aux.y);
+
+        Direction where = decide(vector);
+        move(u[i],where);
       }
     }
-
 
     if(round() == 499){
       cerr << "time for PLAYER1: " << time << endl;
