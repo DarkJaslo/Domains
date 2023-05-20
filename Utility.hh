@@ -173,15 +173,21 @@ class Matrix{
 public:
   Matrix();
   Matrix(int rows, int cols);
+  //Copy constructor
+  Matrix(const Matrix& other);
+  Matrix& operator=(const Matrix& other);
+  //Move constructor
+  Matrix(Matrix&& other)noexcept;
   ~Matrix();
-  T& operator[](Position);
-  T& operator[](Position)const;
-  int rows()const;
-  int cols()const;
+  inline T& operator[](Position);
+  inline const T& operator[](Position)const;
+  inline int rows()const;
+  inline int cols()const;
 
 private:
   int r,c;
-  std::vector<T> data;
+  T* _ptr = nullptr;
+  //std::vector<T> data;
   size_t size;
 };
 
@@ -190,29 +196,66 @@ template<typename T>
 Matrix<T>::Matrix(){
   r = 0; c = 0;
   size = 0;
+  _ptr = nullptr;
 }
 template<typename T>
 Matrix<T>::Matrix(int rows, int cols){
   r = rows;   c = cols;
   size = r*c;
-  data = std::vector<T>(size);
+  _ptr = new T[size];
+}
+template<typename T>
+Matrix<T>::Matrix(const Matrix<T>& other){
+  r = other.r;
+  c = other.c;
+  size = other.size;
+  if(_ptr != nullptr){
+    delete[] _ptr;
+  }
+  _ptr = new T[size];
+  for(int i = 0; i < size; ++i){
+    _ptr[i] = other._ptr[i];
+  }
+}
+template <typename T>
+Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other){
+  r = other.r;
+  c = other.c;
+  size = other.size;
+  if(_ptr != nullptr){
+    delete[] _ptr;
+  }
+  _ptr = new T[size];
+  for(int i = 0; i < size; ++i){
+    _ptr[i] = other._ptr[i];
+  }
+  return *this;
+}
+template<typename T>
+Matrix<T>::Matrix(Matrix&& other)noexcept{
+  r = other.r;
+  c = other.c;
+  size = other.size;
+  _ptr = other._ptr;
+
+  other._ptr = nullptr;
+  other.size = 0;
 }
 template<typename T>
 Matrix<T>::~Matrix(){
-  //cerr << "destructing matrix" << endl;
+  delete[] _ptr;
 }
 template<typename T>
 T& Matrix<T>::operator[](Position index){
-  //cout << "operador" << endl;
   if(index.x < 0 or index.x >= r) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
   if(index.y < 0 or index.y >= c) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
-  return data[index.x*c+index.y];
+  return _ptr[index.x*c+index.y];
 }
 template<typename T>
-T& Matrix<T>::operator[](Position index)const{
+const T& Matrix<T>::operator[](Position index)const{
   if(index.x < 0 or index.x >= r) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
   if(index.y < 0 or index.y >= c) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
-  return data[index.x*c+index.y];
+  return _ptr[index.x*c+index.y];
 }
 template<typename T>
 int Matrix<T>::rows()const{return r;}
