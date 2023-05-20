@@ -87,7 +87,6 @@ void Board::iniBoard(int s, int rounds){
       info.square_map[ij] = sq;
     }
   }
-  std::cerr << "sqmap  " << info.square_map[Position(0,36)].painter() << endl;
 
   std::cerr << "Initializing units..." << endl;
   //Size may change when other unit types are introduced
@@ -117,7 +116,7 @@ bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(inf
 
 void Board::i_erasePath(int uid, Position p){
   if(info.posOk(p) and info.square_map[p].uDrawer == uid){
-    std::cerr << "erased drawing in " << int(p.x) << "," << int(p.y) << endl;
+    if(debug) std::cerr << "erased drawing in " << int(p.x) << "," << int(p.y) << endl;
     Square sq = info.square(p);
     sq.uDrawer = -1;
     sq.plDrawer = -1;
@@ -135,7 +134,7 @@ void Board::i_erasePath(int uid, Position p){
 }
 
 void Board::erasePath(int uid, Position p){
-  cerr << "erasing in " << int(p.x) << "," << int(p.y) << endl;
+  if(debug) std::cerr << "erasing in " << int(p.x) << "," << int(p.y) << "(uid: " << uid << ")" << std::endl;
   map<Position,pair<int,Position>>::iterator it;
   for(it = drawStartSquares.begin(); it != drawStartSquares.end(); ++it){
     if(it->second.first == uid){
@@ -144,9 +143,13 @@ void Board::erasePath(int uid, Position p){
   }
   if(it == drawStartSquares.end()){
     cerr << "drawing start square not found" << endl;
-    //exit(1);
+    for(auto itaux = drawStartSquares.begin(); itaux != drawStartSquares.end(); ++itaux){
+      std::cerr << int(itaux->first.x) << "," << int(itaux->first.y) << " by unit " << itaux->second.first << std::endl;
+    }
+    exit(1);
   }
   else{
+    if(debug) std::cerr << "erasing starting position" << std::endl;
     drawStartSquares.erase(it);
   }
   
@@ -154,9 +157,18 @@ void Board::erasePath(int uid, Position p){
 }
 
 void Board::killUnit(Unit& u){
+  if(debug) std::cerr << "killing unit " << u.id() << " by " << u.player() << std::endl;
   u.pl = -1;
   info.square_map[u.p].u = nullptr;
-  erasePath(u.id_,u.p);
+
+  //find start square of drawing
+  for(auto it = drawStartSquares.begin(); it != drawStartSquares.end(); ++it){
+    if(it->second.first == u.id()){
+      erasePath(it->second.first,it->second.second);
+      break;
+    }
+  }
+  
   killedUnits[u.id_] = true;
 }
 
@@ -180,7 +192,7 @@ void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ym
   //std::cerr << "enclosing " << int(p.x) << "," << int(p.y)  << endl;
   if(info.posOk(p)){
     if(info.square(p).closes) return;
-    if(info.square(p).border() or info.square(p).uDrawer == uid)
+    if(info.square(p).uDrawer == uid or (info.square(p).painter() == plId and info.square(p).border()))
     {
       info.square_map[p].closes = true;
       if(not info.square(p).border()){
@@ -311,11 +323,16 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     }
   }
 
+
   if(paintDebug) printMatrix(map);
 
-
-
-
+  //Erases the start square
+  for(auto it = drawStartSquares.begin(); it != drawStartSquares.end(); ++it){
+    if(it->second.first == uid){
+      drawStartSquares.erase(it);
+      break;
+    }
+  }
 
   //Variables to follow the drawing and flood
   Position act = Position(out.x-xmin,out.y-ymin);
@@ -396,7 +413,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
 
         //Erases all drawings
         if(info.square(sqpos).drawed() and info.square(sqpos).uDrawer != uid){
-          cerr << "ERASING PATH AT " << i <<"," << j << endl;
+          if(debug) std::cerr << std::endl <<"ERASING PATH THAT STARTED AT " << i <<"," << j << std::endl << std::endl;
           erasePath(info.square(sqpos).uDrawer,sqpos);
         }
       }
@@ -471,7 +488,7 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
   
   if(snew.drawed() /*and snew.uDrawer != uid*/){
     //if you step on someone else's drawing, erase it
-    std::cerr << "erasing path at " << int(snew.pos().x) << "," << int(snew.pos().y) << endl;
+    if(debug) std::cerr << "erasing path at " << int(snew.pos().x) << "," << int(snew.pos().y) << endl;
     erasePath(snew.uDrawer,pnew);
     sant = info.square(pant);
   }
@@ -496,10 +513,11 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
 }
 
 int Board::fight(Unit& u1, Unit& u2, FightMode fm){
-  if(debug) std::cerr << "fighting" << endl;
+  if(debug) std::cerr << "fighting, ";
   //Transformations to energy if needed
 
-  int e1,e2;
+  int e1 = 0;
+  int e2 = 0;
   int winner = -1;
   if(fm == FightMode::Fair)  //Uses random numbers to decide
   {  
@@ -520,6 +538,8 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
       }
     }
   }
+
+  if(debug) std::cerr << "winner: " << winner << std::endl;
 
   //Kill unit, give points and subtract energy
   if(winner == u1.id()){
@@ -907,8 +927,11 @@ void Board::useAbility(int plId, Position p){
         }
         if(sq.drawed()){
           if(sq.plDrawer != plId){
-            std::cerr << "square drawer is " << sq.plDrawer << " but plId is " << plId << endl;
+            std::cerr << "square drawer is " << int(sq.plDrawer) << " but plId is " << plId << std::endl;
+            std::cerr << "erasing path" << std::endl;
+            
             erasePath(sq.uDrawer,pos);
+            sq = info.square(pos); //updating            
           }
           else if(sq.plDrawer == plId){
             if(i != xmin and i != xmax and j != ymin and j != ymax){
@@ -1079,9 +1102,6 @@ void Board::useAbility(int plId, Position p){
           }
 
           paintv2(plId,sq.uDrawer,pos,drawingOut);
-          //cerr << endl << "printing map..." << endl;
-          //printMatrix(info.square_map);
-          //paint(plId,sq.uDrawer,pos);
         }
         else if(sq.drawed()){ //Specific case
           sq.uDrawer = -1;
@@ -1401,7 +1421,10 @@ void Board::printRound(){
 
   //CONSOLE FORMAT
   if(debug){
-    std::cerr << endl;
+
+    printMatrix(info.square_map);
+
+    /*std::cerr << endl;
     for(int i = 0; i < info.boardHeight; ++i){
       for(int j = 0; j < info.boardWidth; ++j){
         
@@ -1416,7 +1439,7 @@ void Board::printRound(){
       }
       std::cerr << endl;
     }
-    std::cerr << endl;
+    std::cerr << endl;*/
   }
 }
 
