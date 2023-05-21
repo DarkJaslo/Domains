@@ -232,9 +232,7 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other){
 }
 template<typename T>
 Matrix<T>::~Matrix(){
-  std::cerr << "destroy Matrix" << std::endl;
   delete[] _ptr;
-  std::cerr << "destroyed Matrix" << std::endl;
 }
 template<typename T>
 T& Matrix<T>::operator[](Position index){
