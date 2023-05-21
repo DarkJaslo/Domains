@@ -128,4 +128,5 @@ private:
   bool paintDebug;
   bool debugDrawErase;
   bool debugOrders;
+  bool debugBasic;
 };

@@ -56,18 +56,18 @@ Board::Board(){debug = false; view = true; info.numPlayers = 4; }
 Board::Board(bool d, bool v, int nplayers){debug = d; view = v; info.numPlayers = nplayers;}
 
 void Board::iniBoard(int s, int rounds){
-  std::cerr << "Initializing board..." << endl;
+  if(debugBasic) std::cerr << "Initializing board..." << endl;
   seed = s;
   randind = seed%randsize();
   jump = seed%randjump()+1;   //+1 to avoid jump = 0
-  std::cerr << "Reading settings..." << endl;
+  if(debugBasic) std::cerr << "Reading settings..." << endl;
   info.maxRounds = rounds;
   info.readSettings();
   //std::cerr << "Read all settings" << endl;
 
-  std::cerr << "Initializing squares..." << endl;
-  info.game_map = vector<vector<char>>(info.boardHeight,vector<char>(info.boardWidth,'.'));
-  //info.square_map = vector<vector<Square>>(info.boardHeight,vector<Square>(info.boardWidth));
+  if(debugBasic) std::cerr << "Initializing squares..." << endl;
+  
+  //info.game_map = vector<vector<char>>(info.boardHeight,vector<char>(info.boardWidth,'.'));
   Matrix<Square> aux(info.boardHeight,info.boardWidth);
   info.square_map = aux;
   for(int i = 0; i < info.square_map.rows(); ++i){
@@ -88,7 +88,7 @@ void Board::iniBoard(int s, int rounds){
     }
   }
 
-  std::cerr << "Initializing units..." << endl;
+  if(debugBasic) std::cerr << "Initializing units..." << endl;
   //Size may change when other unit types are introduced
   info.unitsVector.reserve(info.unitsMax*info.numPlayers);
   drawStarts = std::vector<std::pair<Position,Position>>(info.unitsMax*info.numPlayers,make_pair(Position(-1,-1),Position(-1,-1)));
@@ -105,12 +105,9 @@ void Board::iniBoard(int s, int rounds){
     ));
   }
   //std::cerr << "Initialization ended successfully" << endl;
-  std::cerr << "Spawning players..." << endl;
+  if(debugBasic) std::cerr << "Spawning players..." << endl;
   spawnPlayers();
-  
-  
-  std::cerr << "Board successfully initialized" << endl;
-
+  if(debugBasic) std::cerr << "Board successfully initialized" << endl;
 }
 
 bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
@@ -122,15 +119,11 @@ void Board::i_erasePath(int uid, Position p){
     sq.uDrawer = -1;
     sq.plDrawer = -1;
     info.square_map[p] = sq;
-    Position pp;
-    pp = p+Direction::up;
-    i_erasePath(uid,pp);
-    pp = p+Direction::down;
-    i_erasePath(uid,pp);
-    pp = p+Direction::left;
-    i_erasePath(uid,pp);
-    pp = p+Direction::right;
-    i_erasePath(uid,pp);
+
+    i_erasePath(uid,p+Direction::up);
+    i_erasePath(uid,p+Direction::down);
+    i_erasePath(uid,p+Direction::left);
+    i_erasePath(uid,p+Direction::right);
   }
 }
 
@@ -139,8 +132,7 @@ void Board::erasePath(int uid, Position p){
   if(debugDrawErase)std::cerr << "erasing starting position by unit " << uid << std::endl;
   drawStarts[uid].first = Position(-1,-1);
 
-  printStartSquares(drawStarts);
-  
+  //printStartSquares(drawStarts);
   i_erasePath(uid,p);
 }
 
@@ -156,19 +148,14 @@ void Board::killUnit(Unit& u){
 }
 
 void Board::deenclose(Position p){
-  if(info.posOk(p)){
-    if(info.square(p).closes){
-      info.square_map[p].closes = false;
-      Position pp = p+Direction::up;
-      deenclose(pp);
-      pp = p+Direction::down;
-      deenclose(pp);
-      pp = p+Direction::left;
-      deenclose(pp);
-      pp = p+Direction::right;
-      deenclose(pp);
-    }
-  }
+  if(not info.posOk(p)) return;
+  if(not info.square(p).closes) return;
+  
+  info.square_map[p].closes = false;
+  deenclose(p+Direction::up);
+  deenclose(p+Direction::down);
+  deenclose(p+Direction::left);
+  deenclose(p+Direction::right);
 }
 
 void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax){
@@ -278,9 +265,8 @@ void printMatrix(Matrix<Square>& map){
 }
 
 void Board::paintv2(int plId, int uid, Position in, Position out){
-  /*Seguir el dibujo pa atras
-    Intentar floodear pa los dos lados
-    Pintar solo los dibujos del que pinta*/
+
+  /*Follows the drawing and tries to flood perpendicularly*/
 
   if(paintDebug) cerr << "Painting at " << int(in.x) << "," << int(in.y) << endl;
 
@@ -306,7 +292,6 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     }
   }
 
-
   if(paintDebug) printMatrix(map);
 
   //Erase starting position
@@ -326,9 +311,6 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
 
   //Follows the drawings and tries to flood
 
-  if(act == Position(-1,-1)){
-    cerr << "el hormiguero" << endl;
-  }
   //bool iterated = false;
   while(act != Position(-1,-1) and not visitedNext[act.x][act.y]){
     
@@ -338,7 +320,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     Direction d2 = Direction::null;
     perpendicularDirections(act.to(ant),d1,d2);
     if(d1 == Direction::null or d2 == Direction::null){
-      std::cerr << "wrong perpendicularDirections output, wtf" << endl;
+      std::cerr << "wrong perpendicularDirections() output, wtf" << endl;
       exit(1);
     }
     vector<Direction> floodDirs;
@@ -353,11 +335,9 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       if(floodPos.x < 0 or floodPos.y < 0 or floodPos.x >= map.rows() or floodPos.y >= map.cols()) continue;
       if(map[floodPos].uDrawer == uid) continue;
       bool valid = true;
-      //cerr << "floodingv2: colAct = " << colAct << ", pos = " << int(floodPos.x) << "," << int(floodPos.y) <<endl;
       floodv2(plId,uid,colAct,floodPos,valid,map);
       if(valid){
         validColors.push_back(colAct);
-        //cerr << "flood worked " << endl;
       }
       ++colAct;
     }
@@ -552,25 +532,24 @@ bool Board::executeOrder(int plId, Order ord){
   if(debugOrders) std::cerr << ord.dir << " " <<ord.type << " " << ord.unitId << endl;
 
   if(not unitOk(ord.unitId)){
-    std::cerr << "error: unit " << ord.unitId << " is not valid" << endl;
+    std::cerr << "warning: unit " << ord.unitId << " is not valid" << endl;
     return false;
   }
 
   //Unit is valid
   Unit u = info.unitsVector[ord.unitId];
   if(u.pl != plId){
-    if(not killedUnits[u.id_]) std::cerr << "error: unit " << u.id_ << " is not controlled by the player " << plId << endl;
+    if(not killedUnits[u.id_]) std::cerr << "warning: unit " << u.id_ << " is not controlled by the player " << plId << std::endl;
     return false;
   }
 
   //Unit is controlled by the player
-
   switch (ord.type){
   case OrderType::movement:{
     
     if(info.square(u.p).painter() != plId){ //Not on same-color domain
       if(isDiagonal(ord.dir)){
-        std::cerr << "error: unit " << u.id_ << " cannot move diagonally here" << endl;
+        std::cerr << "warning: unit " << u.id() << " by player " << u.player() << " cannot move diagonally here" << std::endl;
         return false;
       }
     }
@@ -588,18 +567,16 @@ bool Board::executeOrder(int plId, Order ord){
     
     Square sq = info.square(newPos);
     Square act = info.square(u.p);
-    if(act.ability() and not sq.ability() and act.painted() and act.painter() != u.player()){
+    if(act.ability() and not sq.ability() and act.painted() and act.painter() != u.player()){ //Ability border
       return false;
     }
     if(((not act.ability()) or (act.ability() and act.painter() == u.player())) and sq.ability() and sq.painted() and sq.painter() != u.player()){
       return false;
     }
 
-    if(sq.hasUnit()){
+    if(sq.hasUnit()){ //Fight
 
-      if(sq.unit().player() == u.player()){
-        return false;
-      }
+      if(sq.unit().player() == u.player()) return false; 
 
       FightMode fm = FightMode::Fair;
       if(isDiagonal(sq.p.to(u.p)) and sq.unit().player() != sq.painter())
@@ -610,7 +587,7 @@ bool Board::executeOrder(int plId, Order ord){
         return true;
       }
     }
-    else if(sq.hasBonus()){
+    else if(sq.hasBonus()){ //Try to take -> consume
       if(info.bonusPlayers[plId] < info.bonusMax and not info.unitsVector[u.id()].upg){
         info.bonusPlayers[plId]++;
         info.unitsVector[u.id_].upg = true;
@@ -621,7 +598,7 @@ bool Board::executeOrder(int plId, Order ord){
       info.bonusVector[bid].p = Position(-1,-1);
       info.bonusCounters[bid] = GameInfo::randomNumber(0,info.roundsPerBonus)-1;
     }
-    else if(sq.hasBubble()){
+    else if(sq.hasBubble()){ //Pop if ally, change colour and activate rounds to pop if enemy
       Bubble bb = sq.bubble();
 
       if(bb.player() == u.player()){
@@ -634,6 +611,8 @@ bool Board::executeOrder(int plId, Order ord){
         return false;
       }
     }
+
+    //Move
     info.unitsVector[u.id()].p = newPos;
     info.square_map[newPos].u = &info.unitsVector[u.id()];
     info.square_map[actPos].u = nullptr;
@@ -646,7 +625,7 @@ bool Board::executeOrder(int plId, Order ord){
     //Compute attacked position
     Position attacked = u.p + ord.dir;
     if(not info.posOk(attacked)){
-      std::cerr << "attacking an invalid position" << endl;
+      std::cerr << "warning: unit " << u.id() << "by player " << u.player() <<  " attacked an invalid position" << std::endl;
       return false;
     }
     Square sq = info.square(attacked);
@@ -823,12 +802,13 @@ void Board::popBubble(Position p, bool isForced){
       }
     }
     else if(sqaux.plDrawer != -1){
-      std::cerr << "at pos " << int(sqaux.pos().x) << "," << int(sqaux.pos().y) << ": "; 
-      std::cerr << "call to erasePath from popBubble because plDrawer is " << int(sqaux.plDrawer);
-      std::cerr << " and bubble is " << b.player() << std::endl;
+      if(debug){
+        std::cerr << "at pos " << int(sqaux.pos().x) << "," << int(sqaux.pos().y) << ": "; 
+        std::cerr << "call to erasePath from popBubble because plDrawer is " << int(sqaux.plDrawer);
+        std::cerr << " and bubble is " << b.player() << std::endl;
+      }
       erasePath(sqaux.uDrawer,aux);
     }
-    
   }
 
   vector<Position> affPos = {p+Direction::UL, p+Direction::UR, p+Direction::DL, p+Direction::DR, Position(p.x-2,p.y), 
@@ -947,6 +927,7 @@ void Board::useAbility(int plId, Position p){
     }
   }
 
+  //Prints ability
   if(debug){
     std::cerr << "printing ability " << endl;
     for(int i = xmin; i <= xmax; ++i){
@@ -1082,8 +1063,8 @@ void Board::useAbility(int plId, Position p){
       if(info.posOk(pos)){
         Square sq = info.square(pos);
         if(sq.border() and sq.drawed()){
-          if(debug) std::cerr << "drawer is " << int(sq.uDrawer) << std::endl;
           if(debug){
+            std::cerr << "drawer is " << int(sq.uDrawer) << std::endl;
             std::cerr << "pos " << i << "," << j << ", ";
             std::cerr << "Painting from ability" << endl;
             std::cerr << "plId = " << plId << ", uid = " << int(sq.uDrawer) << ", p = " << int(pos.x) << "," << int(pos.y) << endl;
@@ -1101,7 +1082,7 @@ void Board::useAbility(int plId, Position p){
             }
           }
           if(drawingOut == Position(-1,-1)){
-            if(debug) std::cerr << "didn't find out position" << std::endl;
+            if(debug) std::cerr << "didn't find out drawing position" << std::endl;
             info.square_map[pos].uDrawer = -1;
             info.square_map[pos].plDrawer = -1;
             continue;
@@ -1123,19 +1104,19 @@ void Board::resolveAbilities(){
   if(abilityUnits.size() == 0) return;
   if(abilityUnits.size() == 1){
     Unit u = GameInfo::unit(abilityUnits[0]);
-    cerr << "unit " << u.id() << " by player " << u.player() << " using ability" << endl;
+    if(debug) std::cerr << "unit " << u.id() << " by player " << u.player() << " using ability" << std::endl;
     useAbility(u.player(),u.position());
     info.unitsVector[u.id()].upg = false;
     info.bonusPlayers[u.player()]--;
     abilityUnits.clear();
     return;
   }
-  std::cerr << "ability conflicts can occur" << endl;
-  std::cerr<< "units that can use the ability:" << endl;
+  if(debug) std::cerr << "ability conflicts can occur" << endl;
+  if(debug) std::cerr<< "units that can use the ability:" << endl;
   for(int i = 0; i < abilityUnits.size(); ++i){
-    cerr << abilityUnits[i] << " ";
+    if(debug) std::cerr << abilityUnits[i] << " ";
   }
-  cerr << endl;
+  if(debug) std::cerr << std::endl;
 
   //Conflicts can occur, organize data
   vector<pair<int,Position>> unitsMap(info.numPlayers,make_pair(-1,Position(-1,-1)));
@@ -1240,13 +1221,13 @@ void Board::getPlayerSquares(){
       int painter = info.square_map[ij].painter();
       if(painter >= 0){
         if(painter >= info.numPlayers){
-          std::cerr << "painter is " << painter << endl;
-          std::cerr << i << "," << j << endl;
+          std::cerr << "AT getPlayerSquares(), painter is " << painter << std::endl;
+          std::cerr << "position " <<  i << "," << j << std::endl;
           exit(1);
         }
         info.player_squares[painter].push_back(Position(i,j));
 
-        //Decrement ability counter
+        //Decrement ability counter of all squares
         if(info.square_map[ij].isAbility){
           if(--info.square_map[ij].counter == 0){
             info.square_map[ij].isAbility = false;
@@ -1304,11 +1285,9 @@ void Board::respawn(){
       }
     }
     if(x == -1 or y == -1){
-      std::cerr << "error: respawn() with bonus is not working properly" << endl;
+      std::cerr << "error: respawn() with bonus is not working properly" << std::endl;
       exit(1);
     }
-    //std::cerr << "SPAWNING BONUS AT POS " << x << "," << y << endl;
-    //exit(1);
 
     //find free bonus
     int index = -1;
@@ -1328,8 +1307,6 @@ void Board::respawn(){
     info.bonusCounters[index] = 0;
     ++info.currentBonuses;
  }
-  
-  
 }
 
 void Board::computeEnergies(){
@@ -1351,7 +1328,7 @@ void Board::executeRound(const vector<Player*>& pl){
   //if(info.round() == 81) exit(1);
 
   info.old_square_map = info.square_map;
-  std::cerr << "Executing round " << info.round() << endl;
+  if(debugBasic) std::cerr << "Executing round " << info.round() << endl;
 
   killedUnits = vector<bool>(info.unitsMax*info.numPlayers,false);
   for(int i = 0; i < pl.size(); ++i){
@@ -1364,22 +1341,22 @@ void Board::executeRound(const vector<Player*>& pl){
       }
     }
   }
-  std::cerr << "\texecuting free attacks..." << endl;
+  if(debugBasic) std::cerr << "\texecuting free attacks..." << endl;
   performFreeAttacks();
-  std::cerr << "\tpopping bubbles..." << endl;
+  if(debugBasic) std::cerr << "\tpopping bubbles..." << endl;
   popBubbles();
-  std::cerr << "\tresolving abilities..." << endl;
+  if(debugBasic) std::cerr << "\tresolving abilities..." << endl;
   resolveAbilities();
   
-  std::cerr << "\tmoving bubbles..." << endl;
+  if(debugBasic) std::cerr << "\tmoving bubbles..." << endl;
   moveBubbles();
-  std::cerr << "\tgetting player squares..." << endl;
+  if(debugBasic) std::cerr << "\tgetting player squares..." << endl;
   getPlayerSquares();
-  std::cerr << "\trespawning..." << endl;
+  if(debugBasic) std::cerr << "\trespawning..." << endl;
   respawn();
-  std::cerr << "\tcomputing energies..." << endl;
+  if(debugBasic) std::cerr << "\tcomputing energies..." << endl;
   computeEnergies();
-  std::cerr << "\tgiving board points..." << endl;
+  if(debugBasic) std::cerr << "\tgiving board points..." << endl;
   giveBoardPoints();
 }
 
@@ -1387,6 +1364,7 @@ void Board::printRound(){
   //std::cerr << endl << "Printing round " << info.round() << endl << endl;
 
   if(info.round()==0){
+    debugBasic = true;
     paintDebug = false;
     debug = true;
     debugDrawErase = false;
@@ -1413,7 +1391,6 @@ void Board::printRound(){
         }
         else if(sq.hasBonus()){
           cout << ucode(true);
-          //std::cerr << "PRINTING BONUS " << endl << endl;
         } 
         else cout << ucode(false);
       }
@@ -1423,25 +1400,7 @@ void Board::printRound(){
 
   //CONSOLE FORMAT
   if(debug){
-
     printMatrix(info.square_map);
-
-    /*std::cerr << endl;
-    for(int i = 0; i < info.boardHeight; ++i){
-      for(int j = 0; j < info.boardWidth; ++j){
-        
-        Square sq = info.square(Position(i,j));
-        if(sq.hasUnit()) std::cerr << 'u';
-        else if(sq.painted()) std::cerr << int(sq.plPainter);
-        else if(sq.drawed()) std::cerr << 'd';
-        else if(sq.hasBubble()) std::cerr << 'b';
-        else if(sq.hasBonus()) std::cerr << 'B';
-        else std::cerr << '.';
-        if(j < info.boardWidth-1) std::cerr << " ";
-      }
-      std::cerr << endl;
-    }
-    std::cerr << endl;*/
   }
 
   //if(info.round() == 109) exit(1);
