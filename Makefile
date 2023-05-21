@@ -7,7 +7,10 @@ PLAYERS_OBJ = $(patsubst %.cc, %.o, $(PLAYERS_SRC)) #$(EXTRA_OBJ) $(DUMMY_OBJ)
 COMP = g++
 CC = Register.cc Player.cc Board.cc Utility.cc PlayerOrders.cc GameInfo.cc Game.cc Main.cc
 OBJ = Register.o Player.o Board.o Utility.o PlayerOrders.o GameInfo.o Game.o Main.o 
-CFLAGS = -Wall -O3 -Wno-sign-compare
+CFLAGS = -Wall -O3 -Wno-sign-compare 
+
+# DEBUG  -g -O0 -fno-inline -D_GLIBCXX_DEBUG
+# RUN -O3
 
 Game.exe:${OBJ} ${PLAYERS_OBJ}
 	${COMP} ${CFLAGS} -o $@ ${OBJ} ${PLAYERS_OBJ}
