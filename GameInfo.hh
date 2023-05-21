@@ -6,6 +6,7 @@
 class GameInfo{
 public:
 
+  ~GameInfo();
   //Returns the number of columns the board has
   static int cols();
   //returns the number of rows the board has

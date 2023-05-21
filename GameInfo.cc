@@ -49,6 +49,9 @@ std::vector<int> GameInfo::bonusCounters;
 
 
 
+GameInfo::~GameInfo(){
+  std::cerr << "destructing GameInfo" << std::endl;
+}
 int GameInfo::cols(){return boardWidth;}
 int GameInfo::rows(){return boardHeight;}
 int GameInfo::round(){return GameInfo::currentRound;}
