@@ -1,12 +1,10 @@
-petar burbujas dentro de rango de habilidad
-
 primero genera la habilidad y luego pinta, puede evitar pintar según que trozos (es realmente un bug?)
 
 los dibujos de otra unidad de mi team cuentan como frontera para el flood cuando se usa habilidad por ejemplo
   pero quizás no están dentro aun sino que están fuera 
     guardar qué uids son "correctos" para usar como frontera
 
-las órdenes no se ejecutan en orden random aún
+  arréglalo que hace cosas raras a veces
 
 a veces al final de todo hace free() invalid pointer, después del main
   -doble free
