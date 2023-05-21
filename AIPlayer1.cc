@@ -29,16 +29,6 @@ struct PLAYER_NAME : public Player{
       if(rand == 0){return Direction::down;}
       return Direction::right;
     }
-    else if(pos.x < 0){
-      int rand = randomNumber(0,1);
-      if(rand == 0){return Direction::up;}
-      return Direction::right;
-    }
-    else if(pos.y < 0){
-      int rand = randomNumber(0,1);
-      if(rand == 0){return Direction::down;}
-      return Direction::left;
-    }
     else if(pos.x == 0){
       if(pos.y < 0){
         return Direction::left;
@@ -50,6 +40,16 @@ struct PLAYER_NAME : public Player{
         return Direction::up;
       }
       return Direction::down;
+    }
+    else if(pos.x < 0){
+      int rand = randomNumber(0,1);
+      if(rand == 0){return Direction::up;}
+      return Direction::right;
+    }
+    else if(pos.y < 0){
+      int rand = randomNumber(0,1);
+      if(rand == 0){return Direction::down;}
+      return Direction::left;
     }
     return Direction::null;
   }
