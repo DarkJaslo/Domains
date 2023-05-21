@@ -53,6 +53,10 @@ vector<int> GameInfo::randomPermutation(){
 }
 
 //Board class
+Board::~Board()
+{
+  std::cerr << "destructing Board" << std::endl;
+}
 Board::Board(){debug = false; view = true; info.numPlayers = 4; }
 Board::Board(bool d, bool v, int nplayers){debug = d; view = v; info.numPlayers = nplayers;}
 
@@ -197,7 +201,7 @@ void Board::floodv2(int plId, int uid, int col, Position p, bool& correct, Matri
     return;
   }
   Square sq = grid[p];
-  if((sq.painter() >= COLORINDEX) or (sq.plDrawer == plId) or (sq.painter() == plId)){
+  if((sq.painter() >= COLORINDEX) or (sq.uDrawer == uid) or (sq.painter() == plId)){
     //if(sq.painter() == plId) cerr << "found border at " << int(p.x) << "," << int(p.y) << endl;
     //else if(sq.plDrawer == plId) cerr << "found drawing at " << int(p.x) << "," << int(p.y) << endl;
     return;
@@ -1104,6 +1108,10 @@ void Board::useAbility(int plId, Position p){
 void Board::resolveAbilities(){
   if(abilityUnits.size() == 0) return;
   if(abilityUnits.size() == 1){
+    if(killedUnits[abilityUnits[0]]){
+      abilityUnits.clear();
+      return;
+    }
     Unit u = GameInfo::unit(abilityUnits[0]);
     if(debug) std::cerr << "unit " << u.id() << " by player " << u.player() << " using ability" << std::endl;
     useAbility(u.player(),u.position());
@@ -1419,9 +1427,9 @@ void Board::printRound(){
   //std::cerr << endl << "Printing round " << info.round() << endl << endl;
 
   if(info.round()==0){
-    debugBasic = true;
+    debugBasic = false;
     paintDebug = false;
-    debug = true;
+    debug = false;
     debugDrawErase = false;
     debugOrders = false;
   }

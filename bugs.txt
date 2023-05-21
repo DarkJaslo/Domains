@@ -1,10 +1,12 @@
 primero genera la habilidad y luego pinta, puede evitar pintar según que trozos (es realmente un bug?)
 
-los dibujos de otra unidad de mi team cuentan como frontera para el flood cuando se usa habilidad por ejemplo
-  pero quizás no están dentro aun sino que están fuera 
-    guardar qué uids son "correctos" para usar como frontera
+lo de hacer flood perpendicular no siempre funciona bien: busca también casillas de otro color para probar cuando lo hagas
+  suele pasar mucho con dibujos pequeños como
 
-  arréglalo que hace cosas raras a veces
+  .....
+  .111.
+  1111.
+  1.db.
+  1.a..
 
-a veces al final de todo hace free() invalid pointer, después del main
-  -doble free
+donde la unidad sale de a, dibuja d y entra en b

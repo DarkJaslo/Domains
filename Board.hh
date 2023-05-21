@@ -3,6 +3,7 @@
 
 class Board{
 public:
+  ~Board();
   //Default constructor
   Board();
   //Debug and view constructor
