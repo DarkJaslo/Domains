@@ -110,22 +110,16 @@ recorres i,j de la caja contenedora y
 
 
 
-
-cosas que hay que hacer para poder programar un bot
-
-
-
+ideas
 
 podria ser interesante SÍ perder energia cuando la unidad está mejorada: computeEnergies() gestiona eso
-
-
+petar burbujas dentro de rango de habilidad? posible idea
 
 
 ideas de nombres
 
 Domains
 Colorful Domains
-Colorful Domination
 
 
 
