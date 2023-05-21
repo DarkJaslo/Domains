@@ -25,6 +25,7 @@ bool findInVector(const T& thing, const vector<T>& vec){
 }
 
 int GameInfo::randomNumber(int l, int r){
+  if(l == r) return l;
   //std::cerr << "starting random number generation" << endl;
   int div = 100000;
   int digits = 5;  
@@ -66,7 +67,7 @@ void Board::iniBoard(int s, int rounds){
   //std::cerr << "Read all settings" << endl;
 
   if(debugBasic) std::cerr << "Initializing squares..." << endl;
-  
+
   //info.game_map = vector<vector<char>>(info.boardHeight,vector<char>(info.boardWidth,'.'));
   Matrix<Square> aux(info.boardHeight,info.boardWidth);
   info.square_map = aux;
@@ -1331,6 +1332,60 @@ void Board::executeRound(const vector<Player*>& pl){
   if(debugBasic) std::cerr << "Executing round " << info.round() << endl;
 
   killedUnits = vector<bool>(info.unitsMax*info.numPlayers,false);
+
+
+  //this has to happen in random order
+
+  /*
+    idea:
+      guarda por qué orden vamos para cada player
+      guarda cuántos tienen órdenes
+      para elegir de quién es la orden, randomNumber(0,jugadoresConÓrdenes-1)
+      vas al vector<int> de por qué orden vamos y vas contando para ver quién es
+      ejecutas su orden
+      si no le quedan, decrementa el número  
+  */
+
+  int orderable = 0;
+  std::vector<int> playerOrderIndex(info.numPlayers,-1);
+  for(int i = 0; i < pl.size(); ++i){
+    if(pl[i]->index >= 0){
+      orderable++;
+      playerOrderIndex[i] = 0;
+      //if(debugOrders) std::cerr << "Player " << i << " is orderable, index = " << pl[i]->index << std::endl;
+    }
+  }
+
+  //if(debugOrders) std::cerr << "orderable: " << orderable << std::endl;
+
+  while(orderable > 0){
+    int random = GameInfo::randomNumber(0,orderable-1);
+    //if(debugOrders) std::cerr << "random = " << random << std::endl;
+    int who = -1;
+
+    for(who = 0; who < playerOrderIndex.size(); ++who){
+      if(playerOrderIndex[who] != -1 and playerOrderIndex[who] <= pl[who]->index){
+        //if(debugOrders) std::cerr << "player " << who << " has orders" << std::endl;
+        random--;
+      }
+      if(random == -1) break;
+    }
+
+    //if(debugOrders) std::cerr << "Player " << who << " executing order " << playerOrderIndex[who] << std::endl;
+
+    if(executeOrder(who,pl[who]->orderList[playerOrderIndex[who]])){
+      if(debugOrders) std::cerr << "order executed succesfully" << endl;
+    }
+    else{
+      if(debugOrders) std::cerr << "order didn't execute" << endl;
+    }
+    playerOrderIndex[who]++;
+    if(playerOrderIndex[who] > pl[who]->index){
+      --orderable;
+    }
+  }
+
+  /*
   for(int i = 0; i < pl.size(); ++i){
     for(int j = 0; j <= pl[i]->index; ++j){
       if(executeOrder(i,pl[i]->orderList[j])){
@@ -1340,7 +1395,7 @@ void Board::executeRound(const vector<Player*>& pl){
         if(debugOrders) std::cerr << "order didn't execute" << endl;
       }
     }
-  }
+  }*/
   if(debugBasic) std::cerr << "\texecuting free attacks..." << endl;
   performFreeAttacks();
   if(debugBasic) std::cerr << "\tpopping bubbles..." << endl;
