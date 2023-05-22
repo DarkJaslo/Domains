@@ -115,7 +115,6 @@ struct PLAYER_NAME : public Player{
   {
     //Might want to add another function for after posOk()
 
-
     set<Position> visited;
     visited.insert(start);
     queue<BFSInfo> toVisit;
@@ -140,10 +139,8 @@ struct PLAYER_NAME : public Player{
       else if(stop != nullptr and stop(sq,start,info)){
         return false;
       }
-
       queueAdjacentPositions(info,toVisit,visited,tryDiagonal,plId);
     }
-
     return false;
   }
 
@@ -175,7 +172,7 @@ struct PLAYER_NAME : public Player{
         continue;
       }
       Position target;
-      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBonus,nullptr,true,me(),50);
+      bool doesbfs = bfs(target,unit(u[i]).position(),playerHasBonus,nullptr,true,me(),30);
       if(doesbfs){
         Position aux = unit(u[i]).position();
 
