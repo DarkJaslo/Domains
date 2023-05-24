@@ -23,6 +23,36 @@ bool findInVector(const T& thing, const vector<T>& vec){
   for(const T& t : vec) if(t == thing) return true;
   return false;
 }
+Direction inverse(Direction d){
+  switch(d){
+    case Direction::left:
+      return Direction::right;
+      break;
+    case Direction::right:
+      return Direction::left;
+      break;
+    case Direction::up:
+      return Direction::down;
+      break;
+    case Direction::down:
+      return Direction::up;
+      break;
+    case Direction::DL:
+      return Direction::UR;
+      break;
+    case Direction::UR:
+      return Direction::DL;
+      break;
+    case Direction::UL:
+      return Direction::DR;
+      break;
+    case Direction::DR:
+      return Direction::UL;
+    default:
+      return Direction::null;
+      break;
+  }
+}
 
 int GameInfo::randomNumber(int l, int r){
   if(l == r) return l;
@@ -328,10 +358,12 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       std::cerr << "wrong perpendicularDirections() output, wtf" << endl;
       exit(1);
     }
+    Direction d3 = inverse(act.to(ant));
     vector<Direction> floodDirs;
-    floodDirs.reserve(2);
+    floodDirs.reserve(3);
     floodDirs.emplace_back(d1);
     floodDirs.emplace_back(d2);
+    floodDirs.emplace_back(d3);
 
     //Tries to flood
     for(Direction d : floodDirs){
@@ -1067,7 +1099,13 @@ void Board::useAbility(int plId, Position p){
       Position pos(i,j);
       if(info.posOk(pos)){
         Square sq = info.square(pos);
-        if(sq.border() and sq.drawed()){
+        if(pos == Position(37,38)){
+          std::cerr << "position is here" << endl;
+          if(sq.border() and debug) std::cerr << "is border" << " ";
+          if(sq.drawed() and debug) std::cerr << " and drawn";
+          if(debug) std::cerr << std::endl;
+        }
+        if((pos.x == xmin or pos.x == xmax or pos.y == ymin or pos.y == ymax) and sq.drawed()){
           if(debug){
             std::cerr << "drawer is " << int(sq.uDrawer) << std::endl;
             std::cerr << "pos " << i << "," << j << ", ";
@@ -1466,7 +1504,7 @@ void Board::printRound(){
     printMatrix(info.square_map);
   }
 
-  //if(info.round() == 109) exit(1);
+  //if(info.round() == 151) exit(1);
 }
 
 void Board::printSettings(){

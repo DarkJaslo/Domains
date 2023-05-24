@@ -1,12 +1,13 @@
 primero genera la habilidad y luego pinta, puede evitar pintar según que trozos (es realmente un bug?)
 
-lo de hacer flood perpendicular no siempre funciona bien: busca también casillas de otro color para probar cuando lo hagas
-  suele pasar mucho con dibujos pequeños como
 
-  .....
-  .111.
-  1111.
-  1.db.
-  1.a..
+THEORY-FIXED
+      lo de hacer flood perpendicular no siempre funciona bien: busca también casillas de otro color para probar cuando lo hagas
+        suele pasar mucho con dibujos pequeños como
 
-donde la unidad sale de a, dibuja d y entra en b
+        .....
+        .111.
+        1111.
+        1.db.
+        1.a..
+        donde la unidad sale de a, dibuja d y entra en b
