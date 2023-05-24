@@ -1483,7 +1483,7 @@ void Board::printRound(){
         
         Square sq = info.square(Position(i,j));
         //Prints painter id, drawer id and unit's player id
-        cout << sqcode(sq.plDrawer,sq.painter());
+        cout << sqcode(sq.plDrawer,sq.painter(),sq.ability());
         if(sq.hasUnit()){
           cout << ucode(true,sq.unit().player(),sq.unit().upgraded());
         }
