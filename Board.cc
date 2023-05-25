@@ -526,12 +526,17 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
   {  
     e1 = GameInfo::randomNumber(0,u1.energ);
     e2 = GameInfo::randomNumber(0,u2.energ);
-    winner = u1.id();
-    if(e2 > e1) winner = u2.id();
+    if(e1 > e2) winner = u1.id();
+    else if(e2 > e1) winner = u2.id();
+    else{
+      if(GameInfo::randomNumber(0,1)) winner = u1.id();
+      else winner = u2.id();
+    }
   }
-  else if(fm == FightMode::Attacks)  //Attacks. Kills if e1>e2
+  else if(fm == FightMode::Attacks)  //Kills
   {  
-    if(u1.energy() >= u2.energy()){
+    winner = u1.id();
+    /*if(u1.energy() >= u2.energy()){
       winner = u1.id();
     }
     else{
@@ -539,7 +544,7 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
       if(u2.energy() < info.energyMin){
         u2.energ = info.energyMin;
       }
-    }
+    }*/
   }
 
   if(debug) std::cerr << "winner: " << winner << std::endl;
@@ -555,7 +560,7 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
   }
   else if(winner == u2.id()){
     killUnit(u1);
-    info.playerPoints[u2.pl] += info.pointsPerUnit;
+    info.playerPoints[u2.player()] += info.pointsPerUnit;
     if(fm == FightMode::Fair){
       u2.energ -= GameInfo::randomNumber(0,e1/2);
       if(u2.energ < info.energyMin) u2.energ = info.energyMin;
