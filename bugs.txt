@@ -11,3 +11,5 @@ THEORY-FIXED
         1.db.
         1.a..
         donde la unidad sale de a, dibuja d y entra en b
+
+PlayerOrders move,attack y ability deberían ser protected
