@@ -4,10 +4,12 @@
 
 class PlayerOrders{
 public:
+  PlayerOrders();
+
+protected:
   void move(int unitId, Direction dir);
   void attack(int unitId, Direction dir);
   void ability(int unitId);
-  PlayerOrders();
   
 private:
   friend class Game;
