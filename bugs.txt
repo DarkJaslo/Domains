@@ -1,6 +1,5 @@
 primero genera la habilidad y luego pinta, puede evitar pintar según que trozos (es realmente un bug?)
 
-
 THEORY-FIXED
       lo de hacer flood perpendicular no siempre funciona bien: busca también casillas de otro color para probar cuando lo hagas
         suele pasar mucho con dibujos pequeños como
@@ -11,5 +10,3 @@ THEORY-FIXED
         1.db.
         1.a..
         donde la unidad sale de a, dibuja d y entra en b
-
-PlayerOrders move,attack y ability deberían ser protected
