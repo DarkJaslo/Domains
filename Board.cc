@@ -690,6 +690,7 @@ bool Board::executeOrder(int plId, Order ord){
       return true;
     }
     else if(sq.hasBubble()){
+      if(debugOrders) std::cerr << "square has bubble" << std::endl;
       Bubble bb = sq.bubble();
 
       if(bb.player() == u.player()){
@@ -1509,7 +1510,7 @@ void Board::printRound(){
     printMatrix(info.square_map);
   }
 
-  //if(info.round() == 151) exit(1);
+  //if(info.round() == 19) exit(1);
 }
 
 void Board::printSettings(){
