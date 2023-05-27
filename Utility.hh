@@ -13,6 +13,20 @@
  * Defines all directions
 */
 enum Direction{null,up,down,left,right,UL,UR,DL,DR};
+inline std::ostream& operator << (std::ostream& out, Direction d) {
+  switch (d) {
+  case Direction::down:   out << "Down";  break;
+  case Direction::DR:     out << "DR";    break;
+  case Direction::right:  out << "Right"; break;
+  case Direction::UR:     out << "UR";    break;
+  case Direction::up:     out << "Up";    break;
+  case Direction::UL:     out << "UL";    break;
+  case Direction::left:   out << "Left";  break;
+  case Direction::DL:     out << "DL";    break;
+  default:     out << int(d);  break;
+  }
+  return out;
+}
 
 struct Position{
   int8_t x;
