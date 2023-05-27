@@ -27,7 +27,12 @@ struct Position{
   /* Pre: p is adjacent (diagonal counts) to this
      Returns the direction from this to p. Returns null if an unexpected situation occurs  */
   Direction to(Position p);
+  friend std::ostream& operator<<(std::ostream& os, const Position& p);
 };
+
+inline std::ostream& operator<< (std::ostream& os, const Position& p) {
+  return os << "(" << int(p.x) << ", " << int(p.y) << ")";
+}
 
 enum UnitType{ unit, bubble ,bonus };
 
