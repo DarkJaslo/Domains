@@ -17,3 +17,5 @@ ejemplo:
 ...       ..d
 cu.  ->   cc.
 cc.       cc.
+
+Mira apertura, el cian no lo hace bien. Why?

@@ -1,0 +1,2 @@
+Dummy:
+la apertura puede salir mal si el pop de la burbuja pinta
