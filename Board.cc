@@ -473,7 +473,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   if(debug) std::cerr << "paintv2 func end" << std::endl;
 }
 
-void Board::draw(int plId, int uid, Position pnew, Position pant){
+void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir){
   if(debug) std::cerr << "unit " << uid << " of player " << plId << " drawing" << endl;
   
   Square sant = info.square(pant);
@@ -482,7 +482,7 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
   
   if(snew.drawed() /*and snew.uDrawer != uid*/){
     //if you step on someone else's drawing, erase it
-    if(debug) std::cerr << "erasing path at " << int(snew.pos().x) << "," << int(snew.pos().y) << endl;
+    if(debug) std::cerr << "erasing path at " << snew.pos() << endl;
     erasePath(snew.uDrawer,pnew);
     sant = info.square(pant);
     snew = info.square(pnew);
@@ -499,19 +499,21 @@ void Board::draw(int plId, int uid, Position pnew, Position pant){
   }
   if(sant.plPainter == plId and snew.plPainter != plId){
     //draws if exiting a secure painted area
-    info.square_map[pnew].uDrawer = uid;
-    info.square_map[pnew].plDrawer = plId;
+    if(not isDiagonal(dir)){
+      info.square_map[pnew].uDrawer = uid;
+      info.square_map[pnew].plDrawer = plId;
 
-    //Adds to the map
-    if(drawStarts[uid].first != Position(-1,-1)){
-      if(debug){
-        std::cerr << "unit: " << uid << " ";
-        std::cerr << "position " << int(pant.x) << "," << int(pant.y) <<  " already starts a drawing" << std::endl;
+      //Adds to the map
+      if(drawStarts[uid].first != Position(-1,-1)){
+        if(debug){
+          std::cerr << "unit: " << uid << " ";
+          std::cerr << "position " << int(pant.x) << "," << int(pant.y) <<  " already starts a drawing" << std::endl;
+        }
+        printStartSquares(drawStarts);
+        //exit(1);
       }
-      printStartSquares(drawStarts);
-      //exit(1);
+      drawStarts[uid] = make_pair(pant,pnew);
     }
-    drawStarts[uid] = make_pair(pant,pnew);
   }
 }
 
@@ -658,7 +660,7 @@ bool Board::executeOrder(int plId, Order ord){
     info.unitsVector[u.id()].p = newPos;
     info.square_map[newPos].u = &info.unitsVector[u.id()];
     info.square_map[actPos].u = nullptr;
-    draw(plId,u.id_,newPos,u.p);
+    draw(plId,u.id_,newPos,u.p,ord.dir);
     return true;
     break;
   }

@@ -10,12 +10,5 @@ THEORY-FIXED
         1.db.
         1.a..
         donde la unidad sale de a, dibuja d y entra en b
-
-
-las unidades pueden empezar dibujos en diagonal sin tener un punto de apoyo
-ejemplo:
-...       ..d
-cu.  ->   cc.
-cc.       cc.
-
+        
 Mira apertura, el cian no lo hace bien. Why?

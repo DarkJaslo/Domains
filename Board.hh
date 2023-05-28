@@ -50,7 +50,7 @@ private:
   void paintv2(int plId, int uid, Position in, Position out);
 
   //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
-  void draw(int plId, int uid, Position pnew, Position pant);
+  void draw(int plId, int uid, Position pnew, Position pant, Direction dir);
 
   enum FightMode{
     Fair,     //Both units can attack
