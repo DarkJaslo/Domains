@@ -10,5 +10,3 @@ THEORY-FIXED
         1.db.
         1.a..
         donde la unidad sale de a, dibuja d y entra en b
-        
-Mira apertura, el cian no lo hace bien. Why?

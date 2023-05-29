@@ -163,7 +163,7 @@ void Board::i_erasePath(int uid, Position p){
 }
 
 void Board::erasePath(int uid, Position p){
-  if(debugDrawErase) std::cerr << "erasing in " << int(p.x) << "," << int(p.y) << "(uid: " << uid << ")" << std::endl;
+  if(debugDrawErase) std::cerr << "erasing in " << p << "(uid: " << uid << ")" << std::endl;
   if(debugDrawErase)std::cerr << "erasing starting position by unit " << uid << std::endl;
   drawStarts[uid].first = Position(-1,-1);
 
@@ -338,6 +338,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   Position next = followDrawing(uid,act,ant,map);
 
   if(paintDebug) cerr << "Followed drawing #1" << endl;
+  if(paintDebug) cerr << "next: "<< next << endl;
 
   vector<vector<bool>> visitedNext(xmax-xmin+1,vector<bool>(ymax-ymin+1,false));
 
@@ -402,7 +403,8 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
 
         //Erases start of possible drawings
         for(int i = 0; i < drawStarts.size(); ++i){
-          if(drawStarts[i].first == pos){
+          if(drawStarts[i].first == Position(pos.x+xmin,pos.y+ymin)){
+            if(debugDrawErase) cerr << "erasing drawing starting in " << Position(pos.x+xmin,pos.y+ymin) << endl;
             erasePath(i,drawStarts[i].second);
           }
         }
@@ -474,13 +476,14 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
 }
 
 void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir){
-  if(debug) std::cerr << "unit " << uid << " of player " << plId << " drawing" << endl;
-  
+  if(debug) std::cerr << "unit " << uid << " of player " << plId << " drawing at " << pnew << endl;
+
   Square sant = info.square(pant);
   Square snew = info.square(pnew);
-  
+  if(debug) std::cerr << "sant: " << sant.pos() << ", snew: " << snew.pos() << std::endl;
   
   if(snew.drawed() /*and snew.uDrawer != uid*/){
+    if(debug) std::cerr << "new pos is drawed" << std::endl;
     //if you step on someone else's drawing, erase it
     if(debug) std::cerr << "erasing path at " << snew.pos() << endl;
     erasePath(snew.uDrawer,pnew);
@@ -488,6 +491,7 @@ void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir)
     snew = info.square(pnew);
   }
   if(sant.uDrawer == uid){
+    if(debug) std::cerr << "there is a drawing behind" << std::endl;
     //draws if behind you is a drawing
     info.square_map[pnew].uDrawer = uid;
     info.square_map[pnew].plDrawer = plId;
@@ -498,6 +502,7 @@ void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir)
     }
   }
   if(sant.plPainter == plId and snew.plPainter != plId){
+    if(debug) std::cerr << "exiting painted area" << std::endl;
     //draws if exiting a secure painted area
     if(not isDiagonal(dir)){
       info.square_map[pnew].uDrawer = uid;
@@ -1512,7 +1517,7 @@ void Board::printRound(){
     printMatrix(info.square_map);
   }
 
-  //if(info.round() == 19) exit(1);
+  //if(info.round() == 30) exit(1);
 }
 
 void Board::printSettings(){
