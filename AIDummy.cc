@@ -273,7 +273,7 @@ Direction decide(Position pos){
   return Direction::null;
 }
 Position virtualPos(Position pos){
-  cerr << "me: " << me() << endl;
+  //cerr << "me: " << me() << endl;
   switch(me()){
     case 1:{
       return Position(rows()-1-pos.x,cols()-1-pos.y);
@@ -307,19 +307,12 @@ Direction bestDirection(Position desired, Position act){
 void fillSpecialDirections(Position desired, Position act, Direction& spec1, Direction& spec2){
   //Position is virtual
   //desired = virtualPos(desired);
-  cerr << "desired: " << desired << endl;
-  cerr << "act (pre): " << act << endl;
   act = virtualPos(act);
-  cerr << "act: " << act << endl;
   
   spec1 = bestDirection(desired,act);
-  cerr << "spec1: " << spec1 << endl;
   act +=spec1;
-  cerr << "act: " << act << endl;
   spec2 = bestDirection(desired,act);
-  cerr << "spec2: " << spec2 << endl;
   act +=spec2;
-  cerr << "act2: " << act << endl;
 }
 
 Position meleeTarget(Position act, bool diag, bool(*found)(const Square&))
@@ -497,12 +490,12 @@ virtual void play(){
 
   //Collect units    
   vector<int> uns = units(me());
-  cerr << "unit list: " << endl;
+  /*cerr << "unit list: " << endl;
   for(int un : uns){
     cerr << un << " at ";
     cerr << int(unit(un).position().x) << "," << int(unit(un).position().y) << " ";
   }
-  cerr << endl;
+  cerr << endl;*/
 
   if(round() < SR){
     
@@ -565,8 +558,6 @@ virtual void play(){
         //attack bubble
         Position aux = unit(uns[6]).position();
         Position targetPos = meleeTarget(aux,true,playerHasBubble);
-        cerr << "aux = " << aux << endl;
-        cerr << "targetPos = " << targetPos << endl;
         if(targetPos != Position(-1,-1)){
           attack(uns[6],aux.to(targetPos));
         }
@@ -583,12 +574,10 @@ virtual void play(){
     }
 
     //Unit 8
-
-
-
     move(uns[0],DIRS_MAP[UNIT0OPENING[round()]]);
   }
   else if(round() == SR){
+    //Very specific moves with a very specific order
     move(uns[2],DIRS_MAP[Direction::down]);
     move(uns[0],DIRS_MAP[Direction::left]);
     move(uns[4],DIRS_MAP[Direction::down]);

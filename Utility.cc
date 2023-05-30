@@ -65,7 +65,7 @@ Square::Square(const Square& sq){
 }
 Position Square::pos()const{return p;}
 bool Square::painted()const{return plPainter != -1;}
-bool Square::drawed()const{return uDrawer != -1;}
+bool Square::drawn()const{return uDrawer != -1;}
 bool Square::border()const{return isBorder;}
 bool Square::ability()const{return isAbility;}
 int Square::roundsUntilAbilityEnd()const{return static_cast<int>(counter);}

@@ -134,9 +134,9 @@ public:
   //Pre: Square is painted
   //Returns the id of the painter player
   int painter() const;
-  //True if square is drawed by some player, false otherwise
-  bool drawed() const;
-  //Pre: Square is drawed
+  //True if square is drawn by some player, false otherwise
+  bool drawn() const;
+  //Pre: Square is drawn
   //Returns the id of the drawer player
   int drawer() const;
   //Returns true if this Square separates territories

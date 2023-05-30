@@ -3,6 +3,8 @@
 using namespace std;
 
 //Extra "secret things"
+
+//Random engine
 const char pi[]= "3141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886587533208381420617177669147303598253490428755468731159562863882353787593751957781857780532171226806613001927876611195909216420198938095257201065485863278865936153381827968230301952035301852968995773622599413891249721775283479131515574857242454150695950829533116861727855889075098381754637464939319255060400927701671139009848824012858361603563707660104710181942955596198946767837449448255379774726847104047534646208046684259069491293313677028989152104752162056966024058038150193511253382430035587640247496473263914199272604269922796782354781636009341721641219924586315030286182974555706749838505494588586926995690927210797509302955321165344987202755960236480665499119881834797753566369807426542527862551818417574672890977772793800081647060016145249192173217214772350141441973568548161361157352552133475741849468438523323907394143334547762416862518983569485562099219222184272550254256887671790494601653466804988627232791786085784383827967976681454100953883786360950680064225125205117392984896084128488626945604241965285022210661186306744278622039194945047123713786960956364371917287467764657573962413890865832645995813390478027590099465764078951269468398352595709825822620522489407726719478268482601476990902640136394437455305068203496252451749399651431429809190659250937221696461515709858387410597885959772975498930161753928468138268683868942774155991855925245953959431049972524680845987273644695848653836736222626099124608051243884390451244136549762780797715691435997700129616089441694868555848406353422072225828488648158456028506016842739452267467678895252138522549954666727823986456596116354886230577456498035593634568174324112515076069479451096596094025228879710893145669136867228748940560101503308617928680920874760917824938589009714909675985261365549781893129784821682998948722658804857564014270477555132379641451523746234364542858444795265867821051141354735739523113427166102135969536231442952484937187110145765403590279934403742007310578539062198387447808478489683321445713868751943506430218453191048481005370614680674919278191197939952061419663428754440643745123718192179998391015919561814675142691239748940907186494231961567945208095146550225231603881930142093762137855956638937787083039069792077346722182562599661501421503068038447734549202605414665925201497442850732518666002132434088190710486331734649651453905796268561005508106658796998163574736384052571459102897064140110971206280439039759515677157700420337869936007230558763176359421873125147120532928191826186125867321579198414848829164470609575270695722091756711672291098169091528017350671274858322287183520935396572512108357915136988209144421006751033467110314126711136990865851639831501970165151168517143765761835155650884909989859982387345528331635507647918535893226185489632132933089857064204675259070915481416549859461637180270981994309924488957571282890592323326097299712084433573265489382391193259746366730583604142813883032038249037589852437441702913276561809377344403070746921120191302033038019762110110044929321516084244485963766983895228684783123552658213144957685726243344189303968642624341077322697802807318915441101044682325271620105265227211166039666557309254711055785376346682065310989652691862056476931257058635662018558100729360659876486117910453348850346113657686753249441668039626579787718556084552965412665408530614344431858676975145661406800700237877659134401712749470420562230538994561314071127000407854733269939081454664645880797270826683063432858785698305235808933065757406795457163775254202114955761581400250126228594130216471550979259230990796547376125517656751357517829666454779174501129961489030463994713296210734043751895735961458901938971311179042978285647503203198691514028708085990480109412147221317947647772622414254854540332157185306142288137585043063321751829798662237172159160771669254748738986654949450114654062843366393790039769265672146385306736096571209180763832716641627488880078692560290228472104031721186082041900042296617119637792133757511495950156604963186294726547364252308177036751590673502350728354056704038674351362222477158915049530984448933309634087807693259939780541934144737744184263129860809988868741326047215695162396586457302163159819319516735381297416772947867242292465436680098067692823828068996400482435403701416314965897940924323789690706977942236250822168895738379862300159377647165122893578601588161755782973523344604281512627203734314653197777416031990665541876397929334419521541341899485444734567383162499341913181480927777103863877343177207545654532207770921201905166096280490926360197598828161332316663652861932668633606273567630354477628035045077723554710585954870279081435624014517180624643626794561275318134078330336254232783944975382437205835311477119926063813346776879695970309833913077109870408591337464144282277263465947047458784778720192771528073176790770715721344473060570073349243693113835049316312840425121925651798069411352801314701304781643788518529092854520116583934196562134914341595625865865570552690496520985803385072242648293972858478316305777756068887644624824685792603953527734803048029005876075825104747091643961362676044925627420420832085661190625454337213153595845068772460290161876679524061634252257719542916299193064553779914037340432875262888963995879475729174642635745525407909145135711136941091193932519107602082520261879853188770584297259167781314969900901921169717372784768472686084900337702424291651300500516832336435038951702989392233451722013812806965011784408745196012122859937162313017114448464090389064495444006198690754851602632750529834918740786680881833851022833450850486082503930213321971551843063545500766828294930413776552793975175461395398468339363830474611996653858153842056853386218672523340283087112328278921250771262946322956398989893582116745627010218356462201349671518819097303811980049734072396103685406643193950979019069963955245300545058068550195673022921913933918568034490398205955100226353536192041994745538593810234395544959778377902374216172711172364343543947822181852862408514006660443325888569867054315470696574745855033232334210730154594051655379068662733379958511562578432298827372319898757141595781119635833005940873068121602876496286744604774649159950549737425626901049037781986835938146574126804925648798556145372347867330390468838343634655379498641927056387293174872332083760112302991136793862708943879936201629515413371424892830722012690147546684765357616477379467520049075715552781965362132392640616013635815590742202020318727760527721900556148425551879253034351398442532234157623361064250639049750086562710953591946589751413103482276930624743536325691607815478181152843667957061108615331504452127473924544945423682886061340841486377670096120715124914043027253860764823634143346235189757664521641376796903149501910857598442391986291642193994907236234646844117394032659184044378051333894525742399508296591228508555821572503107125701266830240292952522011872676756220415420516184163484756516999811614101002996078386909291603028840026910414079288621507842451670908700069928212066041837180653556725253256753286129104248776182582976515795984703562226293486003415872298053498965022629174878820273420922224533985626476691490556284250391275771028402799806636582548892648802545661017296702664076559042909945681506526530537182941270336931378517860904070866711496558343434769338578171138645587367812301458768712660348913909562009939361031029161615288138437909904231747336394804575931493140529763475748119356709110137751721008031559024853090669203767192203322909433467685142214477379393751703443661991040337511173547191855046449026365512816228824462575916333039107225383742182140883508657391771509682887478265699599574490661758344137522397096834080053559849175417381883999446974867626551658276584835884531427756879002909517028352971634456212964043523117600665101241200659755851276178583829204197484423608007193045761893234922927965019875187212726750798125547095890455635792122103334669749923563025494780249011419521238281530911407907386025152274299581807247162591668545133312394804947079119153267343028244186041426363954800044800267049624820179289647669758318327131425170296923488962766844032326092752496035799646925650493681836090032380929345958897069536534940603402166544375589004563288225054525564056448246515187547119621844396582533754388569094113031509526179378002974120766514793942590298969594699556576121865619673378623625612521632086286922210327488921865436480229678070576561514463204692790682120738837781423356282360896320806822246801224826117718589638140918390367367222088832151375560037279839400415297002878307667094447456013455641725437090697939612257142989467154357846878861444581231459357198492252847160504922124247014121478057345510500801908699603302763478708108175450119307141223390866393833952942578690507643100638351983438934159613185434754649556978103829309716465143840700707360411237359984345225161050702705623526601276484830840761183013052793205427462865403603674532865105706587488225698157936789766974220575059683440869735020141020672358502007245225632651341055924019027421624843914035998953539459094407046912091409387001264560016237428802109276457931065792295524988727584610126483699989225690";
 const int permutations[24][4] = {{0,1,2,3},{0,1,3,2},{0,2,1,3},{0,2,3,1},{0,3,1,2},{0,3,2,1},{1,0,2,3},{1,0,3,2},{1,2,0,3},{1,2,3,0},{1,3,0,2},{1,3,2,0},{2,0,1,3},{2,0,3,1},{2,1,0,3},{2,1,3,0},{2,3,0,1},{2,3,1,0},{3,0,1,2},{3,0,2,1},{3,1,0,2},{3,1,2,0},{3,2,0,1},{3,2,1,0}};
 int jump;
@@ -16,8 +18,37 @@ int randdigit(){
   c-='0';
   return c;
 }
+int GameInfo::randomNumber(int l, int r){
+  if(l == r) return l;
+  //std::cerr << "starting random number generation" << std::endl;
+  int div = 100000;
+  int digits = 5;  
+  int number = 0;
+  for(int i = digits; i > 0; --i){
+    number*=10;
+    number += randdigit();
+  }
+  int res = r-l+1;
+  res *= number;
+  res /= div;
+  res += l;
+  if(res > r)--res; //the kind of thing that actually doesn't happen, but happens
+  return res;
+}
+vector<int> GameInfo::randomPermutation(){
+  vector<int> v(4);
+  int index = randomNumber(0,23);
+  v[0] = permutations[index][0];
+  v[1] = permutations[index][1];
+  v[2] = permutations[index][2];
+  v[3] = permutations[index][3];
+  return v;
+}
+
+//Utility functions
 const vector<Direction> NORMAL_DIRS = {Direction::up, Direction::down, Direction::left, Direction::right};
 bool isDiagonal(Direction d){return d >= Direction::UL;}
+bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
 template <typename T>
 bool findInVector(const T& thing, const vector<T>& vec){
   for(const T& t : vec) if(t == thing) return true;
@@ -53,33 +84,28 @@ Direction inverse(Direction d){
       break;
   }
 }
-
-int GameInfo::randomNumber(int l, int r){
-  if(l == r) return l;
-  //std::cerr << "starting random number generation" << endl;
-  int div = 100000;
-  int digits = 5;  
-  int number = 0;
-  for(int i = digits; i > 0; --i){
-    number*=10;
-    number += randdigit();
+void printMatrix(Matrix<Square>& map){
+  cerr << "   ";
+  for(int i = 0; i < map.cols(); ++i){
+    cerr << i << " ";
   }
-  int res = r-l+1;
-  res *= number;
-  res /= div;
-  res += l;
-  if(res > r)--res; //the kind of thing that actually doesn't happen, but happens
-  return res;
-}
-
-vector<int> GameInfo::randomPermutation(){
-  vector<int> v(4);
-  int index = randomNumber(0,23);
-  v[0] = permutations[index][0];
-  v[1] = permutations[index][1];
-  v[2] = permutations[index][2];
-  v[3] = permutations[index][3];
-  return v;
+  cerr << std::endl;
+  for(int i = 0; i < map.rows(); ++i){
+    cerr << i;
+    if(i < 10) cerr << " ";
+    cerr << " ";
+    for(int j = 0; j < map.cols(); ++j){
+      if(map[Position(i,j)].drawn()){
+        cerr << 'd';
+      }
+      else if(map[Position(i,j)].painter() == -1) cerr << '.';
+      else cerr << map[Position(i,j)].painter();
+      cerr << " ";
+      if(j >= 9) cerr << " ";
+    }
+    cerr << std::endl;
+  }
+  cerr << std::endl;
 }
 
 //Board class
@@ -91,20 +117,20 @@ Board::Board(){debug = false; view = true; info.numPlayers = 4; }
 Board::Board(bool d, bool v, int nplayers){debug = d; view = v; info.numPlayers = nplayers;}
 
 void Board::iniBoard(int s, int rounds){
-  if(debugBasic) std::cerr << "Initializing board..." << endl;
+  if(debugBasic) std::cerr << "Initializing board..." << std::endl;
   seed = s;
   randind = seed%randsize();
   jump = seed%randjump()+1;   //+1 to avoid jump = 0
-  if(debugBasic) std::cerr << "Reading settings..." << endl;
+  if(debugBasic) std::cerr << "Reading settings..." << std::endl;
   info.maxRounds = rounds;
   info.readSettings();
-  //std::cerr << "Read all settings" << endl;
+  //std::cerr << "Read all settings" << std::endl;
 
-  if(debugBasic) std::cerr << "Initializing squares..." << endl;
+  if(debugBasic) std::cerr << "Initializing squares..." << std::endl;
 
-  //info.game_map = vector<vector<char>>(info.boardHeight,vector<char>(info.boardWidth,'.'));
-  Matrix<Square> aux(info.boardHeight,info.boardWidth);
-  info.square_map = aux;
+  info.square_map = Matrix<Square>(info.boardHeight,info.boardWidth);
+
+  //Initialize squares
   for(int i = 0; i < info.square_map.rows(); ++i){
     for(int j = 0; j < info.square_map.cols(); ++j){
       Square sq;
@@ -123,14 +149,13 @@ void Board::iniBoard(int s, int rounds){
     }
   }
 
-  if(debugBasic) std::cerr << "Initializing units..." << endl;
-  //Size may change when other unit types are introduced
+  if(debugBasic) std::cerr << "Initializing units..." << std::endl;
+
   info.unitsVector.reserve(info.unitsMax*info.numPlayers);
   drawStarts = std::vector<std::pair<Position,Position>>(info.unitsMax*info.numPlayers,make_pair(Position(-1,-1),Position(-1,-1)));
 
-  //First info.unitsMax*info.numPlayers units are players
+  //Initializes units
   for(int i = 0; i < info.unitsMax*info.numPlayers; ++i){
-    //info.unitsVector[i] = 
     info.unitsVector.emplace_back(
     Unit(/*id*/          i,
          /*player*/     -1,
@@ -139,17 +164,14 @@ void Board::iniBoard(int s, int rounds){
          /*energy*/     info.energyStart
     ));
   }
-  //std::cerr << "Initialization ended successfully" << endl;
-  if(debugBasic) std::cerr << "Spawning players..." << endl;
+  if(debugBasic) std::cerr << "Spawning players..." << std::endl;
   spawnPlayers();
-  if(debugBasic) std::cerr << "Board successfully initialized" << endl;
+  if(debugBasic) std::cerr << "Board successfully initialized" << std::endl;
 }
-
-bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
 
 void Board::i_erasePath(int uid, Position p){
   if(info.posOk(p) and info.square_map[p].uDrawer == uid){
-    if(debugDrawErase) std::cerr << "erased drawing in " << int(p.x) << "," << int(p.y) << endl;
+    if(debugDrawErase) std::cerr << "erased drawing in " << p << std::endl;
     Square sq = info.square(p);
     sq.uDrawer = -1;
     sq.plDrawer = -1;
@@ -167,7 +189,6 @@ void Board::erasePath(int uid, Position p){
   if(debugDrawErase)std::cerr << "erasing starting position by unit " << uid << std::endl;
   drawStarts[uid].first = Position(-1,-1);
 
-  //printStartSquares(drawStarts);
   i_erasePath(uid,p);
 }
 
@@ -194,54 +215,49 @@ void Board::deenclose(Position p){
 }
 
 void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax){
-  //std::cerr << "enclosing " << int(p.x) << "," << int(p.y)  << endl;
-  if(info.posOk(p)){
-    if(info.square(p).closes) return;
-    if(info.square(p).uDrawer == uid or (info.square(p).painter() == plId and info.square(p).border()))
-    {
-      info.square_map[p].closes = true;
-      if(not info.square(p).border()){
-        info.square_map[p].isBorder = true;
-      }
-      if(p.x < xmin) xmin = p.x;
-      if(p.x > xmax) xmax = p.x;
-      if(p.y < ymin) ymin = p.y;
-      if(p.y > ymax) ymax = p.y;
-      Position pp;
-      pp = p+Direction::up;
-      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
-      pp = p+Direction::down;
-      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
-      pp = p+Direction::left;
-      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
-      pp = p+Direction::right;
-      enclose(plId,uid,pp,xmin,xmax,ymin,ymax);
+  if(not info.posOk(p)) return;
+  if(info.square(p).closes) return;
+  if(info.square(p).uDrawer == uid or (info.square(p).painter() == plId and info.square(p).border()))
+  {
+    info.square_map[p].closes = true;
+    if(not info.square(p).border()){
+      info.square_map[p].isBorder = true;
     }
+    if(p.x < xmin) xmin = p.x;
+    if(p.x > xmax) xmax = p.x;
+    if(p.y < ymin) ymin = p.y;
+    if(p.y > ymax) ymax = p.y;
+
+    enclose(plId,uid,p+Direction::up,xmin,xmax,ymin,ymax);
+    enclose(plId,uid,p+Direction::down,xmin,xmax,ymin,ymax);
+    enclose(plId,uid,p+Direction::left,xmin,xmax,ymin,ymax);
+    enclose(plId,uid,p+Direction::right,xmin,xmax,ymin,ymax);
   }
 }
 
 //used to flood
 #define COLORINDEX 10
 
-void Board::floodv2(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid){
+void Board::flood(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid){
   //borders are drawings and painted squares
   if(p.x < 0 or p.y < 0 or p.x >= grid.rows() or p.y >= grid.cols()){
-    //cerr << "flood is bad. position: " << int(p.x) << "," << int(p.y) << ". Color = " << col << endl;
     if(correct) correct = false;
     return;
   }
   Square sq = grid[p];
   if((sq.painter() >= COLORINDEX) or (sq.uDrawer == uid) or (sq.painter() == plId)){
-    //if(sq.painter() == plId) cerr << "found border at " << int(p.x) << "," << int(p.y) << endl;
-    //else if(sq.plDrawer == plId) cerr << "found drawing at " << int(p.x) << "," << int(p.y) << endl;
+    if(debugFlood){
+      if(sq.painter() == plId) std::cerr << "found border at " << p << std::endl;
+      else if(sq.plDrawer == plId) std::cerr << "found drawing at " << p << std::endl;
+    }
     return;
   }
-  //cerr << "flooded position " << int(p.x) << "," << int(p.y) << " with col " << col << endl;
+  if(debugFlood) std::cerr << "flooded position " << int(p.x) << "," << int(p.y) << " with col " << col << std::endl;
   grid[p].plPainter = col;
-  floodv2(plId,uid,col,p+NORMAL_DIRS[0],correct,grid);
-  floodv2(plId,uid,col,p+NORMAL_DIRS[1],correct,grid);
-  floodv2(plId,uid,col,p+NORMAL_DIRS[2],correct,grid);
-  floodv2(plId,uid,col,p+NORMAL_DIRS[3],correct,grid);
+  flood(plId,uid,col,p+NORMAL_DIRS[0],correct,grid);
+  flood(plId,uid,col,p+NORMAL_DIRS[1],correct,grid);
+  flood(plId,uid,col,p+NORMAL_DIRS[2],correct,grid);
+  flood(plId,uid,col,p+NORMAL_DIRS[3],correct,grid);
 }
 
 void Board::perpendicularDirections(Direction dir, Direction& res1, Direction& res2){
@@ -256,7 +272,7 @@ void Board::perpendicularDirections(Direction dir, Direction& res1, Direction& r
 }
 
 Position Board::followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid){
-  //cerr << "following drawing from " << int(act.x) << "," << int(act.y) << endl;
+  //cerr << "following drawing from " << act << std::endl;
   if(act == Position(-1,-1)) return act;
   Direction d = act.to(ant);
   Position next;
@@ -266,44 +282,20 @@ Position Board::followDrawing(int uid, Position act, Position ant, Matrix<Square
     if(aux.x < 0 or aux.y < 0 or aux.x >= grid.rows() or aux.y >= grid.cols()) continue;
     Square sq = grid[aux];
     if(sq.uDrawer == uid){
-      //cerr << "found next: " << int(aux.x) << "," << int(aux.y) << endl;
+      //cerr << "found next: " << aux << std::endl;
       return aux;
     }
   }
 
-  //If it has not returned, end of drawing
+  //If it has not returned, it means end of drawing
   return Position(-1,-1);
 }
 
-void printMatrix(Matrix<Square>& map){
-  cerr << "   ";
-  for(int i = 0; i < map.cols(); ++i){
-    cerr << i << " ";
-  }
-  cerr << endl;
-  for(int i = 0; i < map.rows(); ++i){
-    cerr << i;
-    if(i < 10) cerr << " ";
-    cerr << " ";
-    for(int j = 0; j < map.cols(); ++j){
-      if(map[Position(i,j)].drawed()){
-        cerr << 'd';
-      }
-      else if(map[Position(i,j)].painter() == -1) cerr << '.';
-      else cerr << map[Position(i,j)].painter();
-      cerr << " ";
-      if(j >= 9) cerr << " ";
-    }
-    cerr << endl;
-  }
-  cerr << endl;
-}
+void Board::paint(int plId, int uid, Position in, Position out){
 
-void Board::paintv2(int plId, int uid, Position in, Position out){
+  /*Follows the drawing and tries to flood in all directions that are not drawn*/
 
-  /*Follows the drawing and tries to flood perpendicularly*/
-
-  if(paintDebug) cerr << "Painting at " << int(in.x) << "," << int(in.y) << endl;
+  if(debugPaint) cerr << "Painting at " << in << std::endl;
 
   //Calculates the maximum subsection of the grid to paint
   int xmin,xmax,ymin,ymax;
@@ -312,7 +304,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   enclose(plId,uid,out,xmin,xmax,ymin,ymax);
   deenclose(out);
 
-  if(paintDebug) cerr << "Enclosed perimeter: " << xmin << "," << ymin << " " << xmax << "," << ymax << endl;
+  if(debugPaint) cerr << "Enclosed perimeter: " << xmin << "," << ymin << " " << xmax << "," << ymax << std::endl;
 
   int rows = xmax-xmin+1;
   int cols = ymax-ymin+1;
@@ -327,9 +319,9 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
     }
   }
 
-  if(paintDebug) printMatrix(map);
+  if(debugPaint) printMatrix(map);
 
-  //Erase starting position
+  //Erase starting position oh this painter unit's drawing
   drawStarts[uid].first = Position(-1,-1);
 
   //Variables to follow the drawing and flood
@@ -337,9 +329,12 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   Position ant = Position(in.x-xmin,in.y-ymin);
   Position next = followDrawing(uid,act,ant,map);
 
-  if(paintDebug) cerr << "Followed drawing #1" << endl;
-  if(paintDebug) cerr << "next: "<< next << endl;
+  if(debugPaint){
+    std::cerr << "Followed drawing #1" << std::endl;
+    std::cerr << "next: "<< next << std::endl;
+  }
 
+  //Visited list to avoid loops
   vector<vector<bool>> visitedNext(xmax-xmin+1,vector<bool>(ymax-ymin+1,false));
 
   vector<int> validColors; //contains valid flood colors
@@ -347,16 +342,14 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
 
   //Follows the drawings and tries to flood
 
-  //bool iterated = false;
   while(act != Position(-1,-1) and not visitedNext[act.x][act.y]){
     
-    //if(not iterated) iterated = true;
     visitedNext[act.x][act.y] = true;
     Direction d1 = Direction::null;
     Direction d2 = Direction::null;
     perpendicularDirections(act.to(ant),d1,d2);
     if(d1 == Direction::null or d2 == Direction::null){
-      std::cerr << "wrong perpendicularDirections() output, wtf" << endl;
+      std::cerr << "wrong perpendicularDirections() output, wtf" << std::endl;
       exit(1);
     }
     Direction d3 = inverse(act.to(ant));
@@ -373,7 +366,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       if(floodPos.x < 0 or floodPos.y < 0 or floodPos.x >= map.rows() or floodPos.y >= map.cols()) continue;
       if(map[floodPos].uDrawer == uid) continue;
       bool valid = true;
-      floodv2(plId,uid,colAct,floodPos,valid,map);
+      flood(plId,uid,colAct,floodPos,valid,map);
       if(valid){
         validColors.push_back(colAct);
       }
@@ -404,13 +397,13 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
         //Erases start of possible drawings
         for(int i = 0; i < drawStarts.size(); ++i){
           if(drawStarts[i].first == Position(pos.x+xmin,pos.y+ymin)){
-            if(debugDrawErase) cerr << "erasing drawing starting in " << Position(pos.x+xmin,pos.y+ymin) << endl;
+            if(debugDrawErase) cerr << "erasing drawing starting in " << Position(pos.x+xmin,pos.y+ymin) << std::endl;
             erasePath(i,drawStarts[i].second);
           }
         }
 
         //Erases all drawings
-        if(info.square(sqpos).drawed() and info.square(sqpos).uDrawer != uid){
+        if(info.square(sqpos).drawn() and info.square(sqpos).uDrawer != uid){
           if(debug) std::cerr << std::endl <<"ERASING PATH THAT STARTED AT " << i <<"," << j << std::endl << std::endl;
           erasePath(info.square(sqpos).uDrawer,sqpos);
         }
@@ -437,7 +430,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
   }
 
   //Updates borders
-  if(paintDebug) std::cerr << "updating borders..." << endl;
+  if(debugPaint) std::cerr << "updating borders..." << std::endl;
   for(int i = xmin-1; i <= xmax+1; ++i){
     for(int j = ymin-1; j <= ymax+1; ++j){
       Position pos = Position(i,j);
@@ -445,7 +438,7 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       if(info.square_map[pos].plPainter != plId) continue;
       
       bool border = false;
-      for(int i = 0; i < 1; ++i){
+      for(int index = 0; index < 1; ++index){
         Position pos2 = pos+Direction::UL;
         if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
         pos2 = pos+Direction::up;
@@ -472,20 +465,20 @@ void Board::paintv2(int plId, int uid, Position in, Position out){
       }
     }
   }
-  if(debug) std::cerr << "paintv2 func end" << std::endl;
+  if(debug) std::cerr << "paint func end" << std::endl;
 }
 
 void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir){
-  if(debug) std::cerr << "unit " << uid << " of player " << plId << " drawing at " << pnew << endl;
+  if(debug) std::cerr << "unit " << uid << " of player " << plId << " drawing at " << pnew << std::endl;
 
   Square sant = info.square(pant);
   Square snew = info.square(pnew);
   if(debug) std::cerr << "sant: " << sant.pos() << ", snew: " << snew.pos() << std::endl;
   
-  if(snew.drawed() /*and snew.uDrawer != uid*/){
-    if(debug) std::cerr << "new pos is drawed" << std::endl;
+  if(snew.drawn() /*and snew.uDrawer != uid*/){
+    if(debug) std::cerr << "new pos is drawn" << std::endl;
     //if you step on someone else's drawing, erase it
-    if(debug) std::cerr << "erasing path at " << snew.pos() << endl;
+    if(debug) std::cerr << "erasing path at " << snew.pos() << std::endl;
     erasePath(snew.uDrawer,pnew);
     sant = info.square(pant);
     snew = info.square(pnew);
@@ -497,7 +490,7 @@ void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir)
     info.square_map[pnew].plDrawer = plId;
     //if behind you is a drawing and you enter a secure painted area, enclose and paint
     if(snew.plPainter == plId){
-      paintv2(plId,uid,snew.p,sant.p);
+      paint(plId,uid,snew.p,sant.p);
       return;
     }
   }
@@ -512,10 +505,9 @@ void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir)
       if(drawStarts[uid].first != Position(-1,-1)){
         if(debug){
           std::cerr << "unit: " << uid << " ";
-          std::cerr << "position " << int(pant.x) << "," << int(pant.y) <<  " already starts a drawing" << std::endl;
+          std::cerr << "position " << pant <<  " already starts a drawing" << std::endl;
+          printStartSquares(drawStarts);
         }
-        printStartSquares(drawStarts);
-        //exit(1);
       }
       drawStarts[uid] = make_pair(pant,pnew);
     }
@@ -524,7 +516,6 @@ void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir)
 
 int Board::fight(Unit& u1, Unit& u2, FightMode fm){
   if(debug) std::cerr << "fighting, ";
-  //Transformations to energy if needed
 
   int e1 = 0;
   int e2 = 0;
@@ -540,18 +531,9 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
       else winner = u2.id();
     }
   }
-  else if(fm == FightMode::Attacks)  //Kills
+  else if(fm == FightMode::Attacks)  //Kills. Assumes u1 always is the attacker
   {  
     winner = u1.id();
-    /*if(u1.energy() >= u2.energy()){
-      winner = u1.id();
-    }
-    else{
-      u2.energ -= u1.energ;
-      if(u2.energy() < info.energyMin){
-        u2.energ = info.energyMin;
-      }
-    }*/
   }
 
   if(debug) std::cerr << "winner: " << winner << std::endl;
@@ -578,17 +560,17 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm){
 
 bool Board::executeOrder(int plId, Order ord){
   if(debugOrders) std::cerr << "executing order to " << ord.unitId << " owned by " << plId << " ";
-  if(debugOrders) std::cerr << ord.dir << " " <<ord.type << " " << ord.unitId << endl;
+  if(debugOrders) std::cerr << ord.dir << " " << ord.type << " " << ord.unitId << std::endl;
 
   if(not unitOk(ord.unitId)){
-    std::cerr << "warning: unit " << ord.unitId << " is not valid" << endl;
+    std::cerr << "warning: unit " << ord.unitId << " is not valid" << std::endl;
     return false;
   }
 
   //Unit is valid
   Unit u = info.unitsVector[ord.unitId];
   if(u.pl != plId){
-    if(not killedUnits[u.id_]) std::cerr << "warning: unit " << u.id_ << " is not controlled by the player " << plId << std::endl;
+    if(not killedUnits[u.id()]) std::cerr << "warning: unit " << u.id() << " is not controlled by the player " << plId << std::endl;
     return false;
   }
 
@@ -605,20 +587,23 @@ bool Board::executeOrder(int plId, Order ord){
 
     //Valid movement
     if(ord.dir == Direction::null) return true;
-    Position newPos = u.p + ord.dir;
-    Position actPos = u.p;
+    Position newPos = u.position() + ord.dir;
+    Position actPos = u.position();
 
     //Return false if position is not valid
     if(not info.posOk(newPos)){
-      std::cerr << "warning: moving outside of the board" << endl;
+      std::cerr << "warning: player " << u.player() << "'s unit " << u.id()  << " tried to move to outside the board" << std::endl;
       return false;
     }
     
     Square sq = info.square(newPos);
-    Square act = info.square(u.p);
+    Square act = info.square(u.position());
+
+    //Prevents exiting ability areas
     if(act.ability() and not sq.ability() and act.painted() and act.painter() != u.player()){ //Ability border
       return false;
     }
+    //Prevents entering ability areas
     if(((not act.ability()) or (act.ability() and act.painter() == u.player())) and sq.ability() and sq.painted() and sq.painter() != u.player()){
       return false;
     }
@@ -631,7 +616,7 @@ bool Board::executeOrder(int plId, Order ord){
       if(isDiagonal(sq.p.to(u.p)) and sq.unit().player() != sq.painter())
         fm = FightMode::Attacks;
 
-      int win = fight(info.unitsVector[u.id()],info.unitsVector[sq.u->id_],fm);
+      int win = fight(info.unitsVector[u.id()],info.unitsVector[sq.u->id()],fm);
       if(win != u.id()){ //Lost the fight
         return true;
       }
@@ -639,7 +624,7 @@ bool Board::executeOrder(int plId, Order ord){
     else if(sq.hasBonus()){ //Try to take -> consume
       if(info.bonusPlayers[plId] < info.bonusMax and not info.unitsVector[u.id()].upg){
         info.bonusPlayers[plId]++;
-        info.unitsVector[u.id_].upg = true;
+        info.unitsVector[u.id()].upg = true;
       }
       info.square_map[newPos].b = nullptr;
       info.currentBonuses--;
@@ -674,7 +659,7 @@ bool Board::executeOrder(int plId, Order ord){
     //Compute attacked position
     Position attacked = u.p + ord.dir;
     if(not info.posOk(attacked)){
-      std::cerr << "warning: unit " << u.id() << "by player " << u.player() <<  " attacked an invalid position" << std::endl;
+      std::cerr << "warning: unit " << u.id() << "by player " << u.player() <<  " attacked the invalid position" << attacked << std::endl;
       return false;
     }
     Square sq = info.square(attacked);
@@ -682,7 +667,7 @@ bool Board::executeOrder(int plId, Order ord){
     //If there is an enemy unit, attack
     if(sq.hasUnit()){
 
-      if(sq.unit().player() == u.player()){
+      if(sq.unit().player() == u.player()){ //Can't slaughter one's allies
         return false;
       }
 
@@ -711,20 +696,17 @@ bool Board::executeOrder(int plId, Order ord){
       return true;
     }
     
-    //If there is not, see if there was one before that has moved
+    //If there is nothing, see if there was someone before that has moved
     Square sqold = info.old_square_map[attacked];
     if(sqold.hasUnit()){
       //If there was, see if it is in range
       int uid = sqold.unit().id();
       
       Direction dirAux = Direction::null;
-      while(1){
-        if(info.square(sq.pos()+Direction::up).unit().id() == uid) dirAux = Direction::up;
-        else if(info.square(sq.pos()+Direction::left).unit().id() == uid) dirAux = Direction::left;
-        else if(info.square(sq.pos()+Direction::right).unit().id() == uid) dirAux = Direction::right;
-        else if(info.square(sq.pos()+Direction::down).unit().id() == uid) dirAux = Direction::down;
-        break;
-      }
+      if(info.square(sq.pos()+Direction::up).unit().id() == uid) dirAux = Direction::up;
+      else if(info.square(sq.pos()+Direction::left).unit().id() == uid) dirAux = Direction::left;
+      else if(info.square(sq.pos()+Direction::right).unit().id() == uid) dirAux = Direction::right;
+      else if(info.square(sq.pos()+Direction::down).unit().id() == uid) dirAux = Direction::down;
 
       if(dirAux != Direction::null){
         //If it still is in range, attack
@@ -750,8 +732,8 @@ bool Board::executeOrder(int plId, Order ord){
   }
   case OrderType::ability:{
 
-    if(not info.unitsVector[u.id_].upg){
-      std::cerr << "unit " << u.id_ << " is not upgraded and cannot use the ability" << endl;
+    if(not info.unitsVector[u.id()].upg){
+      std::cerr << "player " << u.player() << ": unit " << u.id() << " is not upgraded and cannot use the ability" << std::endl;
       return false;
     }
     
@@ -759,12 +741,10 @@ bool Board::executeOrder(int plId, Order ord){
 
     //Queues the ability for later
     abilityUnits.push_back(u.id());
-
-
     break;
   }
   default:{
-    std::cerr << "didn't do shit" << endl;
+    std::cerr << "ordertype was wrong" << std::endl;
     break;
   }
   }
@@ -818,11 +798,11 @@ void Board::popBubble(Position p, bool isForced){
     Position aux = toPaint[i];
     if(not info.posOk(aux)) continue;
     Square sqaux = info.square(aux);
-    if(not sqaux.drawed()) continue;
+    if(not sqaux.drawn()) continue;
     
     if(sqaux.plDrawer == b.player()){
 
-      if(debug) std::cerr << "painting from bubble pop at " << int(aux.x) << "," << int(aux.y) << endl;
+      if(debug) std::cerr << "painting from bubble pop at " << int(aux.x) << "," << int(aux.y) << std::endl;
 
       //Find out drawing
       Position drawingOut(-1,-1);
@@ -837,17 +817,17 @@ void Board::popBubble(Position p, bool isForced){
       }
       if(drawingOut == Position(-1,-1)){
         if(debug) std::cerr << "popBubble: didn't find a position" << std::endl;
-        if(sqaux.drawed()){
+        if(sqaux.drawn()){
           erasePath(sqaux.uDrawer,drawStarts[sqaux.uDrawer].second);
         }
         continue;
       }
 
-      paintv2(b.player(),sqaux.uDrawer,aux,drawingOut);
+      paint(b.player(),sqaux.uDrawer,aux,drawingOut);
 
       //Erase drawing
       sqaux = info.square(aux);
-      if(sqaux.drawed()){
+      if(sqaux.drawn()){
         erasePath(sqaux.uDrawer,drawStarts[sqaux.uDrawer].second);
       }
     }
@@ -934,14 +914,14 @@ void Board::useAbility(int plId, Position p){
   int ymax = p.y+(info.abilitySize-1)/2;
 
   if(debug){
-    std::cerr << "ability data: " << endl;
-    std::cerr << "position: " << int(p.x) << "," << int(p.y) << endl;
-    std::cerr << "xmin: " << xmin << " " << "xmax: " << xmax << " " << "ymin: " << ymin << " " << "ymax: " << ymax << endl;
+    std::cerr << "ability data: " << std::endl;
+    std::cerr << "position: " << int(p.x) << "," << int(p.y) << std::endl;
+    std::cerr << "xmin: " << xmin << " " << "xmax: " << xmax << " " << "ymin: " << ymin << " " << "ymax: " << ymax << std::endl;
   } 
 
   //Paint and highlight all squares as 'ability squares'
   //Erase all drawings made by enemies
-  //Erase all ally-drawed squares if they are not border
+  //Erase all ally-drawn squares if they are not border
   for(int i = xmin; i <= xmax; ++i){
     for(int j = ymin; j <= ymax; ++j){
       Position pos(i,j);
@@ -951,7 +931,7 @@ void Board::useAbility(int plId, Position p){
       if(sq.ability() and sq.painter() != plId){
         invalidateAbility(sq.painter(),pos);
       }
-      if(sq.drawed()){
+      if(sq.drawn()){
         if(sq.plDrawer != plId){
           if(debug){
             std::cerr << "square drawer is " << int(sq.plDrawer) << " but plId is " << plId << std::endl;
@@ -979,7 +959,7 @@ void Board::useAbility(int plId, Position p){
 
   //Prints ability
   if(debug){
-    std::cerr << "printing ability " << endl;
+    std::cerr << "printing ability " << std::endl;
     for(int i = xmin; i <= xmax; ++i){
       for(int j = ymin; j <= ymax; ++j){
         Position auxaux = Position(i,j);
@@ -989,7 +969,7 @@ void Board::useAbility(int plId, Position p){
         else std::cerr << -9 << " ";
         
       }
-      std::cerr << endl;
+      std::cerr << std::endl;
     }
   }
   
@@ -1113,18 +1093,18 @@ void Board::useAbility(int plId, Position p){
       if(info.posOk(pos)){
         Square sq = info.square(pos);
         if(pos == Position(37,38)){
-          std::cerr << "position is here" << endl;
+          std::cerr << "position is here" << std::endl;
           if(sq.border() and debug) std::cerr << "is border" << " ";
-          if(sq.drawed() and debug) std::cerr << " and drawn";
+          if(sq.drawn() and debug) std::cerr << " and drawn";
           if(debug) std::cerr << std::endl;
         }
-        if((pos.x == xmin or pos.x == xmax or pos.y == ymin or pos.y == ymax) and sq.drawed()){
+        if((pos.x == xmin or pos.x == xmax or pos.y == ymin or pos.y == ymax) and sq.drawn()){
           if(debug){
             std::cerr << "drawer is " << int(sq.uDrawer) << std::endl;
             std::cerr << "pos " << i << "," << j << ", ";
-            std::cerr << "Painting from ability" << endl;
-            std::cerr << "plId = " << plId << ", uid = " << int(sq.uDrawer) << ", p = " << int(pos.x) << "," << int(pos.y) << endl;
-            std::cerr << int(sq.plDrawer) << endl;
+            std::cerr << "Painting from ability" << std::endl;
+            std::cerr << "plId = " << plId << ", uid = " << int(sq.uDrawer) << ", p = " << int(pos.x) << "," << int(pos.y) << std::endl;
+            std::cerr << int(sq.plDrawer) << std::endl;
           }          
 
           Position drawingOut(-1,-1);
@@ -1144,9 +1124,9 @@ void Board::useAbility(int plId, Position p){
             continue;
           }
 
-          paintv2(plId,sq.uDrawer,pos,drawingOut);
+          paint(plId,sq.uDrawer,pos,drawingOut);
         }
-        else if(sq.drawed()){ //Specific case, DON'T TOUCH
+        else if(sq.drawn()){ //Specific case, DON'T TOUCH
           sq.uDrawer = -1;
           sq.plDrawer = -1;
           info.square_map[pos] = sq;
@@ -1171,8 +1151,8 @@ void Board::resolveAbilities(){
     abilityUnits.clear();
     return;
   }
-  if(debug) std::cerr << "ability conflicts can occur" << endl;
-  if(debug) std::cerr<< "units that can use the ability:" << endl;
+  if(debug) std::cerr << "ability conflicts can occur" << std::endl;
+  if(debug) std::cerr<< "units that can use the ability:" << std::endl;
   for(int i = 0; i < abilityUnits.size(); ++i){
     if(debug) std::cerr << abilityUnits[i] << " ";
   }
@@ -1358,7 +1338,7 @@ void Board::respawn(){
       }
     }
     if(index == -1){
-      std::cerr << " at least one bonus should be free (position -1,-1), but it isn't" << endl;
+      std::cerr << " at least one bonus should be free (position -1,-1), but it isn't" << std::endl;
       exit(1);
     }
     Position xy(x,y);
@@ -1388,7 +1368,7 @@ void Board::executeRound(const vector<Player*>& pl){
   //if(info.round() == 81) exit(1);
 
   info.old_square_map = info.square_map;
-  if(debugBasic) std::cerr << "Executing round " << info.round() << endl;
+  if(debugBasic) std::cerr << "Executing round " << info.round() << std::endl;
 
   killedUnits = vector<bool>(info.unitsMax*info.numPlayers,false);
 
@@ -1433,10 +1413,10 @@ void Board::executeRound(const vector<Player*>& pl){
     //if(debugOrders) std::cerr << "Player " << who << " executing order " << playerOrderIndex[who] << std::endl;
 
     if(executeOrder(who,pl[who]->orderList[playerOrderIndex[who]])){
-      if(debugOrders) std::cerr << "order executed succesfully" << endl;
+      if(debugOrders) std::cerr << "order executed succesfully" << std::endl;
     }
     else{
-      if(debugOrders) std::cerr << "order didn't execute" << endl;
+      if(debugOrders) std::cerr << "order didn't execute" << std::endl;
     }
     playerOrderIndex[who]++;
     if(playerOrderIndex[who] > pl[who]->index){
@@ -1448,41 +1428,42 @@ void Board::executeRound(const vector<Player*>& pl){
   for(int i = 0; i < pl.size(); ++i){
     for(int j = 0; j <= pl[i]->index; ++j){
       if(executeOrder(i,pl[i]->orderList[j])){
-        if(debugOrders) std::cerr << "order executed succesfully" << endl;
+        if(debugOrders) std::cerr << "order executed succesfully" << std::endl;
       }
       else{
-        if(debugOrders) std::cerr << "order didn't execute" << endl;
+        if(debugOrders) std::cerr << "order didn't execute" << std::endl;
       }
     }
   }*/
-  if(debugBasic) std::cerr << "\texecuting free attacks..." << endl;
+  if(debugBasic) std::cerr << "\texecuting free attacks..." << std::endl;
   performFreeAttacks();
-  if(debugBasic) std::cerr << "\tpopping bubbles..." << endl;
+  if(debugBasic) std::cerr << "\tpopping bubbles..." << std::endl;
   popBubbles();
-  if(debugBasic) std::cerr << "\tresolving abilities..." << endl;
+  if(debugBasic) std::cerr << "\tresolving abilities..." << std::endl;
   resolveAbilities();
   
-  if(debugBasic) std::cerr << "\tmoving bubbles..." << endl;
+  if(debugBasic) std::cerr << "\tmoving bubbles..." << std::endl;
   moveBubbles();
-  if(debugBasic) std::cerr << "\tgetting player squares..." << endl;
+  if(debugBasic) std::cerr << "\tgetting player squares..." << std::endl;
   getPlayerSquares();
-  if(debugBasic) std::cerr << "\trespawning..." << endl;
+  if(debugBasic) std::cerr << "\trespawning..." << std::endl;
   respawn();
-  if(debugBasic) std::cerr << "\tcomputing energies..." << endl;
+  if(debugBasic) std::cerr << "\tcomputing energies..." << std::endl;
   computeEnergies();
-  if(debugBasic) std::cerr << "\tgiving board points..." << endl;
+  if(debugBasic) std::cerr << "\tgiving board points..." << std::endl;
   giveBoardPoints();
 }
 
 void Board::printRound(){
-  //std::cerr << endl << "Printing round " << info.round() << endl << endl;
+  //std::cerr << std::endl << "Printing round " << info.round() << std::endl << std::endl;
 
   if(info.round()==0){
     debugBasic = false;
-    paintDebug = false;
     debug = false;
-    debugDrawErase = false;
     debugOrders = false;
+    debugPaint = false;
+    debugDrawErase = false;
+    debugFlood = false;
   }
 
   //VIEWER FORMAT
@@ -1509,7 +1490,7 @@ void Board::printRound(){
         else cout << ucode(false);
       }
     }
-    cout << endl;
+    cout << std::endl;
   }
 
   //CONSOLE FORMAT
@@ -1550,7 +1531,7 @@ void Board::spawnPlayers(){
   int playersToSpawn = info.numPlayers;
 
   if(playersToSpawn < 2){
-    std::cerr << "can't play solo" << endl;
+    std::cerr << "can't play solo" << std::endl;
     exit(1);
   }
 
@@ -1596,9 +1577,9 @@ void Board::printPainters(){
     for(int j = 0; j < info.cols(); ++j){
       std::cerr << info.square_map[Position(i,j)].painter() << " ";
     }
-    std::cerr << endl;
+    std::cerr << std::endl;
   }
-  std::cerr << endl;
+  std::cerr << std::endl;
 }
 
 void Board::printStartSquares(const vector<pair<Position,Position>>& sqs){

@@ -210,12 +210,12 @@ private:
 
     //Collect units    
     vector<int> u = units(me());
-    cerr << "unit list: " << endl;
+    /*cerr << "unit list: " << endl;
     for(int un : u){
       cerr << un << " at ";
       cerr << int(unit(un).position().x) << "," << int(unit(un).position().y) << " ";
     }
-    cerr << endl;
+    cerr << endl;*/
 
     for(int i = 0; i < u.size(); ++i){
       if(unit(u[i]).upgraded()){

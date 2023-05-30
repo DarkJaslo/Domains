@@ -39,7 +39,7 @@ private:
   //Saves a rectangle (Position(xmin,ymin),Position(xmax,ymax)) to paint
   void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
 
-  void floodv2(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid);
+  void flood(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid);
 
   void perpendicularDirections(Direction dir, Direction& res1, Direction& res2);
 
@@ -47,7 +47,7 @@ private:
 
   //Seriously how the fuck do you do this
 
-  void paintv2(int plId, int uid, Position in, Position out);
+  void paint(int plId, int uid, Position in, Position out);
 
   //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
   void draw(int plId, int uid, Position pnew, Position pant, Direction dir);
@@ -124,10 +124,11 @@ private:
 
   std::queue<FreeAttack> freeAttacks; 
   std::vector<Position> attackedPositions;
-  std::vector<std::pair<Position,Position>> drawStarts;  //First position is origin, second is first drawed Square
+  std::vector<std::pair<Position,Position>> drawStarts;  //First position is origin, second is first drawn Square
   bool debug,view;
-  bool paintDebug;
+  bool debugPaint;
   bool debugDrawErase;
   bool debugOrders;
   bool debugBasic;
+  bool debugFlood;
 };
