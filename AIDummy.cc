@@ -1,9 +1,12 @@
 #include "Player.hh"
+#include <limits>
 using namespace std;
 
 #define PLAYER_NAME Dummy
 
 struct PLAYER_NAME : public Player{
+
+#define MAXINT numeric_limits<int>::max()
 
 class PositionSet{
 public:
@@ -66,6 +69,16 @@ struct BFSInfo{
   BFSInfo(Position p, int dist){
     pos = p; distance = dist;
   }
+};
+
+struct Order{
+  int uid;
+  Direction dir;
+  bool canChange;
+  OrderType type;
+  int dist;
+  Order(                  ) : uid(-1), dir(null), canChange(true), type(OrderType::movement), dist(MAXINT){}
+  Order(int id, Direction dir, bool canChange, OrderType type, int dist) : uid(id), dir(dir ), canChange(canChange), type(type), dist(dist){}
 };
 
 //Global structures
@@ -231,11 +244,26 @@ double queueTime = 0;
 vector<Direction> DIRS_MAP; //So directions work as if you were down-left
 Position startingPos;
 
-//Auxiliar functions
+vector<int> uns;
+vector<Position> bonusPositions;
+vector<Position> bubblePositions;
+vector<Order> orders;
 
-static bool playerHasBubble(const Square& sq, Position st, BFSInfo inf){ return sq.hasBubble(); }
-static bool playerHasBonus(const Square& sq, Position st, BFSInfo inf){ return sq.hasBonus(); }
+
+//Auxiliar functions
+struct BFSStruct{
+  Square sq;
+  Position st;
+  BFSInfo inf;
+  int plId;
+  BFSStruct(const Square& sq, Position startPos, const BFSInfo& inf, int plId) 
+    :sq(sq),st(startPos),inf(inf),plId(plId) {}
+};
+static bool playerHasBubble(const BFSStruct& str){ return str.sq.hasBubble(); }
+static bool playerHasBonus(const BFSStruct& str){ return str.sq.hasBonus(); }
 static bool playerHasBubble(const Square& sq){ return sq.hasBubble(); }
+static bool allyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() == str.plId; }
+static bool enemyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() != str.plId; }
 bool isDiagonal(Direction d){return d >= Direction::UL;}
 Direction decide(Position pos){
   if(pos.x < 0 and pos.y < 0){
@@ -289,6 +317,16 @@ Position virtualPos(Position pos){
     }
   }
 }
+template<typename T>
+int findInVector(const vector<T>& vec, const T& thing){
+  for(int i = 0; i < vec.size(); ++i){
+    if(vec[i] == thing) return i;
+  }
+  return -1;
+}
+int distance(Position pos, Position target){
+  return abs(target.x-pos.x)+abs(target.y-pos.y);
+}
 
 //Assumes diagonal moves are always legal
 Direction bestDirection(Position desired, Position act){
@@ -301,6 +339,11 @@ Direction bestDirection(Position desired, Position act){
   else if(desired.x < act.x){ return Direction::up; }
   else if(desired.y > act.y){ return Direction::right; }
   return Direction::left;
+}
+
+Direction bestDirectionFlex(Position desired, Position act, bool diag = false){
+  if(diag) return bestDirection(desired,act);
+  return decide(Position(desired.x-act.x,desired.y-act.y));
 }
 
 //Used in openings
@@ -365,15 +408,15 @@ void queueAdjacentPositions(BFSInfo info, queue<BFSInfo>& toVisit, PositionSet& 
 }
 
 //Will allow a lot of stuff when completed
-bool layered_bfs(Position& target, set<Position>& visited, queue<Position>& toVisit, bool(*comp)(const Square&))
+bool layered_bfs(Position& target, PositionSet& visited, queue<Position>& toVisit, bool(*comp)(const Square&))
 {
   return false;
 }
 
 //Good ol' generic BFS
 bool bfs(Position& target, Position start, 
-  bool(*found)(const Square&, Position, BFSInfo), 
-  bool(*stop) (const Square&, Position, BFSInfo) = nullptr, 
+  bool(*found)(const BFSStruct&), 
+  bool(*stop) (const BFSStruct&) = nullptr, 
     bool tryDiagonal = false, int plId = -1, int radius = 2*rows())
 {
   //Might want to add another function for after posOk()
@@ -401,11 +444,12 @@ bool bfs(Position& target, Position start,
     //the function would execute here with a continue
 
     Square sq = square(info.pos);
-    if(found(sq,start,info)){
+    BFSStruct str(sq,start,info,plId);
+    if(found(str)){
       target = info.pos;
       return true;
     }
-    else if(stop != nullptr and stop(sq,start,info)){
+    else if(stop != nullptr and stop(str)){
       return false;
     }
     queueAdjacentPositions(info,toVisit,visited,tryDiagonal,plId);
@@ -414,7 +458,41 @@ bool bfs(Position& target, Position start,
 }
 
 
+//Stores info about the current map
+void scanMap(){
+  bonusPositions.clear();
+  bubblePositions.clear();
 
+  for(int i = 0; i < rows(); ++i){
+    for(int j = 0; j < cols(); ++j){
+      Position pos(i,j);
+      Square sq = square(pos);
+      if(sq.hasBonus()){
+        bonusPositions.push_back(pos);
+      }
+      else if(sq.hasBubble()){
+        bubblePositions.push_back(pos);
+      }
+    }
+  }
+}
+
+void giveBonusOrders(){
+  for(const Position& pos : bonusPositions){
+    Position result(-1,-1);
+    bool findPlayer = bfs(result,pos,PLAYER_NAME::allyUnit,PLAYER_NAME::enemyUnit,false,me(),30);
+    if(not findPlayer) continue;
+    //Found a player
+    Square sq = square(result);
+    int realUid = unit(result).id();
+    int uid = findInVector(uns,realUid);
+    if(uid == -1) continue;
+    if(not orders[uid].canChange) continue;
+    if(orders[uid].dist < distance(pos,result)) continue;
+    bool diagonal = sq.painter() == me();
+    orders[uid] = Order(uid,bestDirectionFlex(pos,result,diagonal),true,OrderType::movement,distance(pos,result));
+  }
+}
 
 
 void initializeDirections(){
@@ -480,6 +558,13 @@ void initialize(){
   initializeDirections();
 }
 
+void update(){
+  orders = vector<Order>(uns.size());
+  for(int i = 0; i < orders.size(); ++i){
+    orders[i] = Order(i,Direction::null,true,OrderType::movement,MAXINT);
+  }
+}
+
 //Play method (keep as short as possible)
 virtual void play(){
   Timer timer("play()",&time,false);
@@ -489,7 +574,8 @@ virtual void play(){
   }
 
   //Collect units    
-  vector<int> uns = units(me());
+  uns = units(me());
+  update();
   /*cerr << "unit list: " << endl;
   for(int un : uns){
     cerr << un << " at ";
@@ -583,6 +669,24 @@ virtual void play(){
     move(uns[4],DIRS_MAP[Direction::down]);
     move(uns[1],DIRS_MAP[Direction::left]);
   }
+  else{
+    scanMap();
+    giveBonusOrders();
+
+    for(const Order& ord : orders){
+      switch(ord.type){
+        case OrderType::movement:
+          move(uns[ord.uid],ord.dir);
+          break;
+        case OrderType::attack:
+          attack(uns[ord.uid],ord.dir);
+          break;
+        case OrderType::ability:
+          ability(uns[ord.uid]);
+          break;
+      }
+    }
+  }
   
   
   
@@ -613,54 +717,41 @@ REGISTER_PLAYER(PLAYER_NAME);
 /*
   Dummy strategy:
   "Greedy" mindset, goes for the nearest interaction without thinking too much
+  Does not use diagonal movement
 
   Stores targets, so two units don't go after the same thing
   Does a simple opening
 
 
 
-  27 ROUND OPENING
-
-  8 units
-
-  0 does 26
-  1 does 22 eff
-  2 19
-  3 16
-  4 13
-  5 10
-  6 7
-  7 4
-  8 1
+  27 round opening
 
 
-  1
-  2   
-  3
-  4
-  5
-  6
-  7
-  8
-  9
-  10
-  11
-  12
-  13
-  14
-  15
-  16
-  17
-  18
-  19
-  20
-  21
-  22
-  23
-  24
-  25
-  26
-  27
+  Strategy:
+  units look for critical cases (distance 1-2-diagonals). They always attack when they can.
+
+  from bonuses, look for the nearest player (with a margin M).
+    If found, player will go for them. This is checked every round
+  
+  from any possible bubbles, look for players in a radius. Same as with bonuses
+
+  Do a distance 5 (example) BFS and decide: always combat if found
+  If no one is near, do a 9 step drawing
+    which has to be complex of course
+
+
+
+
+  In code:
+
+  Solve short distance cases
+  Store who has been ordered
+
+  Scan the board and store bonuses and bubbles
+  Search from all bonuses
+  Search from all bubbles
+  Do the BFS
+
 */
 
 
