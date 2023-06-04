@@ -1,3 +1,2 @@
 Dummy:
-la apertura puede salir mal si el pop de la burbuja pinta
 lo de buscar unidades desde comidas no sigue buscando si la primera unidad encontrada ya está adjudicada (layered bfs)

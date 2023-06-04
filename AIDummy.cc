@@ -653,10 +653,16 @@ virtual void play(){
 
     //Unit 7
     if(round() >= 21){
-      if(round() == 21){
-        move(uns[7],DIRS_MAP[virtualPos(unit(uns[7]).position()).to(Position(48,1))]);
+      Position aux = virtualPos(unit(uns[7]).position());
+      if(aux.x < 47 or aux.y > 2){
+        move(uns[7],DIRS_MAP[Direction::null]);
       }
-      else{  move(uns[7],DIRS_MAP[UNIT7OPENING[round()-22]]); }
+      else{
+        if(round() == 21){
+          move(uns[7],DIRS_MAP[virtualPos(unit(uns[7]).position()).to(Position(48,1))]);
+        }
+        else{  move(uns[7],DIRS_MAP[UNIT7OPENING[round()-22]]); }
+      }
     }
 
     //Unit 0
@@ -666,6 +672,12 @@ virtual void play(){
     //Very specific moves with a very specific order
     if(virtualPos(unit(uns[8]).position()) == Position(47,2)){
       move(uns[8],DIRS_MAP[Direction::down]);
+    }
+    else if(virtualPos(unit(uns[9]).position()) == Position(47,2)){
+      if(virtualPos(unit(uns[8]).position()) == Position(48,2)){
+        move(uns[8],DIRS_MAP[Direction::down]);
+      }
+      move(uns[9],DIRS_MAP[Direction::down]);
     }
     move(uns[2],DIRS_MAP[Direction::down]);
     move(uns[0],DIRS_MAP[Direction::left]);
