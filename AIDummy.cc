@@ -6,6 +6,8 @@ using namespace std;
 
 struct PLAYER_NAME : public Player{
 
+static Player* factory(){ return new PLAYER_NAME; }
+
 #define MAXINT numeric_limits<int>::max()
 
 class PositionSet{
@@ -53,22 +55,10 @@ private:
   Matrix<int8_t> _container;  
 };
 
-static Player* factory(){
-  return new PLAYER_NAME;
-}
-
-//Maybe unused
-template<typename T>
-bool contains(set<T>& set, const T& value){
-  return set.find(value) != set.end();
-}
-
 struct BFSInfo{
   Position pos;
-  int distance;
-  BFSInfo(Position p, int dist){
-    pos = p; distance = dist;
-  }
+  int dist;
+  BFSInfo(Position p, int dist) : pos(p), dist(dist){}
 };
 
 struct Order{
@@ -79,6 +69,11 @@ struct Order{
   int dist;
   Order(                  ) : uid(-1), dir(null), canChange(true), type(OrderType::movement), dist(MAXINT){}
   Order(int id, Direction dir, bool canChange, OrderType type, int dist) : uid(id), dir(dir ), canChange(canChange), type(type), dist(dist){}
+};
+
+struct BFSState{
+  PositionSet vis;
+  queue<BFSInfo> toVis;
 };
 
 //Global structures
@@ -401,7 +396,7 @@ void queueAdjacentPositions(BFSInfo info, queue<BFSInfo>& toVisit, PositionSet& 
     Position aux = info.pos+permutation[i];
     if(posOk(aux) and not visited.queued(aux) and not visited.contains(aux) ){
       if(isDiagonal(permutation[i]) and square(aux).painter() != plId) continue;
-      toVisit.push(BFSInfo(aux,info.distance+1));
+      toVisit.push(BFSInfo(aux,info.dist+1));
       visited.queue(aux);
     }
   }
@@ -425,18 +420,18 @@ bool bfs(Position& target, Position start,
   visited.add(start);
   queue<BFSInfo> toVisit;
   Matrix<int> distances(50,50);
-  for(int i = 0; i < 50; ++i){
+  /*for(int i = 0; i < 50; ++i){
     for(int j = 0; j < 50; ++j){
       distances[Position(i,j)] = 0;
     }
-  }
+  }*/
   queueAdjacentPositions(BFSInfo(start,0),toVisit,visited,tryDiagonal,plId);
 
   while(not toVisit.empty()){
     BFSInfo info = toVisit.front();
     toVisit.pop();
 
-    if(info.distance > radius) return false;
+    if(info.dist > radius) return false;
 
     if(visited.contains(info.pos)) continue;
     visited.add(info.pos);
