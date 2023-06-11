@@ -58,6 +58,9 @@ private:
 struct BFSInfo{
   Position pos;
   int dist;
+  bool operator<(const BFSInfo& another){
+    return dist < another.dist;
+  }
   BFSInfo(Position p, int dist) : pos(p), dist(dist){}
 };
 
@@ -74,6 +77,27 @@ struct Order{
 struct BFSState{
   PositionSet vis;
   queue<BFSInfo> toVis;
+  Position start;
+  int uid;
+};
+
+struct Target{
+  Target(){
+    bonus = false; bubble = false;
+  }
+  bool targeted()const{ return bonus or bubble; }
+  int targetNum;
+  bool bonus, bubble;
+};
+
+struct BFSStruct{
+  Square sq;
+  Position st;
+  BFSInfo inf;
+  int plId;
+  Target target;
+  BFSStruct(const Square& sq, Position startPos, const BFSInfo& inf, int plId, Target target) 
+    :sq(sq),st(startPos),inf(inf),plId(plId),target(target) {}
 };
 
 //Global structures
@@ -243,21 +267,15 @@ vector<int> uns;
 vector<Position> bonusPositions;
 vector<Position> bubblePositions;
 vector<Order> orders;
+Matrix<Target> targets;
 
 
 //Auxiliar functions
-struct BFSStruct{
-  Square sq;
-  Position st;
-  BFSInfo inf;
-  int plId;
-  BFSStruct(const Square& sq, Position startPos, const BFSInfo& inf, int plId) 
-    :sq(sq),st(startPos),inf(inf),plId(plId) {}
-};
 static bool playerHasBubble(const BFSStruct& str){ return str.sq.hasBubble(); }
 static bool playerHasBonus(const BFSStruct& str){ return str.sq.hasBonus(); }
 static bool playerHasBubble(const Square& sq){ return sq.hasBubble(); }
 static bool allyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() == str.plId; }
+static bool allyNoTargetBonus(const BFSStruct& str){ return allyUnit(str) and not str.target.bonus; }
 static bool enemyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() != str.plId; }
 bool isDiagonal(Direction d){return d >= Direction::UL;}
 Direction decide(Position pos){
@@ -403,8 +421,33 @@ void queueAdjacentPositions(BFSInfo info, queue<BFSInfo>& toVisit, PositionSet& 
 }
 
 //Will allow a lot of stuff when completed
-bool layered_bfs(Position& target, PositionSet& visited, queue<Position>& toVisit, bool(*comp)(const Square&))
+bool layered_bfs(Position& target, PositionSet& visited, queue<BFSInfo>& toVisit, 
+  bool(*found)(const BFSStruct&),
+  bool(*stop) (const BFSStruct&) = nullptr,
+    bool tryDiagonal = false, int plId = -1)
 {
+  int dist = toVisit.front().dist;
+  //cerr << " performing layered with " << dist << endl;
+
+  do{
+    BFSInfo act = toVisit.front();
+    toVisit.pop();
+    queueAdjacentPositions(act,toVisit,visited,true,plId);
+    if(not posOk(act.pos)) continue;
+    if(visited.contains(act.pos)) continue;
+    visited.add(act.pos);
+
+    BFSStruct str(square(act.pos),Position(-1,-1),act,plId,targets[act.pos]);
+    if(found(str)){
+      target = act.pos;
+      return true;
+    }
+    else if(stop != nullptr and stop(str)){
+      target = Position(-1,-1);
+      return true;
+    }
+  }
+  while(not toVisit.empty() and toVisit.front().dist == dist);
   return false;
 }
 
@@ -439,7 +482,7 @@ bool bfs(Position& target, Position start,
     //the function would execute here with a continue
 
     Square sq = square(info.pos);
-    BFSStruct str(sq,start,info,plId);
+    BFSStruct str(sq,start,info,plId,targets[info.pos]);
     if(found(str)){
       target = info.pos;
       return true;
@@ -473,22 +516,39 @@ void scanMap(){
 }
 
 void giveBonusOrders(){
-  for(const Position& pos : bonusPositions){
-    Position result(-1,-1);
-    bool findPlayer = bfs(result,pos,PLAYER_NAME::allyUnit,PLAYER_NAME::enemyUnit,false,me(),30);
-    if(not findPlayer) continue;
-    //Found a player
-    Square sq = square(result);
-    int realUid = unit(result).id();
-    int uid = findInVector(uns,realUid);
-    if(uid == -1) continue;
-    if(not orders[uid].canChange) continue;
-    if(orders[uid].dist < distance(pos,result)) continue;
-    bool diagonal = sq.painter() == me();
-    orders[uid] = Order(uid,bestDirectionFlex(pos,result,diagonal),true,OrderType::movement,distance(pos,result));
+  int layeredDist = 30;
+
+  vector<BFSState> layered(bonusPositions.size());
+
+  for(int i = 0; i < layered.size(); ++i){
+    layered[i].start = bonusPositions[i];
+    layered[i].uid = -1;
+    BFSInfo inf(layered[i].start,0);
+    queueAdjacentPositions(inf,layered[i].toVis,layered[i].vis,true,me());
+  }
+
+  for(int c = 1; c < layeredDist; ++c){
+    for(int i = 0; i < layered.size(); ++i){
+      if(layered[i].uid != -1) continue;
+      BFSState& l = layered[i];
+      Position target;
+      bool res = layered_bfs(target,l.vis,l.toVis,allyNoTargetBonus,enemyUnit,true,me());
+      if(not res) continue;
+      if(target == Position(-1,-1)){
+        layered[i].uid = -2; //Enemy is going for it
+        continue;
+      }
+      Square sq = square(target);
+      int realUid = unit(target).id();
+      int uid = findInVector(uns,realUid);
+      if(uid == -1) continue;
+      if(not orders[uid].canChange) continue;
+      bool diagonal = sq.painter() == me();
+      orders[uid] = Order(uid,bestDirectionFlex(bonusPositions[i],target,diagonal),false,OrderType::movement,distance(bonusPositions[i],target));
+      layered[i].uid = uid;
+    }
   }
 }
-
 
 void initializeDirections(){
   DIRS_MAP = vector<Direction>(9);
@@ -548,7 +608,6 @@ void initializeDirections(){
   }
 }
 
-
 void initialize(){
   initializeDirections();
 }
@@ -558,6 +617,7 @@ void update(){
   for(int i = 0; i < orders.size(); ++i){
     orders[i] = Order(i,Direction::null,true,OrderType::movement,MAXINT);
   }
+  targets = Matrix<Target>(rows(),cols());
 }
 
 //Play method (keep as short as possible)
@@ -748,8 +808,6 @@ REGISTER_PLAYER(PLAYER_NAME);
   Do a distance 5 (example) BFS and decide: always combat if found
   If no one is near, do a 9 step drawing
     which has to be complex of course
-
-
 
 
   In code:
