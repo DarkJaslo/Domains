@@ -273,9 +273,10 @@ Matrix<Target> targets;
 //Auxiliar functions
 static bool playerHasBubble(const BFSStruct& str){ return str.sq.hasBubble(); }
 static bool playerHasBonus(const BFSStruct& str){ return str.sq.hasBonus(); }
+static bool hasBubbleOrBonus(const BFSStruct& str){ return str.sq.hasBubble() or str.sq.hasBonus(); }
 static bool playerHasBubble(const Square& sq){ return sq.hasBubble(); }
 static bool allyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() == str.plId; }
-static bool allyNoTargetBonus(const BFSStruct& str){ return allyUnit(str) and not str.target.bonus; }
+static bool allyNoTarget(const BFSStruct& str){ return allyUnit(str);/* and not str.target.targeted();*/ }
 static bool enemyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() != str.plId; }
 bool isDiagonal(Direction d){return d >= Direction::UL;}
 Direction decide(Position pos){
@@ -516,15 +517,23 @@ void scanMap(){
 }
 
 void giveBonusOrders(){
-  int layeredDist = 30;
+  int layeredDist = 20;
 
-  vector<BFSState> layered(bonusPositions.size());
+  vector<BFSState> layered(bonusPositions.size()+bubblePositions.size());
 
-  for(int i = 0; i < layered.size(); ++i){
+  for(int i = 0; i < bonusPositions.size(); ++i){
     layered[i].start = bonusPositions[i];
     layered[i].uid = -1;
     BFSInfo inf(layered[i].start,0);
     queueAdjacentPositions(inf,layered[i].toVis,layered[i].vis,true,me());
+  }
+
+  for(int i = 0; i < bubblePositions.size(); ++i){
+    int index = i+bonusPositions.size();
+    layered[index].start = bubblePositions[i];
+    layered[index].uid = -1;
+    BFSInfo inf(layered[index].start,0);
+    queueAdjacentPositions(inf,layered[index].toVis,layered[index].vis,true,me());
   }
 
   for(int c = 1; c < layeredDist; ++c){
@@ -532,7 +541,7 @@ void giveBonusOrders(){
       if(layered[i].uid != -1) continue;
       BFSState& l = layered[i];
       Position target;
-      bool res = layered_bfs(target,l.vis,l.toVis,allyNoTargetBonus,enemyUnit,true,me());
+      bool res = layered_bfs(target,l.vis,l.toVis,allyNoTarget,enemyUnit,true,me());
       if(not res) continue;
       if(target == Position(-1,-1)){
         layered[i].uid = -2; //Enemy is going for it
@@ -544,7 +553,14 @@ void giveBonusOrders(){
       if(uid == -1) continue;
       if(not orders[uid].canChange) continue;
       bool diagonal = sq.painter() == me();
-      orders[uid] = Order(uid,bestDirectionFlex(bonusPositions[i],target,diagonal),false,OrderType::movement,distance(bonusPositions[i],target));
+      Position pos;
+      if(i < bonusPositions.size()){
+        pos = bonusPositions[i];
+      }
+      else{
+        pos = bubblePositions[i-bonusPositions.size()];
+      }
+      orders[uid] = Order(uid,bestDirectionFlex(pos,target,diagonal),false,OrderType::movement,distance(pos,target));
       layered[i].uid = uid;
     }
   }
