@@ -15,7 +15,7 @@ ENERGY_AT_START             5
 MAX_ENERGY                  20
 MIN_ENERGY                  1
 ABILITY_SIZE                5
-ABILITY_DURATION            4
+ABILITY_DURATION            10
 BOARD_WIDTH                 50
 BOARD_HEIGHT                50
 ROUNDS_TO_POP               3
