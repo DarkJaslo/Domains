@@ -757,6 +757,14 @@ virtual void play(){
   }
   else{
     scanMap();
+    for(int i = 0; i < uns.size(); ++i){
+      Unit u = unit(uns[i]);
+      if(u.upgraded()){
+        //cerr << "SHIT BE HAPPENING" << endl;
+        orders[i] = Order(i,Direction::null,false,OrderType::ability,0);
+        break;
+      }
+    }
     giveBonusOrders();
 
     for(const Order& ord : orders){
@@ -768,6 +776,7 @@ virtual void play(){
           attack(uns[ord.uid],ord.dir);
           break;
         case OrderType::ability:
+          //cerr << "ESTOY HACIENDO ESTO" << endl;
           ability(uns[ord.uid]);
           break;
       }
