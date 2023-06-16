@@ -566,6 +566,23 @@ void giveBonusOrders(){
   }
 }
 
+void executeOrders(){
+  for(const Order& ord : orders){
+    switch(ord.type){
+      case OrderType::movement:
+        move(uns[ord.uid],ord.dir);
+        break;
+      case OrderType::attack:
+        attack(uns[ord.uid],ord.dir);
+        break;
+      case OrderType::ability:
+        //cerr << "ESTOY HACIENDO ESTO" << endl;
+        ability(uns[ord.uid]);
+        break;
+    }
+  }
+}
+
 void initializeDirections(){
   DIRS_MAP = vector<Direction>(9);
   DIRS_MAP[0] = Direction::null;
@@ -757,6 +774,7 @@ virtual void play(){
   }
   else{
     scanMap();
+    //uses an available ability
     for(int i = 0; i < uns.size(); ++i){
       Unit u = unit(uns[i]);
       if(u.upgraded()){
@@ -766,21 +784,7 @@ virtual void play(){
       }
     }
     giveBonusOrders();
-
-    for(const Order& ord : orders){
-      switch(ord.type){
-        case OrderType::movement:
-          move(uns[ord.uid],ord.dir);
-          break;
-        case OrderType::attack:
-          attack(uns[ord.uid],ord.dir);
-          break;
-        case OrderType::ability:
-          //cerr << "ESTOY HACIENDO ESTO" << endl;
-          ability(uns[ord.uid]);
-          break;
-      }
-    }
+    executeOrders();
   }
   
   
