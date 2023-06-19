@@ -106,6 +106,13 @@ const vector<Direction> DIRS_DIAGONAL = {Direction::UL, Direction::UR, Direction
 const vector<Direction> DIRS_STRAIGHT = {Direction::left, Direction::right, Direction::up, Direction::down};
 const vector<Direction> DIRS_ALL = {Direction::left, Direction::right, Direction::up, Direction::down,
                                 Direction::UL, Direction::UR, Direction::DL, Direction::DR};
+const vector<Position> ADJ = 
+  { Position(0,1), Position(0,-1), Position(1,0),  Position(-1,0),
+    Position(1,1), Position(-1,1), Position(1,-1), Position(-1,-1),
+    Position(0,2), Position(0,-2), Position(2,0),  Position(-2,0),
+    Position(1,2), Position(1,-2), Position(2,1),  Position(-2,1),
+    Position(2,2), Position(-2,2), Position(2,-2), Position(-2,-2),
+    Position(-1,2),Position(-2,-1),Position(-1,-2),Position(2,-1)  };
 
 #define SR 27
 
