@@ -55,6 +55,131 @@ private:
   Matrix<int8_t> _container;  
 };
 
+//WIP
+struct Option{
+  bool targetedEnemy;
+  bool canStep;
+  float priority;
+};
+
+//WIP
+class Options{
+/*
+Stores options for a unit in a 5x5 grid. The process:
+
+Scan: if enemies are found, mark all bad squares that can be attacked by them
+      mark all drawn squares of currently drawing units as impossible to step on
+      mark the rest of drawings as "please avoid"
+      mark enemy drawings as "please step on this"
+      if inside an enemy ability, mark all outside squares as impossible to step on
+      if outside an enemy ability, mark all inside-of-an-enemy-ability squares as impossible to step on
+
+if the unit's current square is going to be attacked, 
+  attack the easiest to defeat enemy
+  if none are found (diagonal target) look for other melee interactions
+  if none are found, try to get away (see where you can force the unit to exit)
+if there's a free attack, perform it
+if there's a fair fight, do it (energy?)
+if there's a free bubble, kill it
+if there's a free bonus and the position is not targeted, take it
+if someone could take the bonus, attack the square
+*/
+
+
+
+
+
+
+
+public:
+  Options(){
+    _prios = Matrix<float>(5,5);
+    for(int i = 0; i < _prios.rows(); ++i){
+      for(int j = 0; j < _prios.cols(); ++j){
+        Position pos(i,j);
+        _prios[pos] = 0.0f;
+      }
+    }
+    _center = Position(-1,-1);
+    _id = -1;
+    _diagonal = false;
+  }
+
+  void setCenter(int id, Position center){
+    _id = id; 
+    if(not posOk(center)){
+      std::cerr << "Trying to set an invalid center" << std::endl;
+      exit(1);
+    }
+    _center = center;
+    if(_id == -1){ std::cerr << "Id not set" << std::endl; exit(1);} 
+    if(square(_center).painter() == _id){
+      _diagonal = true;
+    }
+  }
+  void evalSquare(const Square& sq){
+    if(_id == -1){
+      std::cerr << "Trying to evaluate Squares without initializing Options" << std::endl;
+      exit(1);
+    }
+    float value = BASE_VALUE;
+
+    Position vec = sq.pos() - _center;
+    
+    int index = -1;
+    for(int i = 0; i < ADJ.size(); ++i){
+      if(ADJ[i] == vec){
+        index = i;
+        break;
+      }
+    }
+    if(index == -1){
+      std::cerr << "Couldn't find Position in 5x5" << std::endl;
+      exit(1);
+    }
+
+    int next = 3;
+    int diag = 7;
+    int dist2 = 11;
+    int twoone = 19;
+    int doublediag = 23;
+
+    /*
+    Options
+
+    enemy next
+    enemy diag
+    enemy dist2
+    enemy twoone
+    enemy doublediag
+
+    attackable bubble (next or _diagonal == true and diag)
+    not attackable bubble
+
+    takeable bonus (next or _diagonal == true and diag)
+    not takeable bonus
+
+    ability border
+
+    */
+
+    //_prios[vec+Position(2,2)] += value;
+  }
+private:
+  const int BASE_VALUE = 100.0f;
+const vector<Position> ADJ = //All relative positions in a 5x5 grid excluding (0,0)
+  { Position(0,1), Position(0,-1), Position(1,0),  Position(-1,0),
+    Position(1,1), Position(-1,1), Position(1,-1), Position(-1,-1),
+    Position(0,2), Position(0,-2), Position(2,0),  Position(-2,0),
+    Position(1,2), Position(1,-2), Position(2,1),  Position(-2,1),
+    Position(-1,2),Position(-2,-1),Position(-1,-2),Position(2,-1),
+    Position(2,2), Position(-2,2), Position(2,-2), Position(-2,-2) };
+  Matrix<float> _prios;
+  Position _center;
+  int _id;
+  bool _diagonal;
+};
+
 struct BFSInfo{
   Position pos;
   int dist;
@@ -106,13 +231,6 @@ const vector<Direction> DIRS_DIAGONAL = {Direction::UL, Direction::UR, Direction
 const vector<Direction> DIRS_STRAIGHT = {Direction::left, Direction::right, Direction::up, Direction::down};
 const vector<Direction> DIRS_ALL = {Direction::left, Direction::right, Direction::up, Direction::down,
                                 Direction::UL, Direction::UR, Direction::DL, Direction::DR};
-const vector<Position> ADJ = 
-  { Position(0,1), Position(0,-1), Position(1,0),  Position(-1,0),
-    Position(1,1), Position(-1,1), Position(1,-1), Position(-1,-1),
-    Position(0,2), Position(0,-2), Position(2,0),  Position(-2,0),
-    Position(1,2), Position(1,-2), Position(2,1),  Position(-2,1),
-    Position(2,2), Position(-2,2), Position(2,-2), Position(-2,-2),
-    Position(-1,2),Position(-2,-1),Position(-1,-2),Position(2,-1)  };
 
 #define SR 27
 
