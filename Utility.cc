@@ -28,6 +28,14 @@ Position& Position::operator+= (const Direction& d){
   }
   return *this;
 }
+Position Position::operator+(const Position& other){
+  return Position(x+other.x,y+other.y);
+}
+Position& Position::operator+= (const Position& other){
+  x+=other.x;
+  y+=other.y;
+  return *this;
+}
 Direction Position::to(Position p){
   Direction d = Direction::left;
   if(*this+d == p){return d;}

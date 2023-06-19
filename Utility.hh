@@ -38,6 +38,8 @@ struct Position{
   bool operator<(const Position& p) const;
   Position operator+(const Direction& d);
   Position& operator+= (const Direction& d);
+  Position operator+(const Position& other);
+  Position& operator+= (const Position& other);
   /* Pre: p is adjacent (diagonal counts) to this
      Returns the direction from this to p. Returns null if an unexpected situation occurs  */
   Direction to(Position p);
