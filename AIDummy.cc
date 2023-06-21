@@ -56,10 +56,27 @@ private:
 };
 
 //WIP
-struct Option{
-  bool targetedEnemy;
-  bool canStep;
-  float priority;
+class Option{
+public:
+  enum StepState{ NO, AVOID, NEUTRAL, PREFER};
+  Option(){
+    _state = StepState::NEUTRAL;
+    _priority = BASE_PRIORITY;
+    _dangerous = false;
+  }
+  bool isDangerous() const{ return _dangerous; }
+  void setDangerous(bool value){ _dangerous = value; }
+  bool canStep() const{ return _state != StepState::NO; }
+  StepState stepState() const{ return _state; }
+  void setStep(StepState state){ _state = state; }
+  float priority()const{ return _priority; }
+  void setPriority(float value){ _priority = value; }
+  void addPriority(float value){ _priority += value; }
+private:
+  const float BASE_PRIORITY = 100.0f;
+  StepState _state;
+  float _priority;
+  bool _dangerous;
 };
 
 //WIP
@@ -93,20 +110,16 @@ if someone could take the bonus, attack the square
 
 public:
   Options(){
-    _prios = Matrix<float>(5,5);
-    for(int i = 0; i < _prios.rows(); ++i){
-      for(int j = 0; j < _prios.cols(); ++j){
-        Position pos(i,j);
-        _prios[pos] = 0.0f;
-      }
-    }
+    _options = Matrix<Option>(5,5);
     _center = Position(-1,-1);
     _id = -1;
+    _unitId = -1;
     _diagonal = false;
   }
 
-  void setCenter(int id, Position center){
-    _id = id; 
+  void setCenter(int plId, int uid, Position center){
+    _id = plId;
+    _unitId = uid; 
     if(not posOk(center)){
       std::cerr << "Trying to set an invalid center" << std::endl;
       exit(1);
@@ -117,6 +130,50 @@ public:
       _diagonal = true;
     }
   }
+  void scan(){ //Used after setting center
+    bool enemyAbility = square(_center).ability() and square(_center).painter() != _id;
+    for(int i = _center.x-2; i <= _center.x+2; ++i){
+      for(int j = _center.y-2; j <= _center.y+2; ++j){
+        Position p(i,j);
+        Position index((p-_center)+Position(2,2));
+        if(not posOk(p)){ _options[index].setStep(Option::StepState::NO); continue;}
+        Square sq = square(p);
+        bool enemyAbilityHere = sq.ability() and sq.painter() != _id;
+        if(enemyAbility and not enemyAbilityHere){
+          _options[index].setStep(Option::StepState::NO);
+        }
+        else if(not enemyAbility and enemyAbilityHere){
+          _options[index].setStep(Option::StepState::NO);
+        }
+        else if(sq.drawn()){
+          if(sq.unitDrawer() == _unitId){
+            _options[index].setStep(Option::StepState::NO);
+          }
+          else if(sq.drawer() == _id){
+            _options[index].setStep(Option::StepState::AVOID);
+          }
+          else if(sq.drawer() != _id){
+            _options[index].setStep(Option::StepState::PREFER);
+          }
+        }
+        if(sq.hasUnit() and sq.unit().player() != _id){
+          //Mark all attackable squares as dangerous
+          vector<Direction> dirs;
+          if(sq.painter() == sq.unit().player()){
+            dirs = {Direction::left,Direction::right,Direction::up,Direction::down,
+                    Direction::UL,Direction::UR,Direction::DL,Direction::DR};
+          }
+          else dirs = {Direction::left,Direction::right,Direction::up,Direction::down};
+          for(const Direction d : dirs){
+            Position aux = index+d;
+            if(aux.x >= _options.rows() or aux.y >= _options.cols()) continue;
+            _options[aux].setDangerous(true);
+          }
+        }
+      }
+    }
+  }
+
   void evalSquare(const Square& sq){
     if(_id == -1){
       std::cerr << "Trying to evaluate Squares without initializing Options" << std::endl;
@@ -174,9 +231,10 @@ const vector<Position> ADJ = //All relative positions in a 5x5 grid excluding (0
     Position(1,2), Position(1,-2), Position(2,1),  Position(-2,1),
     Position(-1,2),Position(-2,-1),Position(-1,-2),Position(2,-1),
     Position(2,2), Position(-2,2), Position(2,-2), Position(-2,-2) };
-  Matrix<float> _prios;
+  Matrix<Option> _options;
   Position _center;
   int _id;
+  int _unitId;
   bool _diagonal;
 };
 
