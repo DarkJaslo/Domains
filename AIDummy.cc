@@ -102,12 +102,6 @@ if there's a free bonus and the position is not targeted, take it
 if someone could take the bonus, attack the square
 */
 
-
-
-
-
-
-
 public:
   Options(){
     _options = Matrix<Option>(5,5);
@@ -117,7 +111,7 @@ public:
     _diagonal = false;
   }
 
-  void setCenter(int plId, int uid, Position center){
+  void init(int plId, int uid, Position center){
     _id = plId;
     _unitId = uid; 
     if(not posOk(center)){
@@ -130,7 +124,7 @@ public:
       _diagonal = true;
     }
   }
-  void scan(){ //Used after setting center
+  void scan(){ //Used after init
     bool enemyAbility = square(_center).ability() and square(_center).painter() != _id;
     for(int i = _center.x-2; i <= _center.x+2; ++i){
       for(int j = _center.y-2; j <= _center.y+2; ++j){
