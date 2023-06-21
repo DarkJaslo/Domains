@@ -86,7 +86,8 @@ bool Square::border()const{return isBorder;}
 bool Square::ability()const{return isAbility;}
 int Square::roundsUntilAbilityEnd()const{return static_cast<int>(counter);}
 int Square::painter()const{return static_cast<int>(plPainter);}
-int Square::drawer()const{return static_cast<int>(uDrawer);}
+int Square::drawer()const{return static_cast<int>(plDrawer);}
+int Square::unitDrawer() const{ return static_cast<int>(uDrawer);}
 bool Square::empty()const{return u == nullptr and b == nullptr and bb == nullptr;}
 bool Square::hasUnit()const{return u != nullptr;}
 Unit Square::unit()const{return *u;}

@@ -143,6 +143,9 @@ public:
   //Pre: Square is drawn
   //Returns the id of the drawer player
   int drawer() const;
+  //Pre: Square is drawn
+  //Returns the id of the drawer unit
+  int unitDrawer() const;
   //Returns true if this Square separates territories
   bool border() const;
   //Returns true if this Square is currently from an ability
