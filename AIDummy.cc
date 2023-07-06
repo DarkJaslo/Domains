@@ -59,24 +59,32 @@ private:
 class Option{
 public:
   enum StepState{ NO, AVOID, NEUTRAL, PREFER};
+  enum ContentState{ NOTHING, ENEMY_DRAW, ENEMY_DRAW_HERE, BUBBLE, BUBBLE_HERE, BONUS, BONUS_HERE, FIGHT, FIGHT_HERE, FREE_ATTACK, DIAG_DANGER};
   Option(){
-    _state = StepState::NEUTRAL;
+    _sstate = StepState::NEUTRAL;
+    _cstate = ContentState::NOTHING;
     _priority = BASE_PRIORITY;
     _dangerous = false;
   }
   bool isDangerous() const{ return _dangerous; }
-  void setDangerous(bool value){ _dangerous = value; }
-  bool canStep() const{ return _state != StepState::NO; }
-  StepState stepState() const{ return _state; }
-  void setStep(StepState state){ _state = state; }
+  bool canStep() const{ return _sstate != StepState::NO; }
+  bool hasSomething() const{ return _cstate != ContentState::NOTHING; }
+  StepState stepState() const{ return _sstate; }
+  ContentState contentState() const{ return _cstate; }
   float priority()const{ return _priority; }
+
+  void setDangerous(bool value){ _dangerous = value; }
+  void setStep(StepState state){ _sstate = state; }
+  void setContent(ContentState state){ _cstate = state; }
   void setPriority(float value){ _priority = value; }
   void addPriority(float value){ _priority += value; }
+
 private:
   const float BASE_PRIORITY = 100.0f;
-  StepState _state;
-  float _priority;
-  bool _dangerous;
+  StepState     _sstate;
+  ContentState  _cstate;
+  float         _priority;
+  bool          _dangerous;
 };
 
 //WIP
@@ -124,15 +132,48 @@ public:
       _diagonal = true;
     }
   }
+  /*
+    Marks squares:
+
+      1. If they are not valid (cannot be stepped on)
+      2. If they are drawn
+      3. If they can be attacked by an enemy
+  */
   void scan(){ //Used after init
+
     bool enemyAbility = square(_center).ability() and square(_center).painter() != _id;
+    bool centerIsMine = square(_center).painter() == _id;
+
     for(int i = _center.x-2; i <= _center.x+2; ++i){
       for(int j = _center.y-2; j <= _center.y+2; ++j){
         Position p(i,j);
-        Position index((p-_center)+Position(2,2));
+        Position auxVector = p-_center;
+        Position index((auxVector)+Position(2,2));
         if(not posOk(p)){ _options[index].setStep(Option::StepState::NO); continue;}
         Square sq = square(p);
+
+        if(sq.hasBonus()){
+          if(abs(auxVector.x) <= 1 xor abs(auxVector.y) <= 1){
+            _options[index].setContent(Option::ContentState::BONUS_HERE);
+          }
+          else if(centerIsMine and abs(auxVector.x) <= 1 and abs(auxVector.y) <= 1){
+            _options[index].setContent(Option::ContentState::BONUS_HERE);
+          }
+          else _options[index].setContent(Option::ContentState::BONUS);
+        }
+        else if(sq.hasBubble()){
+          if(abs(auxVector.x) <= 1 xor abs(auxVector.y) <= 1){
+            _options[index].setContent(Option::ContentState::BUBBLE_HERE);
+          }
+          else if(centerIsMine and abs(auxVector.x) <= 1 and abs(auxVector.y) <= 1){
+            _options[index].setContent(Option::ContentState::BUBBLE_HERE);
+          }
+          else _options[index].setContent(Option::ContentState::BUBBLE);
+        }
+
         bool enemyAbilityHere = sq.ability() and sq.painter() != _id;
+        bool enemyHere = sq.hasUnit() and sq.unit().player()  != _id;
+
         if(enemyAbility and not enemyAbilityHere){
           _options[index].setStep(Option::StepState::NO);
         }
@@ -148,9 +189,30 @@ public:
           }
           else if(sq.drawer() != _id){
             _options[index].setStep(Option::StepState::PREFER);
+            
+            if(abs(auxVector.x) <= 1 xor abs(auxVector.y) <= 1){
+              _options[index].setContent(Option::ContentState::ENEMY_DRAW_HERE);
+            }
+            else if(centerIsMine and abs(auxVector.x) <= 1 and abs(auxVector.y) <= 1){
+              _options[index].setContent(Option::ContentState::ENEMY_DRAW_HERE);
+            }
+            else _options[index].setContent(Option::ContentState::ENEMY_DRAW);
           }
         }
-        if(sq.hasUnit() and sq.unit().player() != _id){
+        if(enemyHere){
+          
+          _options[index].setContent(Option::ContentState::FIGHT);
+
+          if(abs(auxVector.x) == 1 xor abs(auxVector.y) == 1){
+            _options[index].setContent(Option::ContentState::FIGHT_HERE);
+          }
+          if(abs(auxVector.x) == 1 and abs(auxVector.y) == 1){
+            if(centerIsMine) _options[index].setContent(Option::ContentState::FREE_ATTACK);
+            else if(sq.painter() == sq.unit().player()){
+              _options[index].setContent(Option::ContentState::DIAG_DANGER);
+            }
+          }
+
           //Mark all attackable squares as dangerous
           vector<Direction> dirs;
           if(sq.painter() == sq.unit().player()){
@@ -178,7 +240,7 @@ public:
     Position vec = sq.pos() - _center;
     
     int index = -1;
-    for(int i = 0; i < ADJ.size(); ++i){
+    for(int i = 0; i < 24; ++i){
       if(ADJ[i] == vec){
         index = i;
         break;
@@ -218,18 +280,18 @@ public:
   }
 private:
   const int BASE_VALUE = 100.0f;
-const vector<Position> ADJ = //All relative positions in a 5x5 grid excluding (0,0)
-  { Position(0,1), Position(0,-1), Position(1,0),  Position(-1,0),
-    Position(1,1), Position(-1,1), Position(1,-1), Position(-1,-1),
-    Position(0,2), Position(0,-2), Position(2,0),  Position(-2,0),
-    Position(1,2), Position(1,-2), Position(2,1),  Position(-2,1),
-    Position(-1,2),Position(-2,-1),Position(-1,-2),Position(2,-1),
-    Position(2,2), Position(-2,2), Position(2,-2), Position(-2,-2) };
+  const Position ADJ[24] = //All relative positions in a 5x5 grid excluding (0,0)
+    { Position( 0,1), Position( 0,-1), Position( 1 ,0), Position(-1, 0),
+      Position( 1,1), Position(-1, 1), Position( 1,-1), Position(-1,-1),
+      Position( 0,2), Position( 0,-2), Position( 2, 0), Position(-2, 0),
+      Position( 1,2), Position( 1,-2), Position( 2, 1), Position(-2, 1),
+      Position(-1,2), Position(-2,-1), Position(-1,-2), Position( 2,-1),
+      Position( 2,2), Position(-2, 2), Position( 2,-2), Position(-2,-2) };
   Matrix<Option> _options;
-  Position _center;
-  int _id;
-  int _unitId;
-  bool _diagonal;
+  Position       _center;
+  int            _id;
+  int            _unitId;
+  bool           _diagonal;
 };
 
 struct BFSInfo{
