@@ -322,8 +322,6 @@ struct BFSState{
   int uid;
 };
 
-
-
 struct BFSStruct{
   Square sq;
   Position st;
