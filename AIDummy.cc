@@ -107,7 +107,6 @@ if there's a free attack, perform it
 if there's a fair fight, do it (energy?)
 if there's a free bubble, kill it
 if there's a free bonus and the position is not targeted, take it
-if someone could take the bonus, attack the square
 */
 
 public:
@@ -138,6 +137,8 @@ public:
       1. If they are not valid (cannot be stepped on)
       2. If they are drawn
       3. If they can be attacked by an enemy
+
+    Gets the content of every square in ContentStates
   */
   void scan(){ //Used after init
 
@@ -230,54 +231,6 @@ public:
     }
   }
 
-  void evalSquare(const Square& sq){
-    if(_id == -1){
-      std::cerr << "Trying to evaluate Squares without initializing Options" << std::endl;
-      exit(1);
-    }
-    float value = BASE_VALUE;
-
-    Position vec = sq.pos() - _center;
-    
-    int index = -1;
-    for(int i = 0; i < 24; ++i){
-      if(ADJ[i] == vec){
-        index = i;
-        break;
-      }
-    }
-    if(index == -1){
-      std::cerr << "Couldn't find Position in 5x5" << std::endl;
-      exit(1);
-    }
-
-    int next = 3;
-    int diag = 7;
-    int dist2 = 11;
-    int twoone = 19;
-    int doublediag = 23;
-
-    /*
-    Options
-
-    enemy next
-    enemy diag
-    enemy dist2
-    enemy twoone
-    enemy doublediag
-
-    attackable bubble (next or _diagonal == true and diag)
-    not attackable bubble
-
-    takeable bonus (next or _diagonal == true and diag)
-    not takeable bonus
-
-    ability border
-
-    */
-
-    //_prios[vec+Position(2,2)] += value;
-  }
 private:
   const int BASE_VALUE = 100.0f;
   const Position ADJ[24] = //All relative positions in a 5x5 grid excluding (0,0)
