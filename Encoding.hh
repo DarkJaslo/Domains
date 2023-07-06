@@ -127,26 +127,26 @@ Painted by 1
 Painted by 2
 Painted by 3
 
-Drawed by 0
-Drawed by 1
-Drawed by 2
-Drawed by 3
+drawn by 0
+drawn by 1
+drawn by 2
+drawn by 3
 
-Painted by 0 and drawed by 1
-Painted by 0 and drawed by 2
-Painted by 0 and drawed by 3
+Painted by 0 and drawn by 1
+Painted by 0 and drawn by 2
+Painted by 0 and drawn by 3
 
-Painted by 1 and drawed by 0
-Painted by 1 and drawed by 2
-Painted by 1 and drawed by 3
+Painted by 1 and drawn by 0
+Painted by 1 and drawn by 2
+Painted by 1 and drawn by 3
 
-Painted by 2 and drawed by 0
-Painted by 2 and drawed by 1
-Painted by 2 and drawed by 3
+Painted by 2 and drawn by 0
+Painted by 2 and drawn by 1
+Painted by 2 and drawn by 3
 
-Painted by 3 and drawed by 0
-Painted by 3 and drawed by 1
-Painted by 3 and drawed by 2
+Painted by 3 and drawn by 0
+Painted by 3 and drawn by 1
+Painted by 3 and drawn by 2
 
 Unit info
 
