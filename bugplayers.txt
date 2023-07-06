@@ -1,2 +1,3 @@
 Dummy:
 al salir de zona propia se suele usar el diagonal porque se optimiza el movimiento, pero no empiezan dibujos y quiero que los empiecen
+al analizar opciones, no verifica si ya están targeted
