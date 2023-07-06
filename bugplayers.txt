@@ -1,2 +1,2 @@
 Dummy:
-lo de buscar unidades desde comidas no sigue buscando si la primera unidad encontrada ya está adjudicada (layered bfs)
+al salir de zona propia se suele usar el diagonal porque se optimiza el movimiento, pero no empiezan dibujos y quiero que los empiecen
