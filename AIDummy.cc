@@ -55,7 +55,16 @@ private:
   Matrix<int8_t> _container;  
 };
 
-//WIP
+struct Target{
+  Target(){
+    bonus = false; bubble = false;
+  }
+  bool targeted()const{ return bonus or bubble; }
+  int targetNum;
+  bool bonus, bubble;
+};
+
+//WIP, computePriority 
 class Option{
 public:
   enum StepState{ NO, AVOID, NEUTRAL, PREFER};
@@ -79,6 +88,11 @@ public:
   void setPriority(float value){ _priority = value; }
   void addPriority(float value){ _priority += value; }
 
+  void computePriority(){
+    //Sets _priority to a value that reflects the priority of an order here
+    //Maybe return an "urgent" attribute too?
+  }
+
 private:
   const float BASE_PRIORITY = 100.0f;
   StepState     _sstate;
@@ -87,7 +101,7 @@ private:
   bool          _dangerous;
 };
 
-//WIP
+//WIP  Still doesn't check if things are targeted
 class Options{
 /*
 Stores options for a unit in a 5x5 grid. The process:
@@ -116,11 +130,15 @@ public:
     _id = -1;
     _unitId = -1;
     _diagonal = false;
+    _orderType = OrderType::ability;
+    _orderDir = Direction::null;
+    _orderCanChange = true;
   }
 
-  void init(int plId, int uid, Position center){
+  void init(int plId, int uid, Position center, Matrix<Target>* ptr){
     _id = plId;
     _unitId = uid; 
+    _targetsPtr = ptr;
     if(not posOk(center)){
       std::cerr << "Trying to set an invalid center" << std::endl;
       exit(1);
@@ -230,7 +248,34 @@ public:
       }
     }
   }
+  void computeOrder(){
+    //Does not work yet
 
+
+    for(int i = 0; i < _options.rows(); ++i){
+      for(int j = 0; j < _options.cols(); ++j){
+        Position p(i,j);
+        _options[p].computePriority();  
+      }
+    }
+
+    float prio = 0.0f;
+    Position mostPrioritary(-1,-1);
+    for(int i = 0; i < _options.rows(); ++i){
+      for(int j = 0; j < _options.cols(); ++j){
+        Position p(i,j);
+        float pr = _options[p].priority();
+        if(pr > prio){
+          prio = pr;
+          mostPrioritary = p;
+          
+        }  
+      }
+    }
+  }
+  bool hasUrgentOrder()const{return _orderCanChange == false; }
+  OrderType orderType()const{return _orderType;}
+  Direction orderDir()const{return _orderDir;}
 private:
   const int BASE_VALUE = 100.0f;
   const Position ADJ[24] = //All relative positions in a 5x5 grid excluding (0,0)
@@ -240,11 +285,15 @@ private:
       Position( 1,2), Position( 1,-2), Position( 2, 1), Position(-2, 1),
       Position(-1,2), Position(-2,-1), Position(-1,-2), Position( 2,-1),
       Position( 2,2), Position(-2, 2), Position( 2,-2), Position(-2,-2) };
-  Matrix<Option> _options;
-  Position       _center;
-  int            _id;
-  int            _unitId;
-  bool           _diagonal;
+  Matrix<Option>  _options;
+  Matrix<Target>* _targetsPtr;
+  Position        _center;
+  int             _id;
+  int             _unitId;
+  bool            _diagonal;
+  OrderType       _orderType;
+  Direction       _orderDir;
+  bool            _orderCanChange;
 };
 
 struct BFSInfo{
@@ -273,14 +322,7 @@ struct BFSState{
   int uid;
 };
 
-struct Target{
-  Target(){
-    bonus = false; bubble = false;
-  }
-  bool targeted()const{ return bonus or bubble; }
-  int targetNum;
-  bool bonus, bubble;
-};
+
 
 struct BFSStruct{
   Square sq;
@@ -708,6 +750,10 @@ void scanMap(){
   }
 }
 
+void giveImmediateOrders(){
+
+}
+
 void giveBonusOrders(){
   int layeredDist = 20;
 
@@ -756,6 +802,10 @@ void giveBonusOrders(){
       layered[i].uid = uid;
     }
   }
+}
+
+void giveDrawOrders(){
+
 }
 
 void executeOrders(){
@@ -970,12 +1020,13 @@ virtual void play(){
     for(int i = 0; i < uns.size(); ++i){
       Unit u = unit(uns[i]);
       if(u.upgraded()){
-        //cerr << "SHIT BE HAPPENING" << endl;
         orders[i] = Order(i,Direction::null,false,OrderType::ability,0);
         break;
       }
     }
+    //giveImmediateOrders();
     giveBonusOrders();
+    //giveDrawOrders();
     executeOrders();
   }
   
