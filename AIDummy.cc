@@ -58,24 +58,28 @@ private:
 struct Target{
   Target(){
     bonus = false; bubble = false;
+    targetNum = 0;
   }
-  bool targeted()const{ return bonus or bubble; }
+  bool targeted()const{ return bonus or bubble or (targetNum > 0); }
   int targetNum;
   bool bonus, bubble;
 };
 
-//WIP, computePriority 
+//WIP, needs bugfixing 
 class Option{
+  #define BASE_PRIORITY 0.0f
 public:
   enum StepState{ NO, AVOID, NEUTRAL, PREFER};
-  enum ContentState{ NOTHING, ENEMY_DRAW, ENEMY_DRAW_HERE, BUBBLE, BUBBLE_HERE, BONUS, BONUS_HERE, FIGHT, FIGHT_HERE, FREE_ATTACK, DIAG_DANGER};
+  enum ContentState{ NOTHING, TARGETED, ENEMY_DRAW, ENEMY_DRAW_HERE, BUBBLE, BUBBLE_HERE, BONUS, BONUS_HERE, FIGHT, FIGHT_HERE, FREE_ATTACK, DIAG_DANGER};
   Option(){
     _sstate = StepState::NEUTRAL;
     _cstate = ContentState::NOTHING;
     _priority = BASE_PRIORITY;
     _dangerous = false;
+    _urgent = false;
   }
   bool isDangerous() const{ return _dangerous; }
+  bool isUrgent() const{ return _urgent; }
   bool canStep() const{ return _sstate != StepState::NO; }
   bool hasSomething() const{ return _cstate != ContentState::NOTHING; }
   StepState stepState() const{ return _sstate; }
@@ -91,17 +95,42 @@ public:
   void computePriority(){
     //Sets _priority to a value that reflects the priority of an order here
     //Maybe return an "urgent" attribute too?
+
+    switch(_cstate){
+      case ContentState::DIAG_DANGER:     { _priority = 0.0f;   break;}
+      case ContentState::TARGETED:        { _priority = 0.0f;   break;}
+      case ContentState::ENEMY_DRAW:      { _priority = 50.0f;  break;}
+      case ContentState::BONUS:           { _priority = 60.0f;  break;}
+      case ContentState::BUBBLE:          { _priority = 70.0f;  break;}
+      case ContentState::FIGHT:           { _priority = 90.0f;  break;}
+      case ContentState::ENEMY_DRAW_HERE: { _priority = 100.0f; break;}
+      case ContentState::BUBBLE_HERE:     { _priority = 150.0f; break;}
+      case ContentState::BONUS_HERE:      { _priority = 200.0f; break;}
+      case ContentState::FIGHT_HERE:      { _priority = 300.0f; break;}
+      case ContentState::FREE_ATTACK:     { _priority = 500.0f; break;}
+      default:{ break;}
+    }
+
+    switch(_sstate){
+      case StepState::NO:      { _priority = -100.0f; break;}
+      case StepState::AVOID:   { _priority = -100.0f; break;}
+      case StepState::NEUTRAL: { break;}
+      case StepState::PREFER:  { break;}
+      default:{ break;}
+    }
+
+    if(_priority > 0.0f) _urgent = true;
   }
 
 private:
-  const float BASE_PRIORITY = 100.0f;
   StepState     _sstate;
   ContentState  _cstate;
   float         _priority;
   bool          _dangerous;
+  bool          _urgent;
 };
 
-//WIP  Still doesn't check if things are targeted
+//WIP, needs bugfixing (print/display the matrix to see if it works) -> check the (2,2) offset in the 5x5
 class Options{
 /*
 Stores options for a unit in a 5x5 grid. The process:
@@ -171,8 +200,9 @@ public:
         if(not posOk(p)){ _options[index].setStep(Option::StepState::NO); continue;}
         Square sq = square(p);
 
-        if(sq.hasBonus()){
-          if(abs(auxVector.x) <= 1 xor abs(auxVector.y) <= 1){
+        if((*_targetsPtr)[p].targeted()) _options[index].setContent(Option::ContentState::TARGETED);
+        else if(sq.hasBonus()){
+          if((abs(auxVector.x) <= 1) xor (abs(auxVector.y) <= 1)){
             _options[index].setContent(Option::ContentState::BONUS_HERE);
           }
           else if(centerIsMine and abs(auxVector.x) <= 1 and abs(auxVector.y) <= 1){
@@ -181,7 +211,7 @@ public:
           else _options[index].setContent(Option::ContentState::BONUS);
         }
         else if(sq.hasBubble()){
-          if(abs(auxVector.x) <= 1 xor abs(auxVector.y) <= 1){
+          if((abs(auxVector.x) <= 1) xor (abs(auxVector.y) <= 1)){
             _options[index].setContent(Option::ContentState::BUBBLE_HERE);
           }
           else if(centerIsMine and abs(auxVector.x) <= 1 and abs(auxVector.y) <= 1){
@@ -209,20 +239,22 @@ public:
           else if(sq.drawer() != _id){
             _options[index].setStep(Option::StepState::PREFER);
             
-            if(abs(auxVector.x) <= 1 xor abs(auxVector.y) <= 1){
-              _options[index].setContent(Option::ContentState::ENEMY_DRAW_HERE);
+            if(_options[index].contentState() != Option::ContentState::TARGETED){
+              if((abs(auxVector.x) <= 1) xor (abs(auxVector.y) <= 1)){
+                _options[index].setContent(Option::ContentState::ENEMY_DRAW_HERE);
+              }
+              else if(centerIsMine and abs(auxVector.x) <= 1 and abs(auxVector.y) <= 1){
+                _options[index].setContent(Option::ContentState::ENEMY_DRAW_HERE);
+              }
+              else _options[index].setContent(Option::ContentState::ENEMY_DRAW);
             }
-            else if(centerIsMine and abs(auxVector.x) <= 1 and abs(auxVector.y) <= 1){
-              _options[index].setContent(Option::ContentState::ENEMY_DRAW_HERE);
-            }
-            else _options[index].setContent(Option::ContentState::ENEMY_DRAW);
           }
         }
         if(enemyHere){
           
           _options[index].setContent(Option::ContentState::FIGHT);
 
-          if(abs(auxVector.x) == 1 xor abs(auxVector.y) == 1){
+          if((abs(auxVector.x) == 1) xor (abs(auxVector.y) == 1)){
             _options[index].setContent(Option::ContentState::FIGHT_HERE);
           }
           if(abs(auxVector.x) == 1 and abs(auxVector.y) == 1){
@@ -248,9 +280,8 @@ public:
       }
     }
   }
-  void computeOrder(){
+  void computeOrder(){ //Used after scan()
     //Does not work yet
-
 
     for(int i = 0; i < _options.rows(); ++i){
       for(int j = 0; j < _options.cols(); ++j){
@@ -268,14 +299,53 @@ public:
         if(pr > prio){
           prio = pr;
           mostPrioritary = p;
-          
+          _orderCanChange = not _options[p].isUrgent();
         }  
       }
+    }
+
+    //Get OrderType and Direction depending on the winning order
+
+    //OrderType
+
+    if(mostPrioritary == Position(-1,-1)) return;
+    Position realMostPrioritary = _center+mostPrioritary+Position(-2,-2);
+
+    Option::ContentState cs = _options[mostPrioritary].contentState();
+
+    if(cs == Option::ContentState::BONUS or cs == Option::ContentState::BONUS_HERE or cs == Option::ContentState::ENEMY_DRAW or cs == Option::ContentState::ENEMY_DRAW_HERE or cs == Option::ContentState::FIGHT or cs == Option::ContentState::BUBBLE){
+      _orderType = OrderType::movement;
+      bool centerIsMine = square(_center).painter() == _id;
+      _orderDir = bestDirectionFlex(realMostPrioritary,_center,centerIsMine); // can step on illegal things
+      Position newPos = Position(2,2)+_orderDir;
+      if(_options[newPos].priority() < 0.0f){
+        //consider alternative or just don't move
+        if(centerIsMine){
+          Direction d1 = clockwiseDirection(_orderDir,true);
+          newPos = Position(2,2)+d1;
+          if(_options[newPos].priority() >= 0.0f){
+            _orderDir = d1;
+          }
+          else{
+            d1 = counterclockwiseDirection(_orderDir,true);
+            newPos = Position(2,2)+d1;
+            if(_options[newPos].priority() >= 0.0f){
+              _orderDir = d1;
+            }
+            else _orderType = OrderType::attack; //Due to invalid movements, tries to attack to avoid being still
+          }
+        }
+        else _orderType = OrderType::attack; //Due to invalid movements, tries to attack to avoid being still
+      }
+    }
+    else if(cs == Option::ContentState::BUBBLE_HERE or cs == Option::ContentState::FIGHT_HERE or cs == Option::ContentState::FREE_ATTACK){
+      _orderType = OrderType::attack;
+      _orderDir = _center.to(realMostPrioritary);
     }
   }
   bool hasUrgentOrder()const{return _orderCanChange == false; }
   OrderType orderType()const{return _orderType;}
-  Direction orderDir()const{return _orderDir;}
+  Direction orderDir() const{return _orderDir;}
 private:
   const int BASE_VALUE = 100.0f;
   const Position ADJ[24] = //All relative positions in a 5x5 grid excluding (0,0)
@@ -495,11 +565,12 @@ double queueTime = 0;
 vector<Direction> DIRS_MAP; //So directions work as if you were down-left
 Position startingPos;
 
-vector<int> uns;
+vector<int>      uns;
+vector<Options>  options;
 vector<Position> bonusPositions;
 vector<Position> bubblePositions;
-vector<Order> orders;
-Matrix<Target> targets;
+vector<Order>    orders;
+Matrix<Target>   targets;
 
 
 //Auxiliar functions
@@ -510,8 +581,74 @@ static bool playerHasBubble(const Square& sq){ return sq.hasBubble(); }
 static bool allyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() == str.plId; }
 static bool allyNoTarget(const BFSStruct& str){ return allyUnit(str);/* and not str.target.targeted();*/ }
 static bool enemyUnit(const BFSStruct& str){ return str.sq.hasUnit() and str.sq.unit().player() != str.plId; }
+static Direction clockwiseDirection(Direction d, bool diagonal){
+  switch (d) {
+  case Direction::down: { 
+    if(diagonal) return Direction::DL;
+    return Direction::left; break;
+  }
+  case Direction::DL: { 
+    return Direction::left; break;
+  }
+  case Direction::left: { 
+    if(diagonal) return Direction::UL;
+    return Direction::up; break;
+  }
+  case Direction::UL: {
+    return Direction::up; break;
+  }
+  case Direction::up: { 
+    if(diagonal) return Direction::UR;
+    return Direction::right; break;
+  }
+  case Direction::UR: { 
+    return Direction::right; break;
+  }
+  case Direction::right: { 
+    if(diagonal) return Direction::DR;
+    return Direction::down; break;
+  }
+  case Direction::DR: {
+    return Direction::down; break;
+  }
+  default: return Direction::null; break;
+  }
+}
+static Direction counterclockwiseDirection(Direction d, bool diagonal){
+  switch (d) {
+  case Direction::left: { 
+    if(diagonal) return Direction::DL;
+    return Direction::down; break;
+  }
+  case Direction::DL: { 
+    return Direction::down; break;
+  }
+  case Direction::up: { 
+    if(diagonal) return Direction::UL;
+    return Direction::left; break;
+  }
+  case Direction::UL: {
+    return Direction::left; break;
+  }
+  case Direction::right: { 
+    if(diagonal) return Direction::UR;
+    return Direction::up; break;
+  }
+  case Direction::UR: { 
+    return Direction::up; break;
+  }
+  case Direction::down: { 
+    if(diagonal) return Direction::DR;
+    return Direction::right; break;
+  }
+  case Direction::DR: {
+    return Direction::right; break;
+  }
+  default: return Direction::null; break;
+  }
+}
 bool isDiagonal(Direction d){return d >= Direction::UL;}
-Direction decide(Position pos){
+static Direction decide(Position pos){
   if(pos.x < 0 and pos.y < 0){
     int rand = randomNumber(0,1);
     if(rand == 0){return Direction::up;}
@@ -575,7 +712,7 @@ int distance(Position pos, Position target){
 }
 
 //Assumes diagonal moves are always legal
-Direction bestDirection(Position desired, Position act){
+static Direction bestDirection(Position desired, Position act){
   if(act == desired) return Direction::null;
   else if(desired.x > act.x and desired.y > act.y){return Direction::DR;}
   else if(desired.x < act.x and desired.y < act.y){return Direction::UL;}
@@ -587,7 +724,7 @@ Direction bestDirection(Position desired, Position act){
   return Direction::left;
 }
 
-Direction bestDirectionFlex(Position desired, Position act, bool diag = false){
+static Direction bestDirectionFlex(Position desired, Position act, bool diag = false){
   if(diag) return bestDirection(desired,act);
   return decide(Position(desired.x-act.x,desired.y-act.y));
 }
@@ -749,7 +886,18 @@ void scanMap(){
 }
 
 void giveImmediateOrders(){
-
+  for(int i = 0; i < options.size(); ++i){
+    Unit u = unit(uns[i]);
+    options[i].init(me(),u.id(),u.position(),&targets);
+    options[i].scan();
+    options[i].computeOrder();
+    if(not options[i].hasUrgentOrder()){
+      cerr << "player " << me() <<  " unit " << u.id() << " does not have an urgent order in options" << endl;
+      continue;
+    }
+    orders[i] = Order(i,options[i].orderDir(),not options[i].hasUrgentOrder(),options[i].orderType(),distance(u.position(),u.position()+options[i].orderDir()));
+    if(options[i].hasUrgentOrder()) targets[u.position()+options[i].orderDir()].targetNum++;
+  }
 }
 
 void giveBonusOrders(){
@@ -891,6 +1039,7 @@ void update(){
     orders[i] = Order(i,Direction::null,true,OrderType::movement,MAXINT);
   }
   targets = Matrix<Target>(rows(),cols());
+  options = vector<Options>(uns.size());
 }
 
 //Play method (keep as short as possible)
@@ -1022,7 +1171,7 @@ virtual void play(){
         break;
       }
     }
-    //giveImmediateOrders();
+    giveImmediateOrders();
     giveBonusOrders();
     //giveDrawOrders();
     executeOrders();
