@@ -119,6 +119,15 @@ private:
 };
 
 enum OrderType{ movement, attack, ability };
+inline std::ostream& operator << (std::ostream& out, OrderType t) {
+  switch (t) {
+    case OrderType::movement: out << "movement";  break;
+    case OrderType::attack:   out << "attack";    break;
+    case OrderType::ability:  out << "ability"; break;
+    default:     out << int(t);  break;
+  }
+  return out;
+}
 
 struct Order{
   int unitId;
