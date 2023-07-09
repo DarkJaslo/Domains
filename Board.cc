@@ -701,12 +701,25 @@ bool Board::executeOrder(int plId, Order ord){
     if(sqold.hasUnit()){
       //If there was, see if it is in range
       int uid = sqold.unit().id();
-      
+
       Direction dirAux = Direction::null;
-      if(info.square(sq.pos()+Direction::up).unit().id() == uid) dirAux = Direction::up;
-      else if(info.square(sq.pos()+Direction::left).unit().id() == uid) dirAux = Direction::left;
-      else if(info.square(sq.pos()+Direction::right).unit().id() == uid) dirAux = Direction::right;
-      else if(info.square(sq.pos()+Direction::down).unit().id() == uid) dirAux = Direction::down;
+
+      vector<Direction> ALL_DIRS = NORMAL_DIRS;
+      if(info.square(u.position()).painter() == u.player()){
+        ALL_DIRS.push_back(Direction::UL);
+        ALL_DIRS.push_back(Direction::UR);
+        ALL_DIRS.push_back(Direction::DL);
+        ALL_DIRS.push_back(Direction::DR);
+      }
+      for(Direction d : ALL_DIRS){
+        Position paux(u.position()+d);
+        if(info.posOk(paux) and info.square(paux).hasUnit()){
+          if(info.square(paux).unit().id() == uid){
+            dirAux = d;
+            break;
+          }
+        }
+      }
 
       if(dirAux != Direction::null){
         //If it still is in range, attack
