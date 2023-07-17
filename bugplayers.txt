@@ -1,6 +1,7 @@
 Dummy:
 al salir de zona propia se suele usar el diagonal porque se optimiza el movimiento, pero no empiezan dibujos y quiero que los empiecen
-ordenes de bonus y bubble no miran targets 
+ordenes de bonus y bubble no miran targets (creo que ahora si?)
 hay unidades que no están muriendo al morir?
 las burbujas a distancia 2 y similar no se persiguen lol
 las unidades no petan burbujas cuando tienen otras unidades cerca (peor sistema de opciones jamás inventado)
+las unidades no se mueven cuando tienen otras unidades enemigas cerca
