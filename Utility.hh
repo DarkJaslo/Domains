@@ -211,7 +211,6 @@ public:
   //Copy constructor
   Matrix(const Matrix& other);
   Matrix& operator=(const Matrix& other);
-  //Move constructor
   ~Matrix();
   inline T& operator[](Position);
   inline const T& operator[](Position)const;
