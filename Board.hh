@@ -66,7 +66,7 @@ private:
   //Performs all free attacks
   void performFreeAttacks();
 
-  //Pops Bubble with bubble id = bid
+  //Pops Bubble in position p
   void popBubble(Position p, bool isForced);
 
   //Decreases all Bubbles' rtps and pops them if needed
@@ -102,7 +102,7 @@ private:
   //Spawns players
   void spawnPlayers();
 
-  //Prints the start squares of all units
+  //(DEBUG) Prints the start squares of all units
   void printStartSquares(const std::vector<std::pair<Position,Position>>& sqs);
 
   int seed;
