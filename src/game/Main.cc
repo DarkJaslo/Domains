@@ -13,21 +13,22 @@ int main(int argc, char** argv){
 
   //1:seed 2:print? 3:pl1 4:pl2 5:pl3 6:pl4
 
-  if(argc != 6)
+  if(argc != 7)
   {
     std::cerr << "Usage: ./Game.exe [seed] [print_options] [Player1] [Player2] [Player3] [Player4] < [config_file]" << std::endl;
+    exit(EXIT_FAILURE);
   }
 
-  cerr << "hola soy el main" << endl;
+  cerr << "hola soy el main\n";
   //Register::printPlayers();
 
   int nplayers = argc-3;
   if(nplayers < 2){
-    cerr << "too few players/parameters" << endl;
+    cerr << "too few players/parameters\n";
     exit(1);
   }
   else if(nplayers > 4){
-    cerr << "too many players/parameters" << endl;
+    cerr << "too many players/parameters\n";
     exit(1);
   }
 
@@ -40,7 +41,7 @@ int main(int argc, char** argv){
   string arg2 = argv[2];
   bool show = arg2 == "y";
 
-  g.play(names,atoi(argv[1]),true,show /*,true*/);
+  g.play(names,atoi(argv[1]),false,show /*,true*/);
 
   cerr << "Fin main" << endl;
   //exit(0);

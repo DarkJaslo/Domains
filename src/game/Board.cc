@@ -89,7 +89,7 @@ void printMatrix(Matrix<Square>& map){
   for(int i = 0; i < map.cols(); ++i){
     cerr << i << " ";
   }
-  cerr << std::endl;
+  cerr << "\n";
   for(int i = 0; i < map.rows(); ++i){
     cerr << i;
     if(i < 10) cerr << " ";
@@ -103,9 +103,9 @@ void printMatrix(Matrix<Square>& map){
       cerr << " ";
       if(j >= 9) cerr << " ";
     }
-    cerr << std::endl;
+    cerr << "\n";
   }
-  cerr << std::endl;
+  cerr << "\n";
 }
 
 //Board class
@@ -1503,7 +1503,7 @@ void Board::printRound(){
         else cout << ucode(false);
       }
     }
-    cout << std::endl;
+    cout << "\n";
   }
 
   //CONSOLE FORMAT
