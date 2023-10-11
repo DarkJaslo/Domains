@@ -174,6 +174,10 @@ std::vector<int> GameInfo::numberOfUnits(){
   return n;
 }
 
+int GameInfo::maxNumberOfUnits(){
+  return unitsVector.size();
+}
+
 bool GameInfo::freeSquare(int plId, Position& p){
   if(plId >= numPlayers){
     std::cerr << "freeSquare requested for player " << plId << ", who does not exist" << std::endl;

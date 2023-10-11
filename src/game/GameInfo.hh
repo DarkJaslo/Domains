@@ -33,10 +33,12 @@ public:
   static int randomNumber(int l, int r); //implemented in Board.cc
   //Returns a random permutation of 0,1,2,3
   static std::vector<int> randomPermutation(); //implemented in Board.cc
-  //Returns all unit ids the player p possesses
+  //Returns all unit ids the player p possesses, sorted in ascending order
   static std::vector<int> units(int p);
   //Returns the number of units belonging to each player
   static std::vector<int> numberOfUnits();
+  //Returns the maximum number of units
+  static int maxNumberOfUnits();
 
 
 private:
