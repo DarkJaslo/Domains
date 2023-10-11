@@ -1105,12 +1105,6 @@ void Board::useAbility(int plId, Position p){
       Position pos(i,j);
       if(info.posOk(pos)){
         Square sq = info.square(pos);
-        if(pos == Position(37,38)){
-          std::cerr << "position is here" << std::endl;
-          if(sq.border() and debug) std::cerr << "is border" << " ";
-          if(sq.drawn() and debug) std::cerr << " and drawn";
-          if(debug) std::cerr << std::endl;
-        }
         if((pos.x == xmin or pos.x == xmax or pos.y == ymin or pos.y == ymax) and sq.drawn()){
           if(debug){
             std::cerr << "drawer is " << int(sq.uDrawer) << std::endl;
