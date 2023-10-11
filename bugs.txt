@@ -10,3 +10,6 @@ THEORY-FIXED
         1.db.
         1.a..
         donde la unidad sale de a, dibuja d y entra en b
+
+
+Board.cc, executeRound() no ejecuta las cosas en orden aún creo
