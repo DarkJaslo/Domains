@@ -32,7 +32,7 @@ $(OBJ_DIR) :
 	mkdir -p $@
 
 clean: 
-	rm *.o *.exe
+	rm src/bots/*.o obj/*.o *.exe
 	@rm -rv $(OBJ_DIR)
 
 #-include $(OBJ:.o=.d)
