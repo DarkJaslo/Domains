@@ -137,7 +137,7 @@ vector<Direction> DIRS_MAP; //So directions work as if you were down-left
 const int PRIO_MAX = 110;
 const int PRIO_FETCH = 50;
 
-const int MAX_BFS = 12;
+const int MAX_BFS = 20;
 const int MAX_TARGETS = 2;
 
 
