@@ -11,20 +11,23 @@ int jump;
 int randind;
 int randsize(){return 9973;}
 int randjump(){return 11;}
-int randdigit(){
+int randdigit()
+{
   randind += jump;
   if(randind>=randsize()) randind%=randsize();
   char c = pi[randind];
   c-='0';
   return c;
 }
-int GameInfo::randomNumber(int l, int r){
+int GameInfo::randomNumber(int l, int r)
+{
   if(l == r) return l;
   //std::cerr << "starting random number generation" << std::endl;
   int div = 100000;
   int digits = 5;  
   int number = 0;
-  for(int i = digits; i > 0; --i){
+  for(int i = digits; i > 0; --i)
+  {
     number*=10;
     number += randdigit();
   }
@@ -35,7 +38,8 @@ int GameInfo::randomNumber(int l, int r){
   if(res > r)--res; //the kind of thing that actually doesn't happen, but happens
   return res;
 }
-vector<int> GameInfo::randomPermutation(){
+vector<int> GameInfo::randomPermutation()
+{
   vector<int> v(4);
   int index = randomNumber(0,23);
   v[0] = permutations[index][0];
@@ -50,11 +54,13 @@ const vector<Direction> NORMAL_DIRS = {Direction::up, Direction::down, Direction
 bool isDiagonal(Direction d){return d >= Direction::UL;}
 bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
 template <typename T>
-bool findInVector(const T& thing, const vector<T>& vec){
+bool findInVector(const T& thing, const vector<T>& vec)
+{
   for(const T& t : vec) if(t == thing) return true;
   return false;
 }
-Direction inverse(Direction d){
+Direction inverse(Direction d)
+{
   switch(d){
     case Direction::left:
       return Direction::right;
@@ -84,18 +90,23 @@ Direction inverse(Direction d){
       break;
   }
 }
-void printMatrix(Matrix<Square>& map){
+void printMatrix(Matrix<Square>& map)
+{
   cerr << "   ";
-  for(int i = 0; i < map.cols(); ++i){
+  for(int i = 0; i < map.cols(); ++i)
+  {
     cerr << i << " ";
   }
   cerr << "\n";
-  for(int i = 0; i < map.rows(); ++i){
+  for(int i = 0; i < map.rows(); ++i)
+  {
     cerr << i;
     if(i < 10) cerr << " ";
     cerr << " ";
-    for(int j = 0; j < map.cols(); ++j){
-      if(map[Position(i,j)].drawn()){
+    for(int j = 0; j < map.cols(); ++j)
+    {
+      if(map[Position(i,j)].drawn())
+      {
         cerr << 'd';
       }
       else if(map[Position(i,j)].painter() == -1) cerr << '.';
@@ -116,7 +127,8 @@ Board::~Board()
 Board::Board(){debug = false; view = true; info.numPlayers = 4; }
 Board::Board(bool d, bool v, int nplayers){debug = d; view = v; info.numPlayers = nplayers;}
 
-void Board::iniBoard(int s, int rounds){
+void Board::iniBoard(int s, int rounds)
+{
   if(debugBasic) std::cerr << "Initializing board...\n";
   seed = s;
   randind = seed%randsize();
@@ -131,7 +143,8 @@ void Board::iniBoard(int s, int rounds){
 
   //Initialize squares
   for(int i = 0; i < info.square_map.rows(); ++i){
-    for(int j = 0; j < info.square_map.cols(); ++j){
+    for(int j = 0; j < info.square_map.cols(); ++j)
+    {
       Square sq;
       Position ij(i,j);
       sq.p = ij;
