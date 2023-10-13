@@ -57,7 +57,7 @@ private:
     Attacks,  //Unit U1 can attack, Unit U2 can't
   };
 
-  //Executes the fight between u1 and u2 and its consequences... Returns the winner's uid
+  //Executes the fight between u1 and u2 and its consequences... Assumes u1 is always the attacker and returns the winner's uid
   int fight(Unit& u1, Unit& u2, FightMode fm);
 
   //Executes ord (if it is valid) and returns true if it succeeds
