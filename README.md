@@ -41,6 +41,9 @@ The ability can trigger extra painting processes if ally drawings are inside the
 <p>
 Painting events always happen because a drawing and already painted squares form a closed perimeter. This can happen when a unit that is drawing walks into a painted square, or when a bubble pop or an ability close this perimeter. For painting to happen, at least one of the perimeter’s squares must be a drawing. Diagonally adjacent squares don’t form a perimeter: they must be adjacent using the basic four directions: up, down, left and right.
 </p>
+ <h3> Energy </h3>
+Each unit has an energy value. At the end of each round, all units in ally squares gain 1 point and units in enemy squares lose 1 point. Anything else yields nothing. Keep this mechanic in mind with fights, because it's important there. Details on the starting and max values are in the standard configuration in <tt>config.cnf</tt>.
+
  <h3> Fights </h3>
 <p>
 Units can fight when they are close enough. There are only two ways to trigger a fight: attacking a position with a unit on it or moving to it. Winning a fight gives points and kills the losing unit, but there is a certain risk to it:
