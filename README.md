@@ -1,6 +1,6 @@
-# Game Rules
+# Domains
 <p>
-  This game is all about painting. From two to four players compete on a board simultaneously for a number of rounds (R, from now on), and the player that gets the most points wins.
+  This game is all about painting and expanding. From two to four players compete on a board simultaneously for a number of rounds, and the player that gets the most points wins. <b>WARNING!</b> This is still a Beta, so expect some mistakes here and there.
 </p>
 
 ## Mechanics
@@ -68,6 +68,21 @@ Bonuses spawn randomly in any square of the map without a fixed frequency. Up to
   <h3> Making players </h3>
 <p>
 Players have to inherit from the Player class, which contains the virtual method play() (don’t worry, there is a player template that serves as an example). When a round begins, the game will call this function for every player, so orders to all units should be given there. Players can give up to one command per unit, and they will be executed in the same order they are given in. The order between players, though, is completely random: each time a command is going to be executed, the game decides randomly which player’s it is.
+</p>
+
+## Additional considerations
+  <h3> Demo </h3>
+<p> 
+  The source code provides a Dummy player that can be used for demo purposes or player testing. It is not intended to be good at the game, but does basic things. As the game has many mechanics that are difficult to understand, watching sample games can serve as a starting point.
+</p>
+
+  <h3> Openings </h3>
+<p>
+  A good approach for any player is to design a sequence of opening moves. The beggining of the game is a very particular moment where each player has very few options, and units or bubbles will spawn every three rounds. Account for the randomness of spawn events as well as the very limited domain you start with: it will be full of units before other players end their opening sequences.
+</p>
+  <h3> Configuration file (config.cnf) </h3>
+<p> 
+  Contains parameters for the game. It is local to every copy of this repository, but the version that is intented to be canon is this repository's. Please mind that I may -very rarely- tune some of the numbers in there as time goes without updating the rules here, so the definitive values will always be the ones there.
 </p>
 
 # Game viewer
