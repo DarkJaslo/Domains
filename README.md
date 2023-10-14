@@ -28,7 +28,7 @@ The unit moves one Square in a direction. Valid directions include left, right, 
 <h3> Attacking [attack()] </h3>
 
 <p>
-The unit attacks an adjacent position. In this case, it does not move, but it offers higher versatility: Imagine a unit u1 is in square s. Our unit, u2, wants to attack that position. If u1 moves before u2 attacks, leaving the attacked position, the move order attack would be useless. This attack order can still attack u1 if it moves but stays in attack range. This is usual when units are placed diagonally and the attacker has access to diagonal range, as could happen, for example, when defending a border. This order can be useful too if no one stays in range before the attack, but a unit enters the up to three-position attack range later, which triggers a fight at the end of the round.
+The unit attacks an adjacent position. In this case, it does not move, but it offers higher versatility: Imagine a unit u1 is in square s. Our unit, u2, wants to attack that position. If u1 moves before u2 attacks, leaving the attacked position, the move order attack would be useless. This attack order can still attack u1 if it moves but stays in attack range. This is usual when units are placed diagonally and the attacker has access to diagonal range, as could happen, for example, when defending a border. This order can be useful too if no one is in range before the attack, but a unit enters the up to three-position attack range later, which triggers a fight at the end of the round.
   </p>
 
 <h3> Abilities [ability()] </h3>
@@ -45,9 +45,9 @@ Painting events always happen because a drawing and already painted squares form
 <p>
 Units can fight when they are close enough. There are only two ways to trigger a fight: attacking a position with a unit on it or moving to it. Winning a fight gives points and kills the losing unit, but there is a certain risk to it:
 
-<b>Fair fights</b>: they happen when both units are in strike range (eg. completely adjacent, or in diagonal but each one in owned squares). The attacker does not matter: a random number between 0 and the current energy of both units is generated for each one, and the unit that rolls the highest wins. This behaviour is very random, but gives an edge to the unit with higher energy. Also, the winning unit loses a random number of energy points in range [0,e/2], where e is the energy the losing unit had. Of course, this doesn't make its energy go below 0. 
+<u>Fair fights</u>: they happen when both units are in strike range (eg. completely adjacent, or in diagonal but each one in owned squares). The attacker does not matter: a random number between 0 and the current energy of both units is generated for each one, and the unit that rolls the highest wins. This behaviour is very random, but gives an edge to the unit with higher energy. Also, the winning unit loses a random number of energy points in range [0,e/2], where e is the energy the losing unit had. Of course, this doesn't make its energy go below 0. 
 
-<b>Unfair fights (or kills)</b>: they happen when the attacking unit strikes a unit that cannot counterattack because it doesn't have enough range. In this case, the striking unit always wins
+<u>Unfair fights (or kills)</u>: they happen when the attacking unit strikes a unit that cannot counterattack because it doesn't have enough range. In this case, the striking unit always wins
 </p>
  <h3> Respawns </h3>
 <p>
