@@ -171,6 +171,7 @@ void play()
 		{
 			orders[i] = MyOrder(Order(i,Direction::null,OrderType::ability),0);
 			availableUnits[i] = false;
+			break;
 		}
 	}
 
