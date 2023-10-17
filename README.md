@@ -1,6 +1,8 @@
 # Domains
 <p>
   This game is all about painting and expanding. From two to four players compete on a board simultaneously for a number of rounds, and the player that gets the most points wins. <b>WARNING!</b> This is still a Beta, so expect some mistakes here and there.
+
+  All of this is heavily inspired in a [game/competition I took part in at university](https://github.com/DarkJaslo/EDA-game-Q12223). I extracted the factory pattern from there and made a similar board and core mechanics, with enough changes of my liking to make something different and more challenging while learning from the experience.
 </p>
 
 ## Mechanics
