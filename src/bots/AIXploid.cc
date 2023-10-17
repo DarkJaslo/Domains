@@ -136,6 +136,7 @@ vector<Direction> DIRS_MAP; //So directions work as if you were down-left
 
 const int PRIO_MAX = 110;
 const int PRIO_FETCH = 50;
+const int PRIO_ABILITY = -10; //Currently the most prioritary thing
 
 const int MAX_BFS = 20;
 const int MAX_TARGETS = 2;
@@ -161,21 +162,9 @@ void play()
 	else update();
 
 	doOpeningMoves();
-	//Else
 
 	if(round() <= OPENING_ROUNDS) return;
-
-	for(int i = 0; i < myUnits.size(); ++i)
-	{
-		if(unit(myUnits[i]).upgraded())
-		{
-			orders[i] = MyOrder(Order(i,Direction::null,OrderType::ability),0);
-			availableUnits[i] = false;
-			break;
-		}
-	}
-
-	layeredBFS(1,MAX_BFS);
+	//Else,
 
 	/*
 	1.Handle critical stuff
@@ -193,30 +182,34 @@ void play()
 	
 	*/
 
-	priority_queue<MyOrder> orderQueue;
+	useAbility();
+	// Gives useful orders to some units
+	layeredBFS(1,MAX_BFS);
+	// Remaining units should draw
+	doDrawingStuff();
+
+
+	// Gives orders taking priorities into account
+
+	std::sort(orders.begin(), orders.end());
 	for(const MyOrder& ord : orders)
 	{
-		orderQueue.push(ord);
-	}
-
-	while(not orderQueue.empty())
-	{
-		MyOrder ord = orderQueue.top();
-		orderQueue.pop();
-
-		if(ord.ord.type == OrderType::movement)
+		switch (ord.ord.type)
 		{
+		case OrderType::movement:
 			move(myUnits[ord.ord.unitId],ord.ord.dir);
-		}
-		else if(ord.ord.type == OrderType::attack){
+			break;
+		case OrderType::attack:
 			attack(myUnits[ord.ord.unitId],ord.ord.dir);
-		}
-		else if(ord.ord.type == OrderType::ability){
+			break;
+		case OrderType::ability:
 			ability(myUnits[ord.ord.unitId]);
+			break;
+		
+		default:
+			break;
 		}
 	}
-
-
 } //play() end
 
 void init()
@@ -581,6 +574,21 @@ void updateUnits()
 	commitedUnits = newCommitedUnits;
 }
 
+/* Uses the ability if needed or useful */
+void useAbility()
+{
+	//Currently uses the ability as soon as we get it
+	for(int i = 0; i < myUnits.size(); ++i)
+	{
+		if(unit(myUnits[i]).upgraded())
+		{
+			orders[i] = MyOrder(Order(i,Direction::null,OrderType::ability),PRIO_ABILITY);
+			availableUnits[i] = false;
+			break;
+		}
+	}
+}
+
 void layeredBFS(int initialRadius, int maxRadius)
 {
 	int remainingUnits = availableUnits.size();
@@ -668,7 +676,98 @@ bool layerOfBFS(int u, int radius, BFSInfo& info)
 	return false;
 }
 
+void doDrawingStuff()
+{
+	std::vector<int> available;
+	for(int i = 0; i < availableUnits.size(); ++i)
+		if(availableUnits[i])
+			available.push_back(i);
 
+	for(int u : available)
+	{
+		int un = myUnits[u];
+		Square sq = square(unit(un).position());
+		if(sq.drawn() and sq.unitDrawer() == un) continueDrawing(u);
+		else startDrawing(u);
+	}
+	return;
+
+
+	//Future, better implementation
+
+	/*
+	std::vector<int> commited;
+	for(int i = 0; i < commitedUnits.size(); ++i)
+		if(commitedUnits[i] > 0)
+			commited.push_back(i);
+
+	for(int u : commited)
+	{
+		//Continue drawing
+		continueDrawing(u);
+	}
+
+	std::vector<int> available;
+	for(int i = 0; i < availableUnits.size(); ++i)
+		if(availableUnits[i])
+			available.push_back(i);
+
+	for(int u : available)
+	{
+		//Try to start a drawing
+		startDrawing(u);
+	}
+	*/
+}
+
+void continueDrawing(int u)
+{
+	int un = myUnits[u];
+	//If I'm drawing something, go to the nearest painted square
+	Position p = unit(un).position();
+	Square sq = square(p);
+
+	if(not sq.drawn())
+	{
+		commitedUnits[u] = 0;
+		availableUnits[u] = true;
+		return;
+	} 
+	//BFS to nearest painted square
+	//This method is stupid and can erase drawings
+	
+	Position pSqPos;
+	std::function<bool(const Square&,int)> queueFunc = queueIfNotDrawn;
+	std::function<bool(const Square&,int)> evalFunc = isMineSquare;
+	if(findNearest(p,pSqPos,queueFunc,evalFunc))
+	{
+		Order ord(u,bestDirectionFlex(pSqPos,p,false),OrderType::movement);
+		MyOrder order(ord,PRIO_MAX);
+		orders[u] = order;	
+	}	
+}
+
+void startDrawing(int u)
+{
+	Position p = unit(myUnits[u]).position();
+	Position pSqPos;
+	std::function<bool(const Square&,int)> queueFunc = queueIfNotDrawn;
+	std::function<bool(const Square&,int)> evalFunc;
+
+	Square sq = square(p);
+	if(isMineSquare(sq,me()))
+	{
+		evalFunc = isNotMineSquare; 
+	}
+	else evalFunc = isMineSquare;
+
+	if(findNearest(p,pSqPos,queueFunc,evalFunc))
+	{
+		Order ord(u,bestDirectionFlex(pSqPos,p,isMineSquare(sq,me())),OrderType::movement);
+		MyOrder order(ord,PRIO_MAX);
+		orders[u] = order;
+	}
+}
 
 /*
 
@@ -839,6 +938,33 @@ void queueAdjacentPositions(BFSNode info, queue<BFSNode>& toVisit, PositionSet& 
   }
 }
 
+bool findNearest(Position ini, Position& result, std::function<bool(const Square&, int)> queueFunc, std::function<bool(const Square&,int)> evalFunc)
+{
+	BFSInfo info;
+	BFSNode node(0,ini);
+	queueAdjacentPositions(node,info.q,info.v,false,me());
+
+	while(not info.q.empty())
+	{
+		BFSNode n = info.q.front();
+		info.q.pop();
+		if(not posOk(n.pos)) continue;
+		if(n.dist > MAX_BFS) break;
+		Square sq = square(n.pos);
+
+		if(not queueFunc(sq,me())) continue;
+		
+		if(not evalFunc(sq,me()))
+		{
+			queueAdjacentPositions(n,info.q,info.v,false,me());
+			continue;
+		}
+
+		result = n.pos;
+		return true;
+	}
+	return false;
+}
 
 /*
 	
@@ -847,6 +973,22 @@ void queueAdjacentPositions(BFSNode info, queue<BFSNode>& toVisit, PositionSet& 
 */
 static bool playerHasBubble(const Square& sq){ return sq.hasBubble(); }
 //static bool playerHasBubble(const BFSStruct& str){ return str.sq.hasBubble(); }
+
+static bool queueIfNotDrawn(const Square& sq, int me)
+{
+	return not sq.drawn() or sq.drawer() != me;
+}
+
+static bool isMineSquare(const Square& sq, int me)
+{
+	return sq.painted() and sq.painter() == me;
+}
+
+static bool isNotMineSquare(const Square& sq, int me)
+{
+	return not isMineSquare(sq,me);
+}
+
 
 }; //Struct end
 
