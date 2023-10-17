@@ -763,7 +763,11 @@ void startDrawing(int u)
 
 	if(findNearest(p,pSqPos,queueFunc,evalFunc))
 	{
-		Order ord(u,bestDirectionFlex(pSqPos,p,isMineSquare(sq,me())),OrderType::movement);
+		Direction dir = bestDirectionFlex(pSqPos,p,isMineSquare(sq,me()));
+		Position newPos = p+dir;
+		if(posOk(newPos) and (not square(newPos).painted() or square(newPos).painter() != me()))
+			dir = bestDirectionFlex(pSqPos,p,false);
+		Order ord(u,dir,OrderType::movement);
 		MyOrder order(ord,PRIO_MAX);
 		orders[u] = order;
 	}
