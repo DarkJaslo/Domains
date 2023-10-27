@@ -52,7 +52,7 @@ Units can fight when they are close enough. There are only two ways to trigger a
 
 __Fair fights__: they happen when both units are in strike range (eg. completely adjacent, or in diagonal but each one in owned squares). The attacker does not matter: a random number between 0 and the current energy of both units is generated for each one, and the unit that rolls the highest wins. This behaviour is very random, but gives an edge to the unit with higher energy. Also, the winning unit loses a random number of energy points in range [0,e/2], where e is the energy the losing unit had. Of course, this doesn't make its energy go below 0. 
 
-__Unfair fights (or kills)__: they happen when the attacking unit strikes a unit that cannot counterattack because it doesn't have enough range. In this case, the striking unit always wins
+__Unfair fights (or kills)__: they happen when the attacking unit strikes a unit that cannot counterattack because it doesn't have enough range. In this case, the striking unit always wins.
 </p>
  <h3> Respawns </h3>
 <p>
@@ -90,7 +90,5 @@ Players have to inherit from the Player class, which contains the virtual method
 # Game viewer
 
 <p>
-The viewer program can be used to watch games. So far, it is a C++ application that runs on Linux. It takes the standard output of a Game as input, and allows moving across the rounds freely, both forwards and backwards. Space toggles the animation and left/right arrow keys allow moving from round to round. Assuming four players, Player1, Player2, Player3 and Player4, who are given to the Game in this order, their starting corner is:
-4   2
-1   3
+The [viewer](https://github.com/DarkJaslo/game-viewer) program can be used to watch games. So far, it is a C++ application that runs on Linux. It takes the standard output of a Game as input, and allows moving across the rounds freely, both forwards and backwards. Space toggles the animation and left/right arrow keys allow moving from round to round.
 </p>
