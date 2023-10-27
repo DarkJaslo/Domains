@@ -90,5 +90,6 @@ Players have to inherit from the Player class, which contains the virtual method
 # Game viewer
 
 <p>
+
 The [viewer](https://github.com/DarkJaslo/game-viewer) program can be used to watch games. So far, it is a C++ application that runs on Linux. It takes the standard output of a Game as input, and allows moving across the rounds freely, both forwards and backwards. Space toggles the animation and left/right arrow keys allow moving from round to round.
 </p>
