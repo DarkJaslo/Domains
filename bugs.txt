@@ -1,12 +1,1 @@
-primero genera la habilidad y luego pinta, puede evitar pintar según que trozos (es realmente un bug?)
-
-THEORY-FIXED
-      lo de hacer flood perpendicular no siempre funciona bien: busca también casillas de otro color para probar cuando lo hagas
-        suele pasar mucho con dibujos pequeños como
-
-        .....
-        .111.
-        1111.
-        1.db.
-        1.a..
-        donde la unidad sale de a, dibuja d y entra en b
+If a player uses the ability and then collects a bonus, the bonus isn't collected because technically the ability is used when the round ends. The counter should be updated when the order is received and processed instead of when the ability is used (or the unit attempts to)
