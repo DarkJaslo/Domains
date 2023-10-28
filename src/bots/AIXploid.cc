@@ -139,7 +139,7 @@ const int PRIO_FETCH = 50;
 const int PRIO_ABILITY = -10; //Currently the most prioritary thing
 
 const int MAX_BFS = 20;
-const int MAX_TARGETS = 2;
+const int MAX_TARGETS = 1;
 
 
 /*
@@ -623,6 +623,7 @@ bool layerOfBFS(int u, int radius, BFSInfo& info)
 {
 
 	if(info.q.empty()) return false;
+	bool diag = square(unit(myUnits[u]).position()).painter() == me();
 	do{
 		BFSNode n = info.q.front();
 		if(n.dist > radius) return false;
@@ -636,8 +637,6 @@ bool layerOfBFS(int u, int radius, BFSInfo& info)
 		//Evaluate conditions
 		bool finished = false;
 
-		
-		bool diag = sq.painter() == me();
 		if(sq.empty()) continue;
 		if(targets.targets(pos) >= MAX_TARGETS) continue;
 		if(sq.hasBubble())
@@ -741,7 +740,32 @@ void continueDrawing(int u)
 	std::function<bool(const Square&,int)> evalFunc = isMineSquare;
 	if(findNearest(p,pSqPos,queueFunc,evalFunc))
 	{
-		Order ord(u,bestDirectionFlex(pSqPos,p,false),OrderType::movement);
+		vector<Direction> options = possibleDirections(pSqPos-p);
+		vector<Direction> realOptions;
+
+		for(int i = 0; i < options.size(); ++i)
+		{
+			Position paux = p+options[i];
+			if(posOk(paux))
+			{
+				Square sqaux = square(paux);
+        if(not sqaux.drawn() or sqaux.drawer() != me())
+          realOptions.push_back(options[i]);
+			}
+		}
+
+    Direction finalDir = Direction::null;
+
+    if(realOptions.size() == 1)
+    {
+      finalDir = realOptions[0];
+    }
+    else if(realOptions.size() >= 2)
+    {
+      finalDir = realOptions[randomNumber(0,1)];
+    }
+
+		Order ord(u,finalDir,OrderType::movement);
 		MyOrder order(ord,PRIO_MAX);
 		orders[u] = order;	
 	}	
@@ -763,10 +787,40 @@ void startDrawing(int u)
 
 	if(findNearest(p,pSqPos,queueFunc,evalFunc))
 	{
-		Direction dir = bestDirectionFlex(pSqPos,p,isMineSquare(sq,me()));
-		Position newPos = p+dir;
-		if(posOk(newPos) and (not square(newPos).painted() or square(newPos).painter() != me()))
-			dir = bestDirectionFlex(pSqPos,p,false);
+		Direction dir = Direction::null;
+    if(isMineSquare(sq,me())) //Exit painted area
+    {
+      dir = bestDirectionFlex(pSqPos,p,isMineSquare(sq,me()));
+      Position newPos = p+dir;
+      if(posOk(newPos) and (not square(newPos).painted() or square(newPos).painter() != me()))
+      {  
+        dir = bestDirectionFlex(pSqPos,p,false);
+      }
+    }
+    else //enter painted area avoiding drawings
+    {
+      vector<Direction> options = possibleDirections(pSqPos-p);
+      vector<Direction> realOptions;
+      for(int i = 0; i < options.size(); ++i)
+      {
+        Position paux = p+options[i];
+        if(posOk(paux))
+        {
+          Square sqaux = square(paux);
+          if(not sqaux.drawn() or sqaux.drawer() != me())
+            realOptions.push_back(options[i]);
+        }
+      }
+
+      if(realOptions.size() == 1)
+      {
+        dir = realOptions[0];
+      }
+      else if(realOptions.size() >= 2)
+      {
+        dir = realOptions[randomNumber(0,1)];
+      }
+    }
 		Order ord(u,dir,OrderType::movement);
 		MyOrder order(ord,PRIO_MAX);
 		orders[u] = order;
@@ -850,40 +904,57 @@ static Direction bestDirection(Position desired, Position act){
   else if(desired.y > act.y){ return Direction::right; }
   return Direction::left;
 }
-static Direction decide(Position pos){
-  if(pos.x < 0 and pos.y < 0){
-    int rand = randomNumber(0,1);
-    if(rand == 0){return Direction::up;}
-    return Direction::left;
+
+static vector<Direction> possibleDirections(Position pos)
+{
+	vector<Direction> dirs;
+
+	if(pos.x < 0 and pos.y < 0)
+	{
+		dirs.push_back(Direction::up);
+    dirs.push_back(Direction::left);
   }
-  else if(pos.x > 0 and pos.y > 0){
-    int rand = randomNumber(0,1);
-    if(rand == 0){return Direction::down;}
-    return Direction::right;
+  else if(pos.x > 0 and pos.y > 0)
+	{
+		dirs.push_back(Direction::down);
+		dirs.push_back(Direction::right);
   }
   else if(pos.x == 0){
     if(pos.y < 0){
-      return Direction::left;
+      dirs.push_back(Direction::left);
     }
-    return Direction::right;
+    else dirs.push_back(Direction::right);
   }
   else if(pos.y == 0){
     if(pos.x < 0){
-      return Direction::up;
+			dirs.push_back(Direction::up);
     }
-    return Direction::down;
+		else dirs.push_back(Direction::down);
   }
   else if(pos.x < 0){
-    int rand = randomNumber(0,1);
-    if(rand == 0){return Direction::up;}
-    return Direction::right;
+		dirs.push_back(Direction::up);
+		dirs.push_back(Direction::right);
   }
   else if(pos.y < 0){
-    int rand = randomNumber(0,1);
-    if(rand == 0){return Direction::down;}
-    return Direction::left;
+		dirs.push_back(Direction::down);
+		dirs.push_back(Direction::left);
   }
-  return Direction::null;
+  return dirs;
+}
+
+static Direction decide(Position pos){
+	vector<Direction> possible = possibleDirections(pos);
+	if(possible.size() >= 2)
+	{
+		if(randomNumber(0,1) == 0)
+		{
+			return possible[0];
+		}
+		return possible[1];
+	}
+	else if(possible.size() == 1)
+		return possible[0];
+	return Direction::null;  
 }
 
 static Direction bestDirectionFlex(Position desired, Position act, bool diag = false){
@@ -934,7 +1005,8 @@ void queueAdjacentPositions(BFSNode info, queue<BFSNode>& toVisit, PositionSet& 
   }
   for(int i = 0; i < permutation.size(); ++i){
     Position aux = info.pos+permutation[i];
-    if(posOk(aux) and not visited.queued(aux) and not visited.contains(aux) ){
+    if(posOk(aux) and square(aux).drawer() != me() and not visited.queued(aux) and not visited.contains(aux))
+	{
       if(isDiagonal(permutation[i]) and square(aux).painter() != plId) continue;
       toVisit.push(BFSNode(info.dist+1,aux));
       visited.queue(aux);
