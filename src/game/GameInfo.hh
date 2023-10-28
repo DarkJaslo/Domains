@@ -59,6 +59,7 @@ private:
   static int unitsMax;
   static int unitsMin;
   static int bonusMax;
+  static int bonusPerPlayer;
   static int roundsPerRespawn;
   static int roundsPerBubble;
   static int roundsPerBubbleMove;

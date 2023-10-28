@@ -699,7 +699,7 @@ bool Board::executeOrder(int plId, Order ord)
     }
     else if(sq.hasBonus()) //Try to take -> consume
     { 
-      if(info.bonusPlayers[plId] < info.bonusMax and not info.unitsVector[u.id()].upgraded())
+      if(info.bonusPlayers[plId] < info.bonusPerPlayer and not info.unitsVector[u.id()].upgraded())
       {
         info.bonusPlayers[plId]++;
         info.unitsVector[u.id()].upg = true;

@@ -10,6 +10,7 @@ int GameInfo::unitsStart;
 int GameInfo::unitsMax;
 int GameInfo::unitsMin;
 int GameInfo::bonusMax;
+int GameInfo::bonusPerPlayer;
 int GameInfo::roundsPerRespawn;
 int GameInfo::roundsPerBubble;
 int GameInfo::roundsPerBubbleMove;
@@ -50,66 +51,67 @@ std::vector<int> GameInfo::bonusCounters;
 
 
 GameInfo::~GameInfo(){
-  std::cerr << "destructing GameInfo" << std::endl;
+  std::cerr << "destructing GameInfo" << "\n";
 }
 int GameInfo::cols(){return boardWidth;}
 int GameInfo::rows(){return boardHeight;}
 int GameInfo::round(){return GameInfo::currentRound;}
 int GameInfo::points(int pl){
   if(pl < 0 or pl >= numPlayers){
-    std::cerr << "warning: asked for player " << pl << " who does not exist" << std::endl;
+    std::cerr << "warning: asked for player " << pl << " who does not exist" << "\n";
     return -1;
   }
   return playerPoints[pl];
 }
 Square GameInfo::square(const Position& p){
-  if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) std::cerr << "Position is not valid (sq)" << std::endl;
+  if(p.y < 0 or p.y > cols() or p.x > rows() or p.x < 0) std::cerr << "Position is not valid (sq)" << "\n";
   return square_map[p];
 }
 Unit GameInfo::unit(int uid){
-  if(uid < 0 or uid >= unitsVector.size()){std::cerr << "warning: requested for a unit that doesn't exist" << std::endl; exit(1);}
+  if(uid < 0 or uid >= unitsVector.size()){std::cerr << "warning: requested for a unit that doesn't exist" << "\n"; exit(1);}
   return unitsVector[uid];
 }
 Unit GameInfo::unit(Position p){
-  if(not posOk(p)){ std::cerr << "warning: position " << p.x << " " << p.y << " is outside the board" << std::endl; exit(1);}
+  if(not posOk(p)){ std::cerr << "warning: position " << p.x << " " << p.y << " is outside the board" << "\n"; exit(1);}
   Square sq = square(p);
-  if(sq.u == nullptr){std::cerr << "warning: position " << p.x << " " << p.y << " does not have any unit" << std::endl; exit(1);}
+  if(sq.u == nullptr){std::cerr << "warning: position " << p.x << " " << p.y << " does not have any unit" << "\n"; exit(1);}
   return sq.unit();
 }
 Bubble GameInfo::bubble(int bid){
-  if(bid < 0 or bid >= bubblesVector.size()){std::cerr << "warning: requested for a bubble that doesn't exist" << std::endl; exit(1);}
+  if(bid < 0 or bid >= bubblesVector.size()){std::cerr << "warning: requested for a bubble that doesn't exist" << "\n"; exit(1);}
   return bubblesVector[bid];
 }
 Bubble GameInfo::bubble(Position p){
-  if(not posOk(p)){ std::cerr << "warning: position " << p.x << " " << p.y << " is outside the board" << std::endl;exit(1);}
+  if(not posOk(p)){ std::cerr << "warning: position " << p.x << " " << p.y << " is outside the board" << "\n";exit(1);}
   Square sq = square(p);
-  if(sq.bb == nullptr){ std::cerr << "warning: position " << p.x << " " << p.y << " does not have any bubble" << std::endl; exit(1); }
+  if(sq.bb == nullptr){ std::cerr << "warning: position " << p.x << " " << p.y << " does not have any bubble" << "\n"; exit(1); }
   return sq.bubble();
 }
 
 
 void GameInfo::printSettings(){
-  std::cout << "NUMBER_OF_PLAYERS" << '\t' << numPlayers << std::endl
-  << "UNITS_AT_START" << "\t\t"       << unitsStart << std::endl
-  << "MAX_NUMBER_OF_UNITS" << '\t'    << unitsMax << std::endl
-  << "MIN_NUMBER_OF_UNITS" << '\t'    << unitsMin << std::endl
-  << "MAX_NUMBER_OF_BONUSES" << '\t'  << bonusMax << std::endl
-  << "ROUNDS_PER_RESPAWN" << '\t'     << roundsPerRespawn << std::endl
-  << "ROUNDS_PER_BUBBLE" << '\t'      << roundsPerBubble << std::endl
-  << "ROUNDS_PER_BUBBLE_MOVE"         << roundsPerBubbleMove << std::endl
-  << "MAX_ROUNDS_PER_BONUS" << '\t'   << roundsPerBonus << std::endl
-  << "POINTS_PER_UNIT" << "\t\t"      << pointsPerUnit << std::endl
-  << "POINTS_PER_BUBBLE" << '\t'      << pointsPerBubble << std::endl
-  << "POINTS_PER_POP" << "\t\t"       << pointsPerPop << std::endl
-  << "POINTS_PER_SQUARE" << '\t'      << pointsPerSquare << std::endl
-  << "ENERGY_AT_START" << "\t\t"      << energyStart << std::endl
-  << "MAX_ENERGY" << "\t\t"           << energyMax << std::endl
-  << "MIN_ENERGY" << "\t\t"           << energyMin << std::endl
-  << "ABILITY SIZE" << "\t\t"         << abilitySize << std::endl
-  << "ABILITY DURATION" << '\t'       << abilityDuration << std::endl
-  << "BOARD_WIDTH" << "\t\t"          << boardWidth << std::endl
-  << "BOARD_HEIGHT" << "\t\t"         << boardHeight << std::endl
-  << "ROUNDS_TO_POP" << "\t"          << roundsToPop << std::endl;
+  std::cout << "NUMBER_OF_PLAYERS" << '\t' << numPlayers << "\n"
+  << "UNITS_AT_START" << "\t\t"       << unitsStart << "\n"
+  << "MAX_NUMBER_OF_UNITS" << '\t'    << unitsMax << "\n"
+  << "MIN_NUMBER_OF_UNITS" << '\t'    << unitsMin << "\n"
+  << "MAX_NUMBER_OF_BONUSES" << '\t'  << bonusMax << "\n"
+  << "MAX_BONUSES_PER_PLAYER" << '\t' << bonusPerPlayer << "\n"
+  << "ROUNDS_PER_RESPAWN" << '\t'     << roundsPerRespawn << "\n"
+  << "ROUNDS_PER_BUBBLE" << '\t'      << roundsPerBubble << "\n"
+  << "ROUNDS_PER_BUBBLE_MOVE"         << roundsPerBubbleMove << "\n"
+  << "MAX_ROUNDS_PER_BONUS" << '\t'   << roundsPerBonus << "\n"
+  << "POINTS_PER_UNIT" << "\t\t"      << pointsPerUnit << "\n"
+  << "POINTS_PER_BUBBLE" << '\t'      << pointsPerBubble << "\n"
+  << "POINTS_PER_POP" << "\t\t"       << pointsPerPop << "\n"
+  << "POINTS_PER_SQUARE" << '\t'      << pointsPerSquare << "\n"
+  << "ENERGY_AT_START" << "\t\t"      << energyStart << "\n"
+  << "MAX_ENERGY" << "\t\t"           << energyMax << "\n"
+  << "MIN_ENERGY" << "\t\t"           << energyMin << "\n"
+  << "ABILITY SIZE" << "\t\t"         << abilitySize << "\n"
+  << "ABILITY DURATION" << '\t'       << abilityDuration << "\n"
+  << "BOARD_WIDTH" << "\t\t"          << boardWidth << "\n"
+  << "BOARD_HEIGHT" << "\t\t"         << boardHeight << "\n"
+  << "ROUNDS_TO_POP" << "\t"          << roundsToPop << "\n";
   //<< "" << '\t' << << endl
 }
 
@@ -119,6 +121,7 @@ void GameInfo::readSettings(){
   >> s >> unitsMax 
   >> s >> unitsMin
   >> s >> bonusMax 
+  >> s >> bonusPerPlayer
   >> s >> roundsPerRespawn 
   >> s >> roundsPerBubble
   >> s >> roundsPerBubbleMove
@@ -180,7 +183,7 @@ int GameInfo::maxNumberOfUnits(){
 
 bool GameInfo::freeSquare(int plId, Position& p){
   if(plId >= numPlayers){
-    std::cerr << "freeSquare requested for player " << plId << ", who does not exist" << std::endl;
+    std::cerr << "freeSquare requested for player " << plId << ", who does not exist" << "\n";
     return false;
   }
   int size = player_squares[plId].size();
@@ -201,7 +204,7 @@ bool GameInfo::freeSquare(int plId, Position& p){
 
 void GameInfo::spawnUnit(int plId, Position p){
   if(plId >= numPlayers){
-    std::cerr << "Player does not exist, didn't spawn unit" << std::endl;
+    std::cerr << "Player does not exist, didn't spawn unit" << "\n";
     exit(1);
   }
   int in;
@@ -212,7 +215,7 @@ void GameInfo::spawnUnit(int plId, Position p){
   }
 
   if(in == unitsVector.size()){
-    std::cerr << "could not find an unused unit, but i'm supposed to" << std::endl;
+    std::cerr << "could not find an unused unit, but i'm supposed to" << "\n";
     exit(1);
   }
 
@@ -229,7 +232,7 @@ void GameInfo::spawnUnit(int plId, Position p){
 
 void GameInfo::spawnBubble(int plId, Position p){
   if(plId >= numPlayers){
-    std::cerr << "Player does not exist, didn't spawn bubble" << std::endl;
+    std::cerr << "Player does not exist, didn't spawn bubble" << "\n";
     exit(1);
   }
   int in;
@@ -243,7 +246,7 @@ void GameInfo::spawnBubble(int plId, Position p){
 
   if(in == bubblesVector.size()){
     //couldn't find a place, make vector bigger
-    std::cerr << "for some reason, bubble vector size is not enough" << std::endl;
+    std::cerr << "for some reason, bubble vector size is not enough" << "\n";
     exit(1);
   }
   bubblesVector[in] = b;
