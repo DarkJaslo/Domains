@@ -210,10 +210,15 @@ void Board::erasePath(int uid, Position p)
 void Board::killUnit(Unit& u)
 {
   if(debug) std::cerr << "killing unit " << u.id() << " by " << u.player() << "\n";
-  
+
+  if(u.upgraded()) //Killed before using the ability
+  {
+    info.bonusPlayers[u.player()]--;
+    u.upg = false;
+  }
   u.pl = -1;
   info.square_map[u.p].u = nullptr;
-  killedUnits[u.id_] = true;
+  killedUnits[u.id()] = true;
 
   //Erase drawing if there is
   if(drawStarts[u.id()].first == Position(-1,-1)) return;
@@ -846,7 +851,10 @@ bool Board::executeOrder(int plId, Order ord)
     
     //The ability can be used
 
-    //Queues the ability for later
+    //Consume ability
+    info.unitsVector[u.id()].upg = false;
+    info.bonusPlayers[u.player()]--;
+    //Queue for later
     abilityUnits.push_back(u.id());
     break;
   }
@@ -1322,9 +1330,6 @@ void Board::resolveAbilities()
     if(debug) std::cerr << "unit " << u.id() << " by player " << u.player() << " using ability\n";
 
     useAbility(u.player(),u.position());
-
-    info.unitsVector[u.id()].upg = false;
-    info.bonusPlayers[u.player()]--;
     abilityUnits.clear();
     return;
   }
@@ -1349,7 +1354,7 @@ void Board::resolveAbilities()
     int player = u.player();
     unitsMap[player] = make_pair(abilityUnits[i], u.position());
   }
-  
+
   vector<bool> canUse(info.numPlayers,true);
 
   //invalidates overlapping abilities
@@ -1384,16 +1389,6 @@ void Board::resolveAbilities()
     {
       Unit u = info.unit(unitsMap[i].first);
       useAbility(u.player(),unitsMap[i].second);
-    }
-    //consume ability
-    for(int j = 0; j < abilityUnits.size(); ++j)
-    {
-      Unit u = GameInfo::unit(abilityUnits[j]);
-      if(u.player() == i)
-      {
-        info.unitsVector[u.id()].upg = false;
-        info.bonusPlayers[u.player()]--;
-      }
     }
   }
 
