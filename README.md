@@ -10,6 +10,7 @@
 <p>
 
 Participants code their own players, following a certain set of rules that will be specified later. To really understand everything, I recommend watching games ([Game Viewer](#game-viewer)).
+
 Initially, all players are placed in a different corner of the board, with a starting domain of 3x3 squares. The objective is to accumulate points by possessing squares, popping bubbles and killing units. A variable but eventually limited number of units belong to every player, and the player must give orders to them every round. There are three possible orders: moving, attacking and using the ability.
 </p>
 
