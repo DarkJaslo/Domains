@@ -14,7 +14,7 @@ static Player* factory(){ return new PLAYER_NAME; }
 
 */
 
-/* Ad-hoc set that greatly improves BFS performance */
+/* Ad hoc set that greatly improves BFS performance */
 class PositionSet{
 public:
   enum State{OUTSIDE,QUEUED,INSIDE};
