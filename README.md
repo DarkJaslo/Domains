@@ -72,6 +72,8 @@ Bonuses spawn randomly in any square of the map without a fixed frequency. Up to
   <h3> Making players </h3>
 <p>
 Players have to inherit from the Player class, which contains the virtual method play() (don’t worry, there is a player template that serves as an example). When a round begins, the game will call this function for every player, so orders to all units should be given there. Players can give up to one command per unit, and they will be executed in the same order they are given in. The order between players, though, is completely random: each time a command is going to be executed, the game decides randomly which player’s it is.
+
+You can find info on how to use the game’s API in <tt>DomainsAPI.pdf</tt>.
 </p>
 
 ## Additional considerations
