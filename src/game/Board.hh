@@ -45,8 +45,7 @@ private:
 
   Position followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid);
 
-  //Seriously how the fuck do you do this
-
+  //Seriously how the fuck do you document this
   void paint(int plId, int uid, Position in, Position out);
 
   //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew

@@ -19,7 +19,7 @@ int main(int argc, char** argv){
     exit(EXIT_FAILURE);
   }
 
-  cerr << "hola soy el main\n";
+  cerr << "Main\n";
   //Register::printPlayers();
 
   int nplayers = argc-3;
@@ -43,6 +43,6 @@ int main(int argc, char** argv){
 
   g.play(names,atoi(argv[1]),false,show /*,true*/);
 
-  cerr << "Fin main" << endl;
+  cerr << "Main end" << endl;
   //exit(0);
 }
