@@ -3,6 +3,8 @@
   This game is all about painting and expanding. From two to four programs (players) compete on a board simultaneously for a number of rounds, and the player that gets the most points wins. <b>WARNING!</b> This is still a Beta, so expect some mistakes here and there.
 
   All of this is heavily inspired in a [game/competition I took part in at university](https://github.com/DarkJaslo/EDA-game-Q12223). I extracted the factory pattern from there and made a similar board and core mechanics, with enough changes of my liking to make something different and more challenging while learning from the experience.
+
+  Of course, the game is functional and the documentation is there, but I don't necessarily expect nor need for it to be used. I made it just because I wanted to learn while making an interesting project. If anyone ends up making a player for it, feel free to contact me about that, it will be fun! Other of the main reasons I made this was so that I could try a lot more stuff making players for it, after all.
 </p>
 
 ## Mechanics
@@ -89,6 +91,10 @@ You can find info on how to use the game’s API in <tt>DomainsAPI.pdf</tt>.
   <h3> Configuration file (config.cnf) </h3>
 <p> 
   Contains parameters for the game. It is local to every copy of this repository, but the version that is intented to be canon is this repository's. Please mind that I may -very rarely- tune some of the numbers in there as time goes without updating the rules here, so the definitive values will always be the ones there.
+</p>
+  <h3> Future players </h3>
+<p>
+  No player is currently being made, and I cannot guarantee 100% that I will even make one. However, I would like to, as the rules of this game allow for many levels of players (and let's be honest, Dummy is easy to beat).
 </p>
 
 # Game viewer
