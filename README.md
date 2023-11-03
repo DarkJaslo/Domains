@@ -79,7 +79,7 @@ You can find info on how to use the game’s API in <tt>DomainsAPI.pdf</tt>.
 ## Additional considerations
   <h3> Demo </h3>
 <p> 
-  The source code provides a Dummy player that can be used for demo purposes or player testing. It is not intended to be good at the game, but does basic things. As the game has many mechanics that are difficult to understand, watching sample games can serve as a starting point.
+  The source code provides PlayerDemo and Dummy players that can be used for demo purposes or player testing. Dummy is not intended to be good at the game, but does some stuff. As the game has many mechanics that are difficult to understand, watching sample games can serve as a starting point. Beware as Dummy never uses attack().
 </p>
 
   <h3> Openings </h3>
