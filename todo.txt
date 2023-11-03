@@ -1,0 +1,4 @@
+-Include min C++ version in the Makefile
+-Finish viewer web page
+-Include build instructions
+-Include showcase info (photos, videos)
