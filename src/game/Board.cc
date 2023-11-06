@@ -1763,11 +1763,11 @@ void Board::spawnPlayers()
 {
   int playersToSpawn = info.numPlayers;
 
-  if(playersToSpawn < 2)
+  /*if(playersToSpawn < 2)
   {
     std::cerr << "can't play alone, sorry\n";
     exit(1);
-  }
+  }*/
 
   /* order is:
       bot-left
@@ -1786,10 +1786,13 @@ void Board::spawnPlayers()
   j = 1;
   spawnPlayer(i,j,0);
 
-  //up right
-  i = 1;
-  j = cols-2;
-  spawnPlayer(i,j,1);
+  if(playersToSpawn >= 2)
+  {
+    //up right
+    i = 1;
+    j = cols-2;
+    spawnPlayer(i,j,1);
+  }
 
   if(playersToSpawn >= 3)
   {

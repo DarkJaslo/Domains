@@ -13,9 +13,10 @@ int main(int argc, char** argv){
 
   //1:seed 2:print? 3:pl1 4:pl2 5:pl3 6:pl4
 
-  if(argc != 7)
+  if(argc < 4 or argc > 7)
   {
     std::cerr << "Usage: ./Game.exe [seed] [print_options] [Player1] [Player2] [Player3] [Player4] < [config_file]" << std::endl;
+    std::cerr << "You can enter any number of players between 1 and 4\n";
     exit(EXIT_FAILURE);
   }
 
@@ -23,14 +24,6 @@ int main(int argc, char** argv){
   //Register::printPlayers();
 
   int nplayers = argc-3;
-  if(nplayers < 2){
-    cerr << "too few players/parameters\n";
-    exit(1);
-  }
-  else if(nplayers > 4){
-    cerr << "too many players/parameters\n";
-    exit(1);
-  }
 
   Game g;
   std::vector<string> names(nplayers);
