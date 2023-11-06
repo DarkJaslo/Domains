@@ -142,6 +142,8 @@ const int PRIO_ABILITY = -10; //Currently the most prioritary thing
 const int MAX_BFS = 20;
 const int MAX_TARGETS = 1;
 
+const int DIST_COMBAT = 2;
+
 
 /*
 	General structures
@@ -627,6 +629,7 @@ void layeredBFS(int initialRadius, int maxRadius)
 */
 bool layerOfBFS(int u, int radius, BFSInfo& info)
 {
+	Position unitPos = unit(myUnits[u]).position();
 
 	if(info.q.empty()) return false;
 	bool diag = square(unit(myUnits[u]).position()).painter() == me();
@@ -647,7 +650,7 @@ bool layerOfBFS(int u, int radius, BFSInfo& info)
 		if(targets.targets(pos) >= MAX_TARGETS) continue;
 		if(sq.hasBubble())
 		{
-			Direction dir = bestDirectionFlex(pos,unit(myUnits[u]).position(),diag);
+			Direction dir = bestDirectionSafe(pos,unit(myUnits[u]).position(),me(),diag);
 			orders[u] = MyOrder(Order(u,dir,OrderType::movement),randomNumber(PRIO_FETCH,PRIO_FETCH+5));
 
 			targets.target(pos);
@@ -656,16 +659,16 @@ bool layerOfBFS(int u, int radius, BFSInfo& info)
 		}
 		else if(sq.hasBonus())
 		{
-			Direction dir = bestDirectionFlex(pos,unit(myUnits[u]).position(),diag);
+			Direction dir = bestDirectionSafe(pos,unit(myUnits[u]).position(),me(),diag);
 			orders[u] = MyOrder(Order(u,dir,OrderType::movement),randomNumber(PRIO_FETCH,PRIO_FETCH+5));
 
 			targets.target(pos);
 			availableUnits[u] = false;
 			finished = true;
 		}
-		else if(sq.hasUnit() and sq.unit().player() != me() and sq.painter() == me())
+		else if(sq.hasUnit() and sq.unit().player() != me() and (sq.painter() == me() or n.dist <= DIST_COMBAT))
 		{
-			Direction dir = bestDirectionFlex(pos,unit(myUnits[u]).position(),diag);
+			Direction dir = bestDirectionSafe(pos,unit(myUnits[u]).position(),me(),diag);
 			orders[u] = MyOrder(Order(u,dir,OrderType::movement),randomNumber(PRIO_FETCH,PRIO_FETCH+5));
 
 			targets.target(pos);
@@ -859,7 +862,7 @@ int recursiveDichSearch(int l, int r, const T& thing, const std::vector<T>& vec)
 	return m;
 }
 
-bool isDiagonal(Direction d){return d >= Direction::UL;}
+static bool isDiagonal(Direction d){return d >= Direction::UL;}
 
 /*
 	Virtualizes a position as if you're down-left
@@ -969,6 +972,49 @@ static Direction decide(Position pos){
 static Direction bestDirectionFlex(Position desired, Position act, bool diag = false){
   if(diag) return bestDirection(desired,act);
   return decide(Position(desired.x-act.x,desired.y-act.y));
+}
+
+static Direction bestDirectionSafe(Position desired, Position act, int col, bool diag = false)
+{
+	Direction result = bestDirectionFlex(desired,act,diag);
+	
+	if(isDiagonal(result))
+	{
+		//Check if exiting a painted area
+		Position aux = act+result;
+		if(posOk(aux))
+		{
+			Square sq = square(aux);
+			if(sq.painter() != col)
+				diag = false;
+		}
+	}
+
+	if(not diag)
+	{
+		//Check if we step on drawings
+		std::vector<Direction> dirs = possibleDirections(desired-act);
+		std::vector<Direction> realDirs;
+
+		for(Direction dir : dirs)
+		{
+			Position aux = act+dir;
+			if(not posOk(aux)) continue;
+			Square sq = square(aux);
+
+			if(not sq.drawn() or sq.drawer() != col)
+			{
+				realDirs.push_back(dir);
+			}
+		}
+
+		if(realDirs.empty())
+			realDirs.push_back(Direction::null);
+
+		result = realDirs[randomNumber(0,realDirs.size()-1)];
+	}
+
+	return result;
 }
 
 /*
