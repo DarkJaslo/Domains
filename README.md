@@ -103,5 +103,5 @@ You can find info on how to use the game’s API in <tt>DomainsAPI.pdf</tt>.
 
 The [viewer](https://github.com/DarkJaslo/Domains-Viewer) program can be used to watch games. So far, it is a C++ application that runs on Linux. It takes the standard output of a Game as input, and allows moving across the rounds freely, both forwards and backwards. Space toggles the animation and left/right arrow keys allow moving from round to round.
 
-There is also a web page with very similar capabilities, but it is still WIP.
+Thanks to [a good friend](https://github.com/Javier0003), there is also a [web page](https://github.com/Javier0003/domains-web-viewer) with very similar capabilities, just enter the .txt result file and there you go. Direct link: https://domains-web-viewer.netlify.app/ (if broken, go to the web page repo).
 </p>
