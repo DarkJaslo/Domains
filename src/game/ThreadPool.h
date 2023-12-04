@@ -1,5 +1,6 @@
 #ifndef ThreadPool_h
 #define ThreadPool_h
+#define ThreadPool_VERSION "1.0"
 
 #include <iostream>
 #include <vector>
