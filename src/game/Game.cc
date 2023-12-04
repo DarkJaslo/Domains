@@ -1,4 +1,5 @@
 #include "Game.hh"
+#include "ThreadPool.h"
 #include <thread>
 #include <unistd.h>
 
@@ -8,11 +9,10 @@ Game::Game(){}
 Game::~Game(){
   std::cerr << "deleting game" << std::endl;
 }
-void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug, bool view, bool debug){
+void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug, bool view, bool parallel, bool debug){
   
   std::cerr << "starting game with seed " << seed << std::endl;
   std::vector<Player*> pl;
-  //vector<string> names = {"Player1", "Player2"};
   std::string s;
   int rounds;
   std::cin >> s >> rounds;
@@ -21,7 +21,7 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
     pl.push_back(Register::newPlayer(names[i]));
     pl[i]->id_ = i;
   }
-  //Hay que inicializar bien el tablero
+
   b.iniBoard(seed,rounds);
 
   /* CODE TO TEST THE RANDOMIZER
@@ -69,43 +69,50 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
   cout << "error: " << error*100 << "%" << endl;
 
   */
+
   std::cout << rounds << " " << b.info.rows() << " " << b.info.cols() << std::endl;
   std::cout << names.size();
   for(const std::string& s : names) std::cout << " " << s;
   std::cout << std::endl;
   b.printRound();
 
-  //thread print([&b](){b.printRound();});
-
   for(int round = 0; round < rounds; ++round){
 
     b.info.currentRound = round;
-    
-    //vector<thread> threads;
-
     if(debug) std::cerr << "starting round " << round << std::endl << std::endl;
-    for(int i = 0; i < pl.size(); ++i){
-      if(debug) std::cerr << "player " << names[i] << std::endl;
-      pl[i]->resetList();
-      //Player* aux = pl[i];
-      //threads.emplace_back(thread([aux](){ aux->play(); } ));
-      pl[i]->play();
-      if(debug) std::cerr << "end player " << names[i] << std::endl << std::endl;
+    
+    if(parallel)
+    {
+      for(int i = 0; i < pl.size(); ++i)
+      {
+        pl[i]->resetList();
+      }    
+      {
+        int nthreads = std::thread::hardware_concurrency();
+        if(pl.size() < nthreads) nthreads = pl.size();
+        jaslo::ThreadPool pool(nthreads);
+
+        for(int i = 0; i < pl.size(); ++i)
+        {
+          pool.enqueue([](Player* p){ p->play();},pl[i]);
+        }   
+      }
+    }
+    else
+    {
+      for(int i = 0; i < pl.size(); ++i){
+        if(debug) std::cerr << "player " << names[i] << std::endl;
+        pl[i]->resetList();
+        pl[i]->play();
+        if(debug) std::cerr << "end player " << names[i] << std::endl << std::endl;
+      }
     }
 
-    /*for(auto& t : threads){
-      t.join();
-    }*/
-
-    //Hay que empezar a ejecutar rondas
+    //Wait for all play() funcs before this
     b.executeRound(pl);
-    //print.join();
-    //print = thread([&b](){b.printRound();});
     b.printRound();
     if(debug) std::cerr << "ending round " << round << std::endl << std::endl << std::endl;
   }
-
-  //print.join();
 
   b.printSettings();
 }
