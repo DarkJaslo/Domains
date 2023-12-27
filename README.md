@@ -4,7 +4,7 @@
 
   All of this is heavily inspired in a [game/competition I took part in at university](https://github.com/DarkJaslo/EDA-game-Q12223). I extracted the factory pattern from there and made a similar board and core mechanics, with enough changes of my liking to make something different and more challenging while learning from the experience.
 
-  Of course, the game is functional and the documentation is there, but I don't necessarily expect nor need for it to be used. I made it just because I wanted to learn while making an interesting project. If anyone ends up making a player for it, feel free to contact me about that, it will be fun! Other of the main reasons I made this was so that I could try a lot more stuff making players for it, after all.
+  Of course, the game is functional and the documentation is there, but I don't necessarily expect nor need for it to be used. I made it just because I wanted to learn while making an interesting project. If anyone ends up making a player for it, feel free to contact me about that, it will be fun! Another of the main reasons why I made this was so that I could try a lot more stuff making players for it, after all.
 </p>
 
 ## Mechanics
