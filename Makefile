@@ -14,7 +14,7 @@ DEBUG = -g -O0 -fno-inline -D_GLIBCXX_DEBUG
 RUN = -O3
 
 CXX = g++
-CXXFLAGS = -Wall -Wno-sign-compare $(RUN)
+CXXFLAGS = -Wall -Wno-sign-compare -std=c++17 $(RUN)
 LDFLAGS =
 
 all: $(EXE) 
