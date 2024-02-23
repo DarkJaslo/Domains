@@ -2,6 +2,7 @@
 #include "ThreadPool.h"
 #include <thread>
 #include <unistd.h>
+#include "Timer.hh"
 
 //Game
 
@@ -10,6 +11,10 @@ Game::~Game(){
   std::cerr << "deleting game" << std::endl;
 }
 void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug, bool view, bool parallel, bool debug){
+
+  double ttotal, tplay, tround;
+  ttotal = tplay = tround = 0.0;
+  Timer timerall("Global timer",&ttotal,false);
   
   std::cerr << "starting game with seed " << seed << std::endl;
   std::vector<Player*> pl;
@@ -87,6 +92,7 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
       {
         pl[i]->resetList();
       }    
+      Timer timerplay("Play timer",&tplay,false);
       {
         int nthreads = std::thread::hardware_concurrency();
         if(pl.size() < nthreads) nthreads = pl.size();
@@ -103,16 +109,27 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
       for(int i = 0; i < pl.size(); ++i){
         if(debug) std::cerr << "player " << names[i] << std::endl;
         pl[i]->resetList();
+
+        Timer timerplay("Play timer",&tplay,false);
+
         pl[i]->play();
         if(debug) std::cerr << "end player " << names[i] << std::endl << std::endl;
       }
     }
 
+    { 
+    Timer timerround("Round timer",&tround,false);
     //Wait for all play() funcs before this
     b.executeRound(pl);
+    }
     b.printRound();
     if(debug) std::cerr << "ending round " << round << std::endl << std::endl << std::endl;
   }
 
   b.printSettings();
+
+  double totaltime = timerall.getTime();
+  std::cerr << "Global timer: " << totaltime << "\nPlay timer: " << tplay << "\nRound timer: " << tround << "\n";
+  std::cerr << "play %: " << (tplay/totaltime)*100 << "\nround %: " << (tround/totaltime)*100 << "\n";
+
 }
