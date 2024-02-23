@@ -68,7 +68,7 @@ Square GameInfo::square(const Position& p){
   return square_map[p];
 }
 Unit GameInfo::unit(int uid){
-  if(uid < 0 or uid >= unitsVector.size()){std::cerr << "warning: requested for a unit that doesn't exist" << "\n"; exit(1);}
+  if(uid < 0 or uid >= unitsVector.size()){std::cerr << "warning: requested for a unit that doesn't exist (" << uid << "), size = " << unitsVector.size() << "\n"; exit(1);}
   return unitsVector[uid];
 }
 Unit GameInfo::unit(Position p){
