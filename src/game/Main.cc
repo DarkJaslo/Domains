@@ -17,7 +17,7 @@ int main(int argc, char** argv){
   {
     std::cerr << "Usage: ./Game.exe [seed] [print {y|n}] [parallel {debug|run}] [Player1] [Player2] [Player3] [Player4] < [config_file]\n\n";
     std::cerr << "Print allows choosing if the board is printed to stdout every round. Set to 'n' if you won't need the result file.\n";
-    std::cerr << "Parallel allows running players' play() functions in parallel (faster). Set to debug if you want console prints to make sense.\n";
+    std::cerr << "Parallel allows running players' play() functions in parallel (faster). Set to debug if you want console prints to make sense. [Parallel option is currently unavailable as it does not work as intended yet]\n";
     std::cerr << "You can enter any number of players between 1 and 4.\n";
     exit(EXIT_FAILURE);
   }
@@ -41,7 +41,8 @@ int main(int argc, char** argv){
   if(arg3 == "debug")
     run = false;
   else if(arg3 == "run")
-    run = true;
+    //run = true;
+    run = false; //temporary, parallel does not work well
   else
   {
     string err = "Bad argument value for [debug|run]: ";
