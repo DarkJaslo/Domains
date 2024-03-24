@@ -1,3 +1,2 @@
--Include min C++ version in the Makefile
 -Include build instructions
--Include showcase info (photos, videos)
+-Include more showcase info (photos, videos?)
