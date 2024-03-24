@@ -1,6 +1,6 @@
 # Domains
 
-<div style="text-align: center;">
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
 <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img1.PNG" alt="image 1" title = "A game " width="70%" height="70%">
 </div>
 
