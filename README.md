@@ -1,6 +1,8 @@
 # Domains
 
+<div style="text-align: center;">
 <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img1.PNG" alt="image 1" title = "A game " width="70%" height="70%">
+</div>
 
 <p>
   This game is all about painting and expanding. From two to four programs (players) compete on a board simultaneously for a number of rounds, and the player that gets the most points wins. <b>WARNING!</b> This is still a Beta, so expect some mistakes here and there.
