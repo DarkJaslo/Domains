@@ -19,6 +19,13 @@
 Participants code their own players, following a certain set of rules that will be specified later. To really understand everything, I recommend watching games ([Game Viewer](#game-viewer)).
 
 Initially, all players are placed in a different corner of the board, with a starting domain of 3x3 squares. The objective is to accumulate points by possessing squares, popping bubbles and killing units. A variable but eventually limited number of units belong to every player, and the player must give orders to them every round. There are three possible orders: moving, attacking and using the ability.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img2.PNG" alt="image 2" title = "A game " width="70%" height="70%">
+</p>
+<p align="center">
+<span style="color: #777777;">The initial state of the board.
+</p>
 </p>
 
 <h3> Moving [move()] </h3>
@@ -29,18 +36,56 @@ The unit moves one Square in a direction. Valid directions include left, right, 
 <p>
   1.	Drawing: the unit starts a drawing when it exits an owned area with a non-diagonal move. Moving continues the trail until it is forcefully erased or it enters an ally square again. When the latter happens, the zone bounded by the drawing is painted. This is the main way of acquiring new squares. Stepping on any drawing erases it, including ally units and own drawings. Painting a drawn square also erases its drawing. 
 </p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/move.png" alt="moving" title = "Moving" width="100%">
+  <span style="color: #777777;">Units before and after moving. The rightmost unit is drawing.
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/drawingerase.png" alt="erasing" title = "Erasing drawings" width="100%">
+  <span style="color: #777777;">A purple unit steps on yellow's drawing, erasing it.
+</p>
 <p>
   2.	Attacking: if the target position contains another unit or a bubble, it triggers a fight (more on that later).
 </p>
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/attack.png" alt="attack" title = "Attack" width="100%">
+<span style="color: #777777;">The yellow unit moves to the right, attacking the purple unit and winning the fight. Note how the drawing is erased.
+</p>
 <p>
   3.	Taking a bonus. If the target position contains a bonus, the unit takes it, assuming all conditions are met (also more on that later).
+</p>
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/takebonus.png" alt="attack" title = "Attack" width="100%">
+<span style="color: #777777;">A bonus (represented by the red square) being taken by a yellow unit.
 </p>
 
 <h3> Attacking [attack()] </h3>
 
 <p>
-The unit attacks an adjacent position. In this case, it does not move, but it offers higher versatility: Imagine a unit u1 is in square s. Our unit, u2, wants to attack that position. If u1 moves before u2 attacks, leaving the attacked position, the move order attack would be useless. This attack order can still attack u1 if it moves but stays in attack range. This is usual when units are placed diagonally and the attacker has access to diagonal range, as could happen, for example, when defending a border. This order can be useful too if no one is in range before the attack, but a unit enters the up to three-position attack range later, which triggers a fight at the end of the round.
-  </p>
+This action is specifically dedicated to attacks. The main difference between moving to an enemy's position and attacking is that we can make good use of our domain. In case you're wondering, this helps in situations like this one:
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/whyattack.png" alt="why-attack" title = "Why attacking is useful" width="100%">
+<span style="color: #777777;">A pink unit that doesn't use attack().
+</p>
+The cyan unit is deep into pink's domain, indicated to us by the long drawing. Pink has a superior range, being able to move and attack in diagonal inside its domain. 
+
+However, cyan is not stupid and tries to get close to pink to fight. Luckily for it, its movement command is executed before pink's move command, so:
+
+1. Cyan moves right.
+2. Pink moves down-left.
+
+The drawing is erased, but it would have been better if pink also _killed_ cyan there. The **attack()** command allows this:
+
+1. Cyan moves right.
+2. Pink is attacking down-left. Since cyan was there and it has moved, but to a position that is still in range, pink attacks cyan and wins without moving.
+
+That was the example. In general, the attacker stays still, targeting a position in range (if inside its domain, diagonal directions are allowed). There are four possible outcomes:
+1. There is no one there at the beginning of the round, and no one enters that position neither. Nothing happens.
+2. There is indeed someone there. It either moves to a position that is still in range or stays still. The position is attacked and a fight starts.
+3. There is someone there at the beginning of the round, but they move out of range before the attack() is executed. The attack isn't performed.
+4. There is no one there, but someone makes the mistake of entering that position before the end of the round. The position is attacked and a fight starts.
+</p>
 
 <h3> Abilities [ability()] </h3>
 
@@ -48,10 +93,27 @@ The unit attacks an adjacent position. In this case, it does not move, but it of
 To use the ability, the unit needs to have collected a bonus beforehand, which causes it to be upgraded. Upgraded units can stay upgraded for as long as they want, considering that a team -or player- can only have one upgraded unit at a time. Using the ability generates a 5x5 painted zone, centered at the unit’s position, which blocks all enemy entities from entering and exiting for a few rounds. 
 The ability can trigger extra painting processes if ally drawings are inside the 5x5 zone or erase them if they are from another player. If two overlapping abilities are used in the same round, they are cancelled (and thus, not used). Using an ability on top of an ability that has not worn off yet cancels its effects and applies the current ability’s.
 </p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/ability1.png" alt="ability1" title = "Basic ability usage" width="100%">
+<span style="color: #777777;">A yellow unit taking a bonus and using the ability. Notice that the drawing gets painted, and that the purple unit cannot get inside.
+</p>
+
 <h3> Painting </h3>
 <p>
 Painting events always happen because a drawing and already painted squares form a closed perimeter. This can happen when a unit that is drawing walks into a painted square, or when a bubble pop or an ability close this perimeter. For painting to happen, at least one of the perimeter’s squares must be a drawing. Diagonally adjacent squares don’t form a perimeter: they must be adjacent using the basic four directions: up, down, left and right.
 </p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/painting.png" alt="painting" title = "Expanding" width="100%">
+<span style="color: #777777;">A purple unit finishing a drawing successfully.
+</p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/ability2.png" alt="ability1" title = "Basic ability usage" width="100%">
+<span style="color: #777777;">An example of an ability triggering a painting event.
+</p>
+
  <h3> Energy </h3>
 Each unit has an energy value. At the end of each round, all units in ally squares gain 1 point and units in enemy squares lose 1 point. Anything else yields nothing. Keep this mechanic in mind with fights, because it's important there. Details on the starting and max values are in the standard configuration in <tt>config.cnf</tt>.
 
@@ -67,10 +129,22 @@ __Unfair fights (or kills)__: they happen when the attacking unit strikes a unit
 <p>
   Every three rounds (counted separately for each player), units of player p can respawn if p does not have the maximum number of units yet. For a respawn to happen, there must be at least one empty square owned by that player, and respawn locations must fit these criteria, but are chosen at random. Technically, a player cannot play anymore if they lose all squares and units.
 </p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/respawn.png" alt="respawn" title = "A respawn occuring" width="100%">
+<span style="color: #777777;">A pink unit spontaneously respawning in a random pink square.
+</p>
+
  <h3> Bubbles </h3>
 <p>
 Bubbles spawn in empty painted squares every three rounds, also counted separately for each player, and spawn following the same rules as units. Bubbles have a color, defined by the color of the square they spawn in. If a unit of that same color attacks it (either by moving or attacking), it pops, generating five painted squares with the pattern of a cross. If a unit of a different color does it, though, the bubble changes color to match the unit’s. If nothing more is done, it pops after three rounds. Attacking it again pops it, and it being attacked by a different unit of a different color activates this process again, restarting the counter. Bubble pops give points to the player responsible for them.
 </p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/bubble.png" alt="bubble" title = "Yellow popping a bubble" width="100%">
+<span style="color: #777777;">A bubble appears and is popped, painting all adjacent squares in a '+' shape. This paints the drawn squares in the left.
+</p>
+
  <h3> Bonuses </h3>
 <p>
 Bonuses spawn randomly in any square of the map without a fixed frequency. Up to four bonuses can be on the board at a time. When a unit collects a bonus, it becomes upgraded, which enables the use of the ability for that unit. A player can only have one upgraded unit at a time: collecting a second bonus removes it from the board, but gives no upgrade.
