@@ -67,9 +67,11 @@ The unit moves one Square in a direction. Valid directions include left, right, 
 <p>
 This action is specifically dedicated to attacks. The main difference between moving to an enemy's position and attacking is that we can make good use of our domain. In case you're wondering, this helps in situations like this one:
 
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/whyattack.png" alt="why-attack" title = "Why attacking is useful" width="70%">
+</div>
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/whyattack.png" alt="why-attack" title = "Why attacking is useful" width="100%">
-<span style="color: #777777;">A pink unit that doesn't use attack().
+  <span style="color: #777777;">A pink unit that doesn't use attack().
 </p>
 The cyan unit is deep into pink's domain, indicated to us by the long drawing. Pink has a superior range, being able to move and attack in diagonal inside its domain. 
 
