@@ -40,8 +40,11 @@ The unit moves one Square in a direction. Valid directions include left, right, 
   <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/move.png" alt="moving" title = "Moving" width="100%">
   <span style="color: #777777;">Units before and after moving. The rightmost unit is drawing.
 </p>
+
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/drawingerase.png" alt="erasing" title = "Erasing drawings" width="50%">
+</div>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/drawingerase.png" alt="erasing" title = "Erasing drawings" width="100%">
   <span style="color: #777777;">A purple unit steps on yellow's drawing, erasing it.
 </p>
 <p>
