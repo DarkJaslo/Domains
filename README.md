@@ -21,7 +21,7 @@ Participants code their own players, following a certain set of rules that will 
 Initially, all players are placed in a different corner of the board, with a starting domain of 3x3 squares. The objective is to accumulate points by possessing squares, popping bubbles and killing units. A variable but eventually limited number of units belong to every player, and the player must give orders to them every round. There are three possible orders: moving, attacking and using the ability.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img2.PNG" alt="image 2" title = "A game " width="70%" height="70%">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img2.PNG" alt="image 2" title = "A game " width="60%" height="70%">
 </p>
 <p align="center">
 <span style="color: #777777;">The initial state of the board.
@@ -36,8 +36,10 @@ The unit moves one Square in a direction. Valid directions include left, right, 
 <p>
   1.	Drawing: the unit starts a drawing when it exits an owned area with a non-diagonal move. Moving continues the trail until it is forcefully erased or it enters an ally square again. When the latter happens, the zone bounded by the drawing is painted. This is the main way of acquiring new squares. Stepping on any drawing erases it, including ally units and own drawings. Painting a drawn square also erases its drawing. 
 </p>
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/move.png" alt="moving" title = "Moving" width="50%">
+</div>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/move.png" alt="moving" title = "Moving" width="100%">
   <span style="color: #777777;">Units before and after moving. The rightmost unit is drawing.
 </p>
 
@@ -50,16 +52,21 @@ The unit moves one Square in a direction. Valid directions include left, right, 
 <p>
   2.	Attacking: if the target position contains another unit or a bubble, it triggers a fight (more on that later).
 </p>
+
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/attack.png" alt="attack" title = "Attack" width="50%">
+</div>
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/attack.png" alt="attack" title = "Attack" width="100%">
-<span style="color: #777777;">The yellow unit moves to the right, attacking the purple unit and winning the fight. Note how the drawing is erased.
+  <span style="color: #777777;">The yellow unit moves to the right, attacking the purple unit and winning the fight. Note how the drawing is erased.
 </p>
 <p>
   3.	Taking a bonus. If the target position contains a bonus, the unit takes it, assuming all conditions are met (also more on that later).
 </p>
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/takebonus.png" alt="attack" title = "Attack" width="50%">
+</div>
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/takebonus.png" alt="attack" title = "Attack" width="100%">
-<span style="color: #777777;">A bonus (represented by the red square) being taken by a yellow unit.
+  <span style="color: #777777;">A bonus (represented by the red square) being taken by a yellow unit.
 </p>
 
 <h3> Attacking [attack()] </h3>
@@ -68,7 +75,7 @@ The unit moves one Square in a direction. Valid directions include left, right, 
 This action is specifically dedicated to attacks. The main difference between moving to an enemy's position and attacking is that we can make good use of our domain. In case you're wondering, this helps in situations like this one:
 
 <div align="center",style="display:flex;">
-  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/whyattack.png" alt="why-attack" title = "Why attacking is useful" width="70%">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/whyattack.png" alt="why-attack" title = "Why attacking is useful" width="50%">
 </div>
 <p align="center">
   <span style="color: #777777;">A pink unit that doesn't use attack().
@@ -99,9 +106,11 @@ To use the ability, the unit needs to have collected a bonus beforehand, which c
 The ability can trigger extra painting processes if ally drawings are inside the 5x5 zone or erase them if they are from another player. If two overlapping abilities are used in the same round, they are cancelled (and thus, not used). Using an ability on top of an ability that has not worn off yet cancels its effects and applies the current ability’s.
 </p>
 
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/ability1.png" alt="ability1" title = "Basic ability usage" width="50%">
+</div>
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/ability1.png" alt="ability1" title = "Basic ability usage" width="100%">
-<span style="color: #777777;">A yellow unit taking a bonus and using the ability. Notice that the drawing gets painted, and that the purple unit cannot get inside.
+  <span style="color: #777777;">A yellow unit taking a bonus and using the ability. Notice that the drawing gets painted, and that the purple unit cannot get inside.
 </p>
 
 <h3> Painting </h3>
@@ -109,14 +118,18 @@ The ability can trigger extra painting processes if ally drawings are inside the
 Painting events always happen because a drawing and already painted squares form a closed perimeter. This can happen when a unit that is drawing walks into a painted square, or when a bubble pop or an ability close this perimeter. For painting to happen, at least one of the perimeter’s squares must be a drawing. Diagonally adjacent squares don’t form a perimeter: they must be adjacent using the basic four directions: up, down, left and right.
 </p>
 
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/painting.png" alt="painting" title = "Expanding" width="50%">
+</div>
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/painting.png" alt="painting" title = "Expanding" width="100%">
-<span style="color: #777777;">A purple unit finishing a drawing successfully.
+  <span style="color: #777777;">A purple unit finishing a drawing successfully.
 </p>
 
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/ability2.png" alt="ability1" title = "Basic ability usage" width="50%">
+</div>
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/ability2.png" alt="ability1" title = "Basic ability usage" width="100%">
-<span style="color: #777777;">An example of an ability triggering a painting event.
+  <span style="color: #777777;">An example of an ability triggering a painting event.
 </p>
 
  <h3> Energy </h3>
@@ -135,9 +148,10 @@ __Unfair fights (or kills)__: they happen when the attacking unit strikes a unit
   Every three rounds (counted separately for each player), units of player p can respawn if p does not have the maximum number of units yet. For a respawn to happen, there must be at least one empty square owned by that player, and respawn locations must fit these criteria, but are chosen at random. Technically, a player cannot play anymore if they lose all squares and units.
 </p>
 
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/respawn.png" alt="respawn" title = "A respawn occuring" width="70%">
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/respawn.png" alt="respawn" title = "A respawn occuring" width="100%">
-<span style="color: #777777;">A pink unit spontaneously respawning in a random pink square.
+  <span style="color: #777777;">A pink unit spontaneously respawning in a random pink square.
 </p>
 
  <h3> Bubbles </h3>
@@ -145,9 +159,11 @@ __Unfair fights (or kills)__: they happen when the attacking unit strikes a unit
 Bubbles spawn in empty painted squares every three rounds, also counted separately for each player, and spawn following the same rules as units. Bubbles have a color, defined by the color of the square they spawn in. If a unit of that same color attacks it (either by moving or attacking), it pops, generating five painted squares with the pattern of a cross. If a unit of a different color does it, though, the bubble changes color to match the unit’s. If nothing more is done, it pops after three rounds. Attacking it again pops it, and it being attacked by a different unit of a different color activates this process again, restarting the counter. Bubble pops give points to the player responsible for them.
 </p>
 
+<div align="center",style="display:flex;">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/bubble.png" alt="bubble" title = "Yellow popping a bubble" width="50%">
+</div>
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/bubble.png" alt="bubble" title = "Yellow popping a bubble" width="100%">
-<span style="color: #777777;">A bubble appears and is popped, painting all adjacent squares in a '+' shape. This paints the drawn squares in the left.
+  <span style="color: #777777;">A bubble appears and is popped, painting all adjacent squares in a '+' shape. This paints the drawn squares in the left.
 </p>
 
  <h3> Bonuses </h3>
