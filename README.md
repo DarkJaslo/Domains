@@ -44,7 +44,7 @@ The unit moves one Square in a direction. Valid directions include left, right, 
 </p>
 
 <div align="center",style="display:flex;">
-  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/drawingerase.png" alt="erasing" title = "Erasing drawings" width="50%">
+  <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/drawingerase.png" alt="erasing" title = "Erasing drawings" width="35%">
 </div>
 <p align="center">
   <span style="color: #777777;">A purple unit steps on yellow's drawing, erasing it.
@@ -150,6 +150,7 @@ __Unfair fights (or kills)__: they happen when the attacking unit strikes a unit
 
 <div align="center",style="display:flex;">
   <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/respawn.png" alt="respawn" title = "A respawn occuring" width="70%">
+</div>
 <p align="center">
   <span style="color: #777777;">A pink unit spontaneously respawning in a random pink square.
 </p>
