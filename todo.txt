@@ -1,2 +1,53 @@
 -Include build instructions
--Include more showcase info (photos, videos?)
+
+(español warning)
+
+Dibujo ultra seguroTM
+
+    0 1 2 3 4 5 6 7 8 9
+0 
+1
+2
+3
+4
+5
+6
+7  7 6 5 4 3 2 3 4 5 6 7
+8  6 5 4 3 2 1 2 3 4 5 6
+9  5 y 3 2 1 x 1 2 3 4 5
+
+1. Apunta para cada casilla a cuantos pasos está el enemigo mas cercano
+2. Piensa un dibujo de longitud L
+3. Si todas las casillas del dibujo tienen valores v > L, el dibujo se puede empezar
+
+Esa es la idea básica.
+
+Ampliación:
+
+Idea: puede aparecernos un enemigo en una casilla pintada enemiga. 
+
+Si en un turno dado se hace el cálculo de distancias más cortas a enemigos y tenemos un problema, se tendrá que calcular un dibujo ajuste.
+
+Opción 1: Acabar el dibujo lo antes posible. Funciona y es simple.
+Opción 2: Repensar el dibujo para tener longitud menor que el nuevo valor. El dibujo tiene la característica especial de que está empezado.
+
+Paso 1:
+
+Implementar una matriz que guarde las distancias de enemigos y un algoritmo que las calcule. La opción obvia es un BFS desde cada unidad. Busca una más optimizada.
+
+Usa BFS por capas. Si una casilla tiene un valor más pequeño que el que tendrá si la encolas, no la encoles
+
+Por lo tanto, programa un BFS genérico y haz una función que lo use para rellenar la matriz.
+
+Paso 2:
+
+Pensar un diseñador de dibujos que use la distancia de enemigos como restricción.
+Escoger el que maximice área/pasos con pasos máximos. Si hay varias opciones, escoger el que sea menos arriesgado
+
+Paso 3:
+
+Haz que el diseñador de dibujos sea lo suficientemente general como para tener en cuenta dibujos ya empezados.
+
+Paso 4:
+
+Observa cómo se comporta y cámbialo si ves que las unidades se molestan entre sí.
