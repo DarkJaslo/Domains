@@ -1,5 +1,6 @@
 #include "../game/Player.hh"
 #include <functional>
+#include <algorithm>
 
 #define PLAYER_NAME Dummy
 using namespace std;
@@ -593,7 +594,7 @@ void useAbility()
 	}
 }
 
-/* Performs a BFS at the same time for all available units. This means no unit will explore distance 2 unless all units have explored distance 1 */
+/* Performs a BFS at the same time for all available units. This means no unit will explore distance 2 until all units have explored distance 1 */
 void layeredBFS(int initialRadius, int maxRadius)
 {
 	int remainingUnits = availableUnits.size();
@@ -606,7 +607,13 @@ void layeredBFS(int initialRadius, int maxRadius)
 	vector<BFSInfo> layeredInfo(myUnits.size());
 	for(int i = 0; i < layeredInfo.size(); ++i)
 	{
-		queueAdjacentPositions(BFSNode(0,unit(myUnits[i]).position()),layeredInfo[i].q,layeredInfo[i].v,(square(unit(myUnits[i]).position()).painter() == me()),me());
+		queueAdjacentPositions(
+			BFSNode(0,unit(myUnits[i]).position()),
+			layeredInfo[i].q,
+			layeredInfo[i].v,
+			(square(unit(myUnits[i]).position()).painter() == me()),
+			me()
+		);
 	}
 
 	while(initialRadius < maxRadius and remainingUnits > 0)
@@ -1121,6 +1128,40 @@ static bool isMineSquare(const Square& sq, int me)
 static bool isNotMineSquare(const Square& sq, int me)
 {
 	return not isMineSquare(sq,me);
+}
+
+// Returns whether a move is legal or not
+static bool legal(int uid, OrderType order, Direction dir, const Square& sq)
+{
+	if(order == OrderType::movement)
+	{
+		if(dir == Direction::null) return true;
+		Position dest = sq.pos()+dir;
+		if(not posOk(dest)) return false;
+
+		Square destSq = square(dest);
+
+		int player = unit(uid).player();
+
+		if(destSq.drawn() and destSq.drawer() == player) return false;
+
+		//May change later, but don't move to a position that is occupied
+		if(destSq.hasUnit() and destSq.unit().player() == player) return false;
+	}
+	else if(order == OrderType::attack)
+	{
+		Position dest = sq.pos()+dir;
+		if(not posOk(dest)) return false; //Position is not valid
+
+		Square targetSq = square(dest);
+		int player = unit(uid).player();
+		//Don't attack positions with my units (legal, just useless)
+		if(targetSq.hasUnit() and targetSq.unit().player() == player) return false;
+	}
+	else //Ability
+	{
+		return unit(uid).upgraded();
+	}
 }
 
 
