@@ -6,3 +6,5 @@ obj
 AI*.o
 *.exe
 juego.txt
+.vscode
+result*

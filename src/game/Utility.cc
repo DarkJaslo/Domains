@@ -96,6 +96,16 @@ Bonus Square::bonus()const{return *b;}
 bool Square::hasBubble()const{return bb != nullptr;}
 Bubble Square::bubble()const{return *bb;}
 
+bool Square::operator==(Square const& other) const
+{
+  return u == other.u && plPainter == other.plPainter && plDrawer == other.plDrawer && isAbility == other.isAbility && b == other.b && bb == other.bb;
+}
+
+bool Square::operator!=(Square const& other) const
+{
+  return !(operator==(other));
+}
+
 //Unit
 
 Unit::Unit(){

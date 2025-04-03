@@ -12,8 +12,8 @@ public:
   void iniBoard(int s, int rounds);
   //Executes the orders given in this round
   void executeRound(const std::vector<Player*>& pl);
-  //Prints the results of this round
-  void printRound();
+  //Prints the results of this round: on the new viewer format if new_viewer is true
+  void printRound(bool new_viewer);
   //Prints all game settings
   void printSettings();
 

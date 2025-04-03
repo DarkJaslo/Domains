@@ -9,7 +9,7 @@ class Game{
 public:
   Game();
   //Plays the whole game
-  void play(const std::vector<std::string>& vnames, int seed, bool fullDebug, bool view, bool parallel = false, bool debug = true);
+  void play(const std::vector<std::string>& vnames, int seed, bool fullDebug, bool view, bool parallel, bool debug, bool new_viewer);
   ~Game();
 
 private:

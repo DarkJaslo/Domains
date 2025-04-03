@@ -185,6 +185,11 @@ public:
   //Copy constructor
   Square(const Square& sq);
 
+  //Returns true if, in viewer terms, the *contents* (not the position) of the squares are the same. To be used with the same square in different rounds
+  bool operator==(Square const& other) const;
+
+  bool operator!=(Square const& other) const;
+
 private:
 
   friend class Board;
@@ -270,14 +275,30 @@ Matrix<T>::~Matrix(){
 }
 template<typename T>
 T& Matrix<T>::operator[](Position index){
-  if(index.x < 0 or index.x >= r) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
-  if(index.y < 0 or index.y >= c) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
+  if(index.x < 0 or index.x >= r) {
+    std::string error = "ERROR: tried to access Matrix with incorrect row " + std::to_string(index.x) + 
+                         " (valid range: 0 to " + std::to_string(r-1) + ")";
+    std::__throw_out_of_range(error.c_str());
+  }
+  if(index.y < 0 or index.y >= c) {
+    std::string error = "ERROR: tried to access Matrix with incorrect column " + std::to_string(index.y) + 
+                         " (valid range: 0 to " + std::to_string(c-1) + ")";
+    std::__throw_out_of_range(error.c_str());
+  }
   return _ptr[index.x*c+index.y];
 }
 template<typename T>
-const T& Matrix<T>::operator[](Position index)const{
-  if(index.x < 0 or index.x >= r) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect row");
-  if(index.y < 0 or index.y >= c) std::__throw_out_of_range("ERROR: tried to access Matrix with incorrect column");
+const T& Matrix<T>::operator[](Position index) const {
+  if(index.x < 0 or index.x >= r) {
+    std::string error = "ERROR: tried to access Matrix with incorrect row " + std::to_string(index.x) + 
+                         " (valid range: 0 to " + std::to_string(r-1) + ")";
+    std::__throw_out_of_range(error.c_str());
+  }
+  if(index.y < 0 or index.y >= c) {
+    std::string error = "ERROR: tried to access Matrix with incorrect column " + std::to_string(index.y) + 
+                         " (valid range: 0 to " + std::to_string(c-1) + ")";
+    std::__throw_out_of_range(error.c_str());
+  }
   return _ptr[index.x*c+index.y];
 }
 template<typename T>

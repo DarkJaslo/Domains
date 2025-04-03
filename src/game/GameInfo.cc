@@ -38,6 +38,7 @@ std::vector<int> GameInfo::whoHasWhat;  //if v[0] = 1, player 1 has unit with id
 std::vector<Unit> GameInfo::unitsVector;
 std::vector<Bubble> GameInfo::bubblesVector;
 std::vector<int> GameInfo::playerPoints;
+std::vector<int> GameInfo::old_playerPoints;
 std::vector<int> GameInfo::bonusPlayers;
 std::vector<Bonus> GameInfo::bonusVector;
 
@@ -141,6 +142,7 @@ void GameInfo::readSettings(){
 
   whoHasWhat = std::vector<int>(unitsMax*numPlayers,-1);
   playerPoints = std::vector<int>(numPlayers,0);
+  old_playerPoints = std::vector<int>(numPlayers,0);
   bonusPlayers = std::vector<int>(numPlayers,0);
   player_squares = std::vector<std::vector<Position>>(numPlayers);
   bubbleCounters = std::vector<int>(numPlayers,0);
