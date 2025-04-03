@@ -87,6 +87,7 @@ private:
   static std::vector<Bubble> bubblesVector;
   static int currentBubbles;
   static std::vector<int> playerPoints;
+  static std::vector<int> old_playerPoints;
   static std::vector<int> bonusPlayers;
   static std::vector<Bonus> bonusVector;
   static int currentBonuses;

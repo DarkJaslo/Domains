@@ -168,6 +168,7 @@ void Board::iniBoard(int s, int rounds)
       info.square_map[ij] = sq;
     }
   }
+  info.old_square_map = info.square_map;
 
   if(debugBasic) std::cerr << "Initializing units...\n";
 
@@ -1593,6 +1594,7 @@ void Board::executeRound(const vector<Player*>& pl)
   //if(info.round() == 81) exit(1);
 
   info.old_square_map = info.square_map;
+  info.old_playerPoints = info.playerPoints;
   if(debugBasic) std::cerr << "Executing round " << info.round() << "\n";
 
   killedUnits = vector<bool>(info.unitsMax*info.numPlayers,false);
@@ -1678,7 +1680,7 @@ void Board::executeRound(const vector<Player*>& pl)
   giveBoardPoints();
 }
 
-void Board::printRound()
+void Board::printRound(bool new_viewer)
 {
   //std::cerr << std::endl << "Printing round " << info.round() << std::endl << std::endl;
 
@@ -1696,28 +1698,86 @@ void Board::printRound()
   if(view)
   {
     cout << info.round() << " ";
-    for(int i = 0; i < info.numPlayers; ++i)
+    if (new_viewer)
     {
-      cout << info.playerPoints[i] << " ";
-    }
-    for(int i = 0; i < info.boardHeight; ++i){
-      for(int j = 0; j < info.boardWidth; ++j)
+      /*
+        New viewer format: incremental
+        - On player points, prints increases to the total amount
+        - On each round, prints the incremental changes to the board:
+          Prints an offset (cells to skip if interpreting the board by rows) and 
+          then information about the first affected cell after the skip. The information about
+          the cell is complete (both square and unit info).
+
+          This produces about 13x smaller files
+      */
+      for(int i = 0; i < info.numPlayers; ++i)
       {
-        Square sq = info.square(Position(i,j));
-        //Prints painter id, drawer id and unit's player id
-        cout << sqcode(sq.plDrawer,sq.painter(),sq.ability());
-        if(sq.hasUnit()){
-          cout << ucode(true,sq.unit().player(),sq.unit().upgraded());
+        cout << info.playerPoints[i]-info.old_playerPoints[i] << " ";
+      }
+
+      int jump = 0;
+
+      for(int i = 0; i < info.boardHeight; ++i){
+        for(int j = 0; j < info.boardWidth; ++j)
+        {
+          Square const& sq = info.square(Position(i,j));
+          Square const& old_sq = info.old_square_map[Position(i,j)];
+
+          if (sq != old_sq)
+          {
+            cout << jump;
+            jump = 0;
+            cout << sqcode(sq.plDrawer,sq.painter(),sq.ability());
+            if(sq.hasUnit()){
+              cout << ucode(true,sq.unit().player(),sq.unit().upgraded());
+            }
+            else if(sq.hasBubble()){
+              cout << ucode(false,sq.bubble().player());
+            }
+            else if(sq.hasBonus()){
+              cout << ucode(true);
+            } 
+            else cout << ucode(false);
+          }
+
+          ++jump;
         }
-        else if(sq.hasBubble()){
-          cout << ucode(false,sq.bubble().player());
-        }
-        else if(sq.hasBonus()){
-          cout << ucode(true);
-        } 
-        else cout << ucode(false);
       }
     }
+    else
+    {
+      // Using old viewer format
+
+      /*
+        Each round, prints how many points each player has
+        Also prints the complete state of the board      
+      */
+      for(int i = 0; i < info.numPlayers; ++i)
+      {
+        cout << info.playerPoints[i] << " ";
+      }
+
+      for(int i = 0; i < info.boardHeight; ++i)
+      {
+        for(int j = 0; j < info.boardWidth; ++j)
+        {
+          Square sq = info.square(Position(i,j));
+          //Prints painter id, drawer id and unit's player id
+          cout << sqcode(sq.plDrawer,sq.painter(),sq.ability());
+          if(sq.hasUnit()){
+            cout << ucode(true,sq.unit().player(),sq.unit().upgraded());
+          }
+          else if(sq.hasBubble()){
+            cout << ucode(false,sq.bubble().player());
+          }
+          else if(sq.hasBonus()){
+            cout << ucode(true);
+          } 
+          else cout << ucode(false);
+        }
+      }
+    }
+    
     cout << "\n";
   }
 
@@ -1726,8 +1786,6 @@ void Board::printRound()
   {
     printMatrix(info.square_map);
   }
-
-  //if(info.round() == 30) exit(1);
 }
 
 void Board::printSettings()
