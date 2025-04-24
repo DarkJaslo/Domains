@@ -1,12 +1,13 @@
-# Detect all native players (files matching "AI*.cc")
+# For choosing players with a bash script
+EXTRA_SRCS ?=
+OUT ?= Game
 
 PLAYERS_DIR := ./src/bots
 SRC_DIR := ./src/game
 OBJ_DIR := ./obj
-EXE := Game.exe
 
-PLAYERS_SRC = $(wildcard $(PLAYERS_DIR)/AI*.cc)
-PLAYERS_OBJ = $(patsubst %.cc, %.o, $(PLAYERS_SRC)) #$(EXTRA_OBJ) $(DUMMY_OBJ)
+PLAYERS_SRC = $(wildcard $(PLAYERS_DIR)/AI*.cc) $(EXTRA_SRCS)
+PLAYERS_OBJ = $(patsubst %.cc, %.o, $(PLAYERS_SRC))
 SRC = $(wildcard $(SRC_DIR)/*.cc)
 OBJ = $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 
@@ -17,9 +18,9 @@ CXX = g++
 CXXFLAGS = -Wall -Wno-sign-compare -std=c++17 $(RUN)
 LDFLAGS =
 
-all: $(EXE) 
+all: $(OUT).exe
 
-$(EXE): $(OBJ) $(PLAYERS_OBJ)
+$(OUT).exe: $(OBJ) $(PLAYERS_OBJ)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc | $(OBJ_DIR)
