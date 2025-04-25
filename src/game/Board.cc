@@ -133,9 +133,13 @@ Board::~Board()
   //std::cerr << "destructing Board" << std::endl;
 }
 Board::Board(){debug = false; view = true; info.numPlayers = 4; }
-Board::Board(bool d, bool v, int nplayers){debug = d; view = v; info.numPlayers = nplayers;}
+Board::Board(bool d, bool v, int nplayers)
+  : debug(d), view(v)
+{
+  info.numPlayers = nplayers;
+}
 
-void Board::iniBoard(int s, int rounds)
+void Board::iniBoard(int s, int rounds, std::ifstream& config_file)
 {
   if(debugBasic) std::cerr << "Initializing board...\n";
   seed = s;
@@ -143,7 +147,7 @@ void Board::iniBoard(int s, int rounds)
   jump = seed%randjump()+1;   //+1 to avoid jump = 0
   if(debugBasic) std::cerr << "Reading settings...\n";
   info.maxRounds = rounds;
-  info.readSettings();
+  info.readSettings(config_file);
 
   if(debugBasic) std::cerr << "Initializing squares...\n";
 

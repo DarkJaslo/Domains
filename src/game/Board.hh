@@ -1,6 +1,8 @@
 #include "GameInfo.hh"
 #include "Player.hh"
 
+#include <fstream>
+
 class Board{
 public:
   ~Board();
@@ -9,7 +11,7 @@ public:
   //Debug and view constructor
   Board(bool d, bool v, int nplayers);
   //Reads settings and initializes variables
-  void iniBoard(int s, int rounds);
+  void iniBoard(int s, int rounds, std::ifstream& config_file);
   //Executes the orders given in this round
   void executeRound(const std::vector<Player*>& pl);
   //Prints the results of this round: on the new viewer format if new_viewer is true

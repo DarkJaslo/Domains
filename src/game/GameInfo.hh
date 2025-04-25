@@ -3,6 +3,8 @@
 
 #include "Utility.hh"
 
+#include <fstream>
+
 class GameInfo{
 public:
 
@@ -46,7 +48,7 @@ private:
   friend class Game;
 
   //Reads and initializes info
-  static void readSettings();
+  static void readSettings(std::ifstream& config_file);
   //Returns true and leaves the position of a free square owned by p. False if there is no free position
   static bool freeSquare(int plId, Position& p);
   //Spawns a unit

@@ -10,7 +10,7 @@ Game::Game(){}
 Game::~Game(){
   std::cerr << "deleting game" << std::endl;
 }
-void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug, bool view, bool parallel, bool debug, bool new_viewer){
+void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug, bool view, bool parallel, bool debug, bool new_viewer, std::ifstream& config_file){
 
   double ttotal, tplay, tround;
   ttotal = tplay = tround = 0.0;
@@ -20,14 +20,17 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
   std::vector<Player*> pl;
   std::string s;
   int rounds;
-  std::cin >> s >> rounds;
+  config_file >> s >> rounds;
+
+  std::cerr << "For real" << std::endl;
+
   Board b(fullDebug,view,names.size());
   for(int i = 0; i < names.size(); ++i){
     pl.push_back(Register::newPlayer(names[i]));
     pl[i]->id_ = i;
   }
 
-  b.iniBoard(seed,rounds);
+  b.iniBoard(seed, rounds, config_file);
 
   std::cout << rounds << " " << b.info.rows() << " " << b.info.cols() << std::endl;
   std::cout << names.size();

@@ -116,9 +116,9 @@ void GameInfo::printSettings(){
   //<< "" << '\t' << << endl
 }
 
-void GameInfo::readSettings(){
+void GameInfo::readSettings(std::ifstream& config_file){
   std::string s; //string to read and discard variable names
-  std::cin >> s >> unitsStart 
+  config_file >> s >> unitsStart 
   >> s >> unitsMax 
   >> s >> unitsMin
   >> s >> bonusMax 
