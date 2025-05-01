@@ -843,7 +843,7 @@ bool Board::executeOrder(int plId, Order ord)
             fm = FightMode::Attacks;
           }
         }
-        fight(u,info.unitsVector[sq.u->id()],fm);
+        fight(u,info.unitsVector[info.square_map[sq.p+dirAux].u->id()],fm);
         return true;
       }
       else //Free attack: at the end of all turns, looks again to see if someone has moved here and attacks
