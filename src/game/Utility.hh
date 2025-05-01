@@ -222,6 +222,96 @@ public:
   inline int rows()const;
   inline int cols()const;
 
+  class iterator {
+    public:
+      using iterator_category = std::random_access_iterator_tag;
+      using value_type = T;
+      using difference_type = std::ptrdiff_t;
+      using pointer = T*;
+      using reference = T&;
+
+      iterator(pointer ptr) : m_ptr(ptr) {}
+      reference operator*() const { return *m_ptr; }
+      pointer operator->() { return m_ptr; }
+
+      // Prefix increment
+      iterator& operator++() { m_ptr++; return *this; }
+
+      // Postfix increment
+      iterator operator++(int) { iterator tmp = *this; ++(*this); return tmp; }
+
+      iterator& operator--() { m_ptr--; return *this; }
+      iterator operator--(int) { iterator tmp = *this; --(*this); return tmp; }
+
+      iterator operator+(difference_type n) const { return iterator(m_ptr + n); }
+      iterator operator-(difference_type n) const { return iterator(m_ptr - n); }
+      difference_type operator-(const iterator& other) const { return m_ptr - other.m_ptr; }
+
+      iterator& operator+=(difference_type n) { m_ptr += n; return *this; }
+      iterator& operator-=(difference_type n) { m_ptr -= n; return *this; }
+
+      reference operator[](difference_type n) const { return m_ptr[n]; }
+
+      bool operator==(const iterator& other) const { return m_ptr == other.m_ptr; }
+      bool operator!=(const iterator& other) const { return m_ptr != other.m_ptr; }
+      bool operator<(const iterator& other) const { return m_ptr < other.m_ptr; }
+      bool operator>(const iterator& other) const { return m_ptr > other.m_ptr; }
+      bool operator<=(const iterator& other) const { return m_ptr <= other.m_ptr; }
+      bool operator>=(const iterator& other) const { return m_ptr >= other.m_ptr; }
+
+    private:
+      pointer m_ptr;
+    };
+
+    // Const iterator version
+    class const_iterator 
+    {
+    public:
+      using iterator_category = std::random_access_iterator_tag;
+      using value_type = T;
+      using difference_type = std::ptrdiff_t;
+      using pointer = const T*;
+      using reference = const T&;
+
+      const_iterator(pointer ptr) : m_ptr(ptr) {}
+      reference operator*() const { return *m_ptr; }
+      pointer operator->() const { return m_ptr; }
+
+      const_iterator& operator++() { m_ptr++; return *this; }
+      const_iterator operator++(int) { const_iterator tmp = *this; ++(*this); return tmp; }
+
+      const_iterator& operator--() { m_ptr--; return *this; }
+      const_iterator operator--(int) { const_iterator tmp = *this; --(*this); return tmp; }
+
+      const_iterator operator+(difference_type n) const { return const_iterator(m_ptr + n); }
+      const_iterator operator-(difference_type n) const { return const_iterator(m_ptr - n); }
+      difference_type operator-(const const_iterator& other) const { return m_ptr - other.m_ptr; }
+
+      const_iterator& operator+=(difference_type n) { m_ptr += n; return *this; }
+      const_iterator& operator-=(difference_type n) { m_ptr -= n; return *this; }
+
+      reference operator[](difference_type n) const { return m_ptr[n]; }
+
+      bool operator==(const const_iterator& other) const { return m_ptr == other.m_ptr; }
+      bool operator!=(const const_iterator& other) const { return m_ptr != other.m_ptr; }
+      bool operator<(const const_iterator& other) const { return m_ptr < other.m_ptr; }
+      bool operator>(const const_iterator& other) const { return m_ptr > other.m_ptr; }
+      bool operator<=(const const_iterator& other) const { return m_ptr <= other.m_ptr; }
+      bool operator>=(const const_iterator& other) const { return m_ptr >= other.m_ptr; }
+
+    private:
+      pointer m_ptr;
+    };
+
+  iterator begin() { return iterator(_ptr); }
+  iterator end() { return iterator(_ptr + size); }
+
+  const_iterator begin() const { return const_iterator(_ptr); }
+  const_iterator end() const { return const_iterator(_ptr + size); }
+
+  const_iterator cbegin() const { return const_iterator(_ptr); }
+  const_iterator cend() const { return const_iterator(_ptr + size); }
+
 private:
   int r,c;
   T* _ptr = nullptr;
