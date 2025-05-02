@@ -645,7 +645,7 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm)
 
 bool Board::executeOrder(int plId, Order ord)
 {
-  if(debugOrders) std::cerr << "executing order to " << ord.unitId << " owned by " << plId << " ";
+  if(debugOrders) std::cerr << "executing order by " << info.unitsVector[ord.unitId].pl << ": " << ord << std::endl;
   if(debugOrders) std::cerr << ord.dir << " " << ord.type << " " << ord.unitId << "\n";
 
   if(not unitOk(ord.unitId))
@@ -843,7 +843,7 @@ bool Board::executeOrder(int plId, Order ord)
             fm = FightMode::Attacks;
           }
         }
-        fight(u,info.unitsVector[info.square_map[sq.p+dirAux].u->id()],fm);
+        fight(u,info.unitsVector[info.square_map[u.position()+dirAux].u->id()],fm);
         return true;
       }
       else //Free attack: at the end of all turns, looks again to see if someone has moved here and attacks
