@@ -12,7 +12,18 @@
 /**
  * Defines all directions
 */
-enum Direction{null,up,down,left,right,UL,UR,DL,DR};
+enum Direction{
+  null = 0,
+  up = 1,
+  down = 2,
+  left = 3,
+  right = 4,
+  UL = 5,
+  UR = 6,
+  DL = 7,
+  DR = 8
+};
+
 inline std::ostream& operator << (std::ostream& out, Direction d) {
   switch (d) {
   case Direction::down:   out << "Down";  break;
@@ -28,6 +39,15 @@ inline std::ostream& operator << (std::ostream& out, Direction d) {
   return out;
 }
 
+namespace utils
+{
+  std::tuple<Direction, Direction> decompose(Direction dir);
+
+  Direction invert(Direction dir);
+
+  bool isDiagonal(Direction dir);
+};
+
 struct Position{
   int8_t x;
   int8_t y;
@@ -42,8 +62,7 @@ struct Position{
   Position& operator+= (const Position& other);
   Position operator-(const Position& other);
   Position& operator-= (const Position& other);
-  /* Pre: p is adjacent (diagonal counts) to this
-     Returns the direction from this to p. Returns null if an unexpected situation occurs  */
+  /* Returns the direction from this to p. Returns null if this == p  */
   Direction to(Position p);
   friend std::ostream& operator<<(std::ostream& os, const Position& p);
 };
@@ -135,6 +154,12 @@ struct Order{
   OrderType type;
   Order(){}
   Order(int id,Direction d, OrderType t){unitId = id; dir = d; type = t;}
+
+  friend std::ostream& operator<<(std::ostream& os, Order const& o)
+  {
+    os << o.unitId << ": " << o.type << " " << o.dir; 
+    return os;
+  }
 };
 
 struct Square{
