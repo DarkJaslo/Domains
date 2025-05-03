@@ -152,7 +152,7 @@ struct Order{
   int unitId;
   Direction dir;
   OrderType type;
-  Order(){}
+  Order() : unitId{-1}, dir{Direction::null} {}
   Order(int id,Direction d, OrderType t){unitId = id; dir = d; type = t;}
 
   friend std::ostream& operator<<(std::ostream& os, Order const& o)
