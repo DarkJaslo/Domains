@@ -698,7 +698,8 @@ void HandleCriticalCases()
 				option.priority = PRIO_GET_CLOSE;
 				option.target_pos = sq.pos();
 
-				if (utils::isDiagonal(option.order.dir) && (!sq.painted() || sq.painter() != me))
+				Square const& current = square(source);
+				if (utils::isDiagonal(option.order.dir) && (!current.painted() || current.painter() != me))
 				{
 					auto [dir_x, dir_y] = utils::decompose(option.order.dir);
 
@@ -768,7 +769,7 @@ void HandleCriticalCases()
 					GetClose(option);
 				}
 
-				if (TARGETS.can(option.target_pos))
+				if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
 				{
 					my_options.push_back(option);
 				}
@@ -791,7 +792,7 @@ void HandleCriticalCases()
 					GetClose(option);
 				}
 
-				if (TARGETS.can(option.target_pos))
+				if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
 				{
 					my_options.push_back(option);
 				}
@@ -807,13 +808,13 @@ void HandleCriticalCases()
 				MyOrder option;
 				GetClose(option);
 
-				if (TARGETS.can(option.target_pos))
+				if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
 				{
 					my_options.push_back(option);
 				}
 			}
 		
-			if (unit(MY_UNITS[index]).upgraded())
+			if (unit(index_map[index]).upgraded())
 			{
 				if (ABILITY_POLICY == AbilityPolicy::IMMEDIATE)
 				{
@@ -854,7 +855,7 @@ void HandleCriticalCases()
 					else
 					{
 						TARGETS.add(p);
-						if (TARGETS.can(option.target_pos))
+						if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
 							TARGETS.add(option.target_pos);
 					}
 				}
