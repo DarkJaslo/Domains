@@ -19,6 +19,9 @@ public:
   //Prints all game settings
   void printSettings();
 
+  // Prints the name and points for each player
+  void printResults(std::vector<std::string> const& names);
+
   void printPainters();
 
 private:

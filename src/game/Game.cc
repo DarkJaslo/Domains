@@ -85,6 +85,8 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
 
   b.printSettings();
 
+  b.printResults(names);
+
   double totaltime = timerall.getTime();
   std::cerr << "Global timer: " << totaltime << "\nPlay timer: " << tplay << "\nRound timer: " << tround << "\n";
   std::cerr << "play %: " << (tplay/totaltime)*100 << "\nround %: " << (tround/totaltime)*100 << "\n";
