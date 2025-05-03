@@ -10,8 +10,29 @@ using namespace std;
 */
 bool const ENABLE_OPENING { true };
 bool const ENABLE_PRIORITIES { true };
+bool const ENABLE_FIGHTS { true };
+bool const ENABLE_ATTACKS { true };
+bool const ENABLE_BUBBLE_POPS { true };
+bool const ENABLE_BONUS_COLLECTION { true };
+bool const ENABLE_BAD_DIAG_HANDLE { true }; // Enemy has unfair fight position against you
+bool const ENABLE_STEP_ON_DRAWING { true };
+
+enum class AbilityPolicy
+{ 
+	IMMEDIATE // Use try to use it as soon as you have it 
+};
+AbilityPolicy ABILITY_POLICY { AbilityPolicy::IMMEDIATE };
+
 int const MAX_TARGETS {1};
-int const MAX_CRITICAL_BFS {2};
+int const MAX_CRITICAL_BFS {100};
+
+
+int const PRIO_AVOID_UNFAIR { 120 };
+int const PRIO_ATTACK_1 { 100 };
+int const PRIO_USE_ABILITY { 90 };
+int const PRIO_ATTACK_BUBBLE { 10 };
+int const PRIO_GET_CLOSE { 0 };
+
 
 struct PLAYER_NAME : public Player {
 
@@ -27,7 +48,7 @@ class PositionSet
 public:
   enum State{OUTSIDE,QUEUED,INSIDE};
   PositionSet()
-	: _container{rows(), cols()}
+	: _container{50, 50}
   {
 	clear();
   }
@@ -69,8 +90,11 @@ private:
 class Targets
 {
 public:
-	Targets()
-		: m_board{rows(), cols()} { }
+	Targets(int max_targets)
+		: m_max_targets{max_targets}, m_board{50, 50}
+	{ 
+		clear(); 
+	}
 
 	void clear()
 	{
@@ -80,7 +104,7 @@ public:
 
 	bool can(Position p) const
 	{
-		return m_board[p] < MAX_TARGETS;
+		return m_board[p] < m_max_targets;
 	}
 
 	unsigned int targets(Position p) const
@@ -90,8 +114,7 @@ public:
 
 	void add(Position p)
 	{
-		if (can(p))
-			++m_board[p];
+		++m_board[p];
 	}
 
 	void remove(Position p)
@@ -100,7 +123,8 @@ public:
 			--m_board[p];
 	}
 private:
-	Matrix<uint8_t> m_board;
+	int m_max_targets;
+	Matrix<std::uint16_t> m_board;
 };
 
 class LayeredBFS
@@ -162,9 +186,12 @@ public:
 					for (auto&& dir : directions)
 					{
 						auto new_pos {pos + dir};
+						if (!posOk(new_pos))
+							continue;
+
 						if (search.queued(new_pos) || search.contains(new_pos))
 							continue;
-						
+
 						queue.emplace(new_pos, m_current_depth+1);
 						search.queue(new_pos);
 					}
@@ -212,6 +239,7 @@ struct MyOrder
 {
 	Order order;
 	int priority;
+	Position target_pos;
 
 	bool operator<(MyOrder const& other) const 
 	{
@@ -253,7 +281,7 @@ vector<Direction> DIRS_MAP; //So directions work as if you were down-left
 vector<int> MY_UNITS;
 vector<MyOrder> ORDERS;
 vector<int> BUSY;
-Targets TARGETS;
+Targets TARGETS{MAX_TARGETS};
 
 void play()
 {
@@ -490,64 +518,66 @@ void InitDirections(){
 /* Does opening moves iff the current round is less than OPENING_ROUNDS. Can be called in any round */
 void DoOpeningMoves()
 {
-	if (round() < OPENING_ROUNDS)
+	int rnd = round();
+
+	if (rnd < OPENING_ROUNDS)
 	{
 		// Unit 1
-		if (round() >= 3){
-			if (round() == 3){
+		if (rnd >= 3){
+			if (rnd == 3){
 				FillSpecialDirections(Position(49,2),unit(MY_UNITS[1]).position(),UNIT1SPECIAL[0],UNIT1SPECIAL[1]);
 				move(MY_UNITS[1],DIRS_MAP[UNIT1SPECIAL[0]]);
 			}
-			else if (round() == 4){  move(MY_UNITS[1],DIRS_MAP[UNIT1SPECIAL[1]]);  }
-			else{  move(MY_UNITS[1],DIRS_MAP[UNIT1OPENING[round()-5]]);  }
+			else if (rnd == 4){  move(MY_UNITS[1],DIRS_MAP[UNIT1SPECIAL[1]]);  }
+			else{  move(MY_UNITS[1],DIRS_MAP[UNIT1OPENING[rnd-5]]);  }
 		}
 
 		// Unit 2
-		if (round() >= 6){
-			if (round() == 6){
+		if (rnd >= 6){
+			if (rnd == 6){
 				FillSpecialDirections(Position(47,1),unit(MY_UNITS[2]).position(),UNIT2SPECIAL[0],UNIT2SPECIAL[1]);
 				move(MY_UNITS[2],DIRS_MAP[UNIT2SPECIAL[0]]);
 			}
-			else if (round() == 7){  move(MY_UNITS[2],DIRS_MAP[UNIT2SPECIAL[1]]);  }
-			else{  move(MY_UNITS[2],DIRS_MAP[UNIT2OPENING[round()-8]]);  }
+			else if (rnd == 7){  move(MY_UNITS[2],DIRS_MAP[UNIT2SPECIAL[1]]);  }
+			else{  move(MY_UNITS[2],DIRS_MAP[UNIT2OPENING[rnd-8]]);  }
 		}
 
 		// Unit 3
-		if (round() >= 9){
-			if (round() == 9){
+		if (rnd >= 9){
+			if (rnd == 9){
 				FillSpecialDirections(Position(47,2),unit(MY_UNITS[3]).position(),UNIT3SPECIAL[0],UNIT3SPECIAL[1]);
 				move(MY_UNITS[3],DIRS_MAP[UNIT3SPECIAL[0]]);
 			}
-			else if (round() == 10){  move(MY_UNITS[3],DIRS_MAP[UNIT3SPECIAL[1]]);  }
-			else{  move(MY_UNITS[3],DIRS_MAP[UNIT3OPENING[round()-11]]);  }
+			else if (rnd == 10){  move(MY_UNITS[3],DIRS_MAP[UNIT3SPECIAL[1]]);  }
+			else{  move(MY_UNITS[3],DIRS_MAP[UNIT3OPENING[rnd-11]]);  }
 		}
 
 		// Unit 4
-		if (round() >= 12){
-			if (round() == 12){
+		if (rnd >= 12){
+			if (rnd == 12){
 				FillSpecialDirections(Position(47,0),unit(MY_UNITS[4]).position(),UNIT4SPECIAL[0],UNIT4SPECIAL[1]);
 				move(MY_UNITS[4],DIRS_MAP[UNIT4SPECIAL[0]]);
 			}
-			else if (round() == 13){  move(MY_UNITS[4],DIRS_MAP[UNIT4SPECIAL[1]]);  }
-			else{  move(MY_UNITS[4],DIRS_MAP[UNIT4OPENING[round()-14]]);  }
+			else if (rnd == 13){  move(MY_UNITS[4],DIRS_MAP[UNIT4SPECIAL[1]]);  }
+			else{  move(MY_UNITS[4],DIRS_MAP[UNIT4OPENING[rnd-14]]);  }
 		}
 
 		// Unit 5
-		if (round() >= 15){
-			if (round() == 15){
+		if (rnd >= 15){
+			if (rnd == 15){
 				FillSpecialDirections(Position(48,2),unit(MY_UNITS[5]).position(),UNIT5SPECIAL[0],UNIT5SPECIAL[1]);
 				move(MY_UNITS[5],DIRS_MAP[UNIT5SPECIAL[0]]);
 			}
-			else if (round() == 16){  move(MY_UNITS[5],DIRS_MAP[UNIT5SPECIAL[1]]);  }
-			else{  move(MY_UNITS[5],DIRS_MAP[UNIT5OPENING[round()-17]]);  }
+			else if (rnd == 16){  move(MY_UNITS[5],DIRS_MAP[UNIT5SPECIAL[1]]);  }
+			else{  move(MY_UNITS[5],DIRS_MAP[UNIT5OPENING[rnd-17]]);  }
 		}
 
 		// Unit 6
-		if (round() >= 18){
-			if (round() == 18){
+		if (rnd >= 18){
+			if (rnd == 18){
 				move(MY_UNITS[6],DIRS_MAP[VirtualPos(unit(MY_UNITS[6]).position()).to(Position(48,1))]);
 			}
-			else if (round() == 19){
+			else if (rnd == 19){
 				//attack bubble
 				Position aux = unit(MY_UNITS[6]).position();
 				Position targetPos = MeleeTarget(aux,true,SquareHasBubble);
@@ -555,29 +585,29 @@ void DoOpeningMoves()
 					attack(MY_UNITS[6],aux.to(targetPos));
 				}
 			}
-			else{  move(MY_UNITS[6],DIRS_MAP[UNIT6OPENING[round()-20]]);  }
+			else{  move(MY_UNITS[6],DIRS_MAP[UNIT6OPENING[rnd-20]]);  }
 		}
 
 		// Unit 7
-		if (round() >= 21){
+		if (rnd >= 21){
 			Position aux = VirtualPos(unit(MY_UNITS[7]).position());
 			if (aux.x < 47 || aux.y > 2){
 				move(MY_UNITS[7],DIRS_MAP[Direction::null]);
 			}
 			else{
-				if (round() == 21){
+				if (rnd == 21){
 					move(MY_UNITS[7],DIRS_MAP[VirtualPos(unit(MY_UNITS[7]).position()).to(Position(48,1))]);
 				}
-				else{  move(MY_UNITS[7],DIRS_MAP[UNIT7OPENING[round()-22]]); }
+				else{  move(MY_UNITS[7],DIRS_MAP[UNIT7OPENING[rnd-22]]); }
 			}
 		}
 
 		// Unit 0
-		move(MY_UNITS[0],DIRS_MAP[UNIT0OPENING[round()]]);
+		move(MY_UNITS[0],DIRS_MAP[UNIT0OPENING[rnd]]);
 
 		return;
 	}
-	else if (round() > OPENING_ROUNDS) return;
+	else if (rnd > OPENING_ROUNDS) return;
 
 	// Else,
 	// Very specific moves with a very specific order, don't touch
@@ -600,6 +630,8 @@ void DoOpeningMoves()
 void Update()
 {	
 	UpdateUnits();
+	ORDERS.clear();
+	TARGETS.clear();
 }
 
 /* Used by update */
@@ -607,7 +639,7 @@ void UpdateUnits()
 {
 	MY_UNITS = units(me());
 	if (MY_UNITS.back() >= BUSY.size())
-		BUSY.resize(MY_UNITS.back());
+		BUSY.resize(MY_UNITS.back()+1);
 
 	for (auto&& x : BUSY)
 		x = false;
@@ -638,16 +670,17 @@ void HandleCriticalCases()
 		}
 
 	std::vector<std::vector<MyOrder>> options;
-	options.reserve(sources.size());
+	options.resize(sources.size());
 
 	LayeredBFS bfs
 	{
 		MAX_CRITICAL_BFS,
 		sources,
 		// Visitor
-		[&options](Square const& sq, int index, int distance)
+		[&options, &sources, &index_map, me = me(), this](Square const& sq, int index, int distance)
 		{
 			auto& my_options = options[index];
+			auto& source = sources[index];
 			/*
 			Distance 1:
 			If there is a fight, decide accordingly
@@ -658,43 +691,188 @@ void HandleCriticalCases()
 			Any other distance:
 			Same, but on the fight case move instead of attacking
 			*/
+			auto GetClose = [&source, &sq, me, this](MyOrder& option)
+			{
+				option.order.type = OrderType::movement;
+				option.order.dir = source.to(sq.pos());
+				option.priority = PRIO_GET_CLOSE;
+				option.target_pos = sq.pos();
+
+				if (utils::isDiagonal(option.order.dir) && (!sq.painted() || sq.painter() != me))
+				{
+					auto [dir_x, dir_y] = utils::decompose(option.order.dir);
+
+					if (randomNumber(0,1) == 0)
+						option.order.dir = dir_x;
+					else
+						option.order.dir = dir_y;
+				}
+			};
+
+			if (ENABLE_FIGHTS && sq.hasUnit() && sq.unit().player() != me)
+			{
+				// Target this unit
+				MyOrder option;
+
+				if (distance == 1)
+				{
+					option.order.type = ENABLE_ATTACKS ? OrderType::attack : OrderType::movement;
+					option.order.dir = source.to(sq.pos());
+					option.priority = PRIO_ATTACK_1;
+					option.target_pos = sq.pos();
+					// Don't need to set unitId here
+				}
+				else if (distance == 2)
+				{
+					// Check enemy advantage - are they on their square?
+					if (sq.painted() && sq.painter() == sq.unit().player())
+					{
+						Position vec { sq.pos() - source };
+						// Check if they can unfairly target us
+						if (abs(vec.x) > 0 && abs(vec.y) > 0 && abs(vec.x) + abs(vec.y) == 2)
+						{
+							option.priority = PRIO_AVOID_UNFAIR;
+							option.order.type = OrderType::movement;
+
+							if (ENABLE_BAD_DIAG_HANDLE)
+							{
+								// Run away
+								auto [dir_x, dir_y] = utils::decompose(sq.pos().to(source));
+								if (randomNumber(0,1) == 0)
+									option.order.dir = dir_x;
+								else
+									option.order.dir = dir_y;
+							}
+							else
+							{
+								// Dumber -> Get close
+								auto [dir_x, dir_y] = utils::decompose(source.to(sq.pos()));
+								if (randomNumber(0,1) == 0)
+									option.order.dir = dir_x;
+								else
+									option.order.dir = dir_y;
+							}
+
+							option.target_pos = source + option.order.dir;
+						}
+					}
+					else
+					{
+						// Just get close for now
+						GetClose(option);
+					}
+				}
+				else
+				{
+					// Just get close for now
+					GetClose(option);
+				}
+
+				if (TARGETS.can(option.target_pos))
+				{
+					my_options.push_back(option);
+				}
+			}
+
+			if (ENABLE_BUBBLE_POPS && sq.hasBubble())
+			{
+				MyOrder option;
+
+				if (distance == 1)
+				{
+					// Attack it
+					option.order.type = OrderType::attack;
+					option.order.dir = source.to(sq.pos());
+					option.priority = PRIO_ATTACK_BUBBLE;
+					option.target_pos = sq.pos();
+				}
+				else
+				{
+					GetClose(option);
+				}
+
+				if (TARGETS.can(option.target_pos))
+				{
+					my_options.push_back(option);
+				}
+			}
+		
+			if (ENABLE_STEP_ON_DRAWING)
+			{
+
+			}
+
+			if (ENABLE_BONUS_COLLECTION && sq.hasBonus())
+			{
+				MyOrder option;
+				GetClose(option);
+
+				if (TARGETS.can(option.target_pos))
+				{
+					my_options.push_back(option);
+				}
+			}
+		
+			if (unit(MY_UNITS[index]).upgraded())
+			{
+				if (ABILITY_POLICY == AbilityPolicy::IMMEDIATE)
+				{
+					MyOrder option;
+					option.order.dir = Direction::null;
+					option.order.type = OrderType::ability;
+					option.priority = PRIO_USE_ABILITY;
+					option.target_pos = source;
+
+					my_options.push_back(option);
+				}
+			}
 		},
 		// On depth completion
 		[&options, &index_map, &sources, this](int index) -> bool
 		{
 			auto& my_options = options[index];
 			if (my_options.empty())
+			{
 				return false;
+			}
 
 			std::sort(my_options.begin(), my_options.end());
 
 			for (int option_index {0}; option_index < my_options.size(); ++option_index)
 			{
-				bool skip{false};
-
-				// Translate index
 				MyOrder option = my_options[option_index];
-				switch (option.order.type)
+
+				if (option.order.type == OrderType::movement || option.order.type == OrderType::attack)
 				{
-				case OrderType::movement:
-				case OrderType::attack:
-					if (!TARGETS.can(sources[index]+option.order.dir))
-						skip = true;
-					break;
-				case OrderType::ability:
+					Position p {sources[index]+option.order.dir};
+
+
+					if (!posOk(p) || !TARGETS.can(p) || !TARGETS.can(option.target_pos))
+					{
+						continue;
+					}
+					else
+					{
+						TARGETS.add(p);
+						if (TARGETS.can(option.target_pos))
+							TARGETS.add(option.target_pos);
+					}
+				}
+				else
+				{
 					if (!TARGETS.can(sources[index]))
-						skip = true;
-					break;
+						continue;
+					else 
+						TARGETS.add(sources[index]);
 				}
 
-				if (skip)
-					continue;
-
+				// Translate index
 				int unit_index = index_map[index];
 				option.order.unitId = index_map[index];
 				ORDERS.push_back(option);
 				BUSY[unit_index] = true;
-				TARGETS.add(sources[index]+option.order.dir);
+
+				my_options.clear();
 				return true;
 			}
 
@@ -703,10 +881,26 @@ void HandleCriticalCases()
 		// Queuer
 		[me = me(), this](Square const& sq) -> std::vector<Direction>
 		{
+			std::vector<Direction> dirs;
+
 			if (sq.painter() == me)
-				return DIRS_ALL;
+			{
+				for (auto&& dir : DIRS_DIAGONAL)
+				{
+					Position p { sq.pos() + dir };
+					if (posOk(p))
+						dirs.push_back(dir);
+				}
+			}
+
+			for (auto&& dir : DIRS_STRAIGHT)
+			{
+				Position p { sq.pos() + dir };
+				if (posOk(p))
+					dirs.push_back(dir);
+			}
 			
-			return DIRS_STRAIGHT;
+			return dirs;
 		}
 	};
 	bfs.run();
