@@ -887,7 +887,7 @@ void Board::performFreeAttacks()
     freeAttacks.pop();
 
     if(killedUnits[f.uid]) continue;
-    if(not info.square(f.tPos).hasUnit()) continue;
+    if(not info.square(f.tPos).hasUnit() || !info.square(f.uPos).hasUnit()) continue;
     if(info.square(f.tPos).unit().player() == info.square(f.uPos).unit().player()) continue;
 
     FightMode fm = FightMode::Fair;
