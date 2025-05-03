@@ -837,7 +837,7 @@ bool Board::executeOrder(int plId, Order ord)
         FightMode fm = FightMode::Fair;
         if(isDiagonal(ord.dir))
         {
-          Square sqaux = info.square(sq.p+dirAux);
+          Square sqaux = info.square(u.position()+dirAux);
           if(isDiagonal(sqaux.p.to(u.p)) and sqaux.painter() != sqaux.unit().player())
           {
             fm = FightMode::Attacks;
