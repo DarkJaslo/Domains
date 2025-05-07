@@ -1797,6 +1797,18 @@ void Board::printSettings()
   info.printSettings();
 }
 
+void Board::printResults(std::vector<std::string> const& names)
+{
+  for (int i = 0; i < names.size(); ++i)
+  {
+    std::cerr << names[i] << " " << info.points(i) << " ";
+    std::cout << names[i] << " " << info.points(i) << " ";
+  }
+
+  std::cerr << std::endl;
+  std::cout << std::endl;
+}
+
 void Board::spawnPlayer(int i, int j, int plId)
 {
   Position p(i,j);
