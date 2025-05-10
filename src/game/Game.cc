@@ -2,7 +2,11 @@
 #include "ThreadPool.h"
 #include <thread>
 #include <unistd.h>
+
 #include "Timer.hh"
+
+int current_player{-1};
+std::vector<bool> crashed{};
 
 //Game
 
@@ -38,6 +42,10 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
   std::cout << std::endl;
   b.printRound(new_viewer);
 
+  crashed.resize(pl.size());
+  for (auto&& x : crashed)
+    x = false;
+
   for(int round = 0; round < rounds; ++round){
 
     b.info.currentRound = round;
@@ -63,15 +71,30 @@ void Game::play(const std::vector<std::string>& names, int seed, bool fullDebug,
     }
     else
     {
-      for(int i = 0; i < pl.size(); ++i){
+      current_player = 0;
+      
+      for(int i = current_player; i < pl.size(); ++i){
+        current_player = i;
+        if (crashed[i])
+          continue;
+        
         if(debug) std::cerr << "player " << names[i] << std::endl;
+        
         pl[i]->resetList();
 
         Timer timerplay("Play timer",&tplay,false);
-
-        pl[i]->play();
+        try
+        {
+          pl[i]->play();
+        }
+        catch(const std::exception& e)
+        {
+          if(debug) std::cerr << "player " << names[i] << " crashed! Ignoring next turns" << std::endl;
+          crashed[i] = true;
+        }
         if(debug) std::cerr << "end player " << names[i] << std::endl << std::endl;
       }
+      current_player = -1;
     }
 
     { 
