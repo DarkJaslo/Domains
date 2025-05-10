@@ -16,6 +16,7 @@ bool const ENABLE_BUBBLE_POPS { true };
 bool const ENABLE_BONUS_COLLECTION { true };
 bool const ENABLE_BAD_DIAG_HANDLE { true }; // Enemy has unfair fight position against you
 bool const ENABLE_STEP_ON_DRAWING { true };
+bool const ENABLE_DRAWING { true };
 
 enum class AbilityPolicy
 { 
@@ -24,15 +25,18 @@ enum class AbilityPolicy
 AbilityPolicy ABILITY_POLICY { AbilityPolicy::IMMEDIATE };
 
 int const MAX_TARGETS {1};
-int const MAX_CRITICAL_BFS {100};
+int const MAX_CRITICAL_BFS {2};
+int const MAX_DRAW_BFS {100};
 
+int const DRAW_AWAY_DIST {2};
+int const DRAW_SIDE_DIST {2};
 
 int const PRIO_AVOID_UNFAIR { 120 };
 int const PRIO_ATTACK_1 { 100 };
 int const PRIO_USE_ABILITY { 90 };
 int const PRIO_ATTACK_BUBBLE { 10 };
 int const PRIO_GET_CLOSE { 0 };
-
+int const PRIO_DRAW { 0 };
 
 struct PLAYER_NAME : public Player {
 
@@ -130,6 +134,13 @@ private:
 class LayeredBFS
 {
 public:
+
+	struct Info
+	{
+		Position pos;
+		Direction from_where;
+		int distance;
+	};
 	/*
 		max_depth is the maximum distance or depth that will be visited
 
@@ -146,7 +157,7 @@ public:
 	*/
 	LayeredBFS(int max_depth,
 			   std::vector<Position> const& sources,
-			   std::function<void(Square const&, int, int)> visitor,
+			   std::function<void(Square const&, Direction, int, int)> visitor,
 			   std::function<bool(int)> on_depth_completion,
 			   std::function<std::vector<Direction>(Square const&)> queuer)
 		: m_max_depth(max_depth), m_sources(sources.size()), m_visitor(visitor), 
@@ -157,7 +168,7 @@ public:
 		
 		for (int i {0}; i < sources.size(); ++i)
 		{
-			m_queues[i].emplace(sources[i], 0);
+			m_queues[i].push(Info{sources[i], Direction::null, 0});
 			m_searches[i].queue(sources[i]);
 		}
 	}
@@ -175,29 +186,33 @@ public:
 				auto& search = m_searches[source];
 				while (!queue.empty())
 				{
-					if (std::get<int>(queue.front()) > m_current_depth)
+					if (queue.front().distance > m_current_depth)
 						break;
 
-					auto pos = std::get<Position>(queue.front());
+					auto info = queue.front();
 					queue.pop();
 
-					auto const& sq = square(pos);
+					auto const& sq = square(info.pos);
 					auto directions = m_queuer(sq);
 					for (auto&& dir : directions)
 					{
-						auto new_pos {pos + dir};
+						auto new_pos {info.pos + dir};
 						if (!posOk(new_pos))
 							continue;
 
 						if (search.queued(new_pos) || search.contains(new_pos))
 							continue;
 
-						queue.emplace(new_pos, m_current_depth+1);
+						Direction first_move = info.from_where; 
+						if (first_move == Direction::null)
+							first_move = dir;
+
+						queue.push(Info{new_pos, first_move, m_current_depth+1});
 						search.queue(new_pos);
 					}
 
-					m_visitor(sq, source, m_current_depth);
-					search.add(pos);
+					m_visitor(sq, info.from_where, source, m_current_depth);
+					search.add(info.pos);
 				}
 			}
 
@@ -224,7 +239,7 @@ private:
 
 	int m_max_depth;
 	int m_sources;
-	std::function<void(Square const&, int, int)> m_visitor;
+	std::function<void(Square const&, Direction, int, int)> m_visitor;
 	std::function<bool(int)> m_on_depth_completion;
 	std::function<std::vector<Direction>(Square const&)> m_queuer;
 
@@ -232,7 +247,7 @@ private:
 	int m_current_depth{0};
 	std::vector<bool> m_finished;
 	std::vector<PositionSet> m_searches;
-	std::vector<std::queue<std::tuple<Position, int>>> m_queues;
+	std::vector<std::queue<Info>> m_queues;
 };
 
 struct MyOrder
@@ -245,6 +260,331 @@ struct MyOrder
 	{
 		return this->priority > other.priority;
 	}
+};
+
+enum class DrawingState
+{
+	Away,
+	Side,
+	Return,
+	None
+};
+
+class Drawing
+{
+public:
+	Drawing() = default;
+	Drawing(PLAYER_NAME* player, int unit) : m_player{player}, m_unit{unit} {}
+
+	void Process()
+	{
+		/*
+		Start, continue and finish drawings
+
+		For all free units
+		If it's drawing, still drawing? (finished a drawing midway or drawing got erased)
+			Getting away:
+				finished: choose a perpendicular direction and move, transition to side
+			Side:
+				finished: go to nearest painted area
+
+		If it's not drawing
+			If inside painted area:
+				if it can exit with one straight move, do so
+				if not, find nearest unpainted square
+
+			If outside painted area: go to painted area
+		
+		*/
+
+		Position act { unit(m_unit).position() };
+
+		if (IsDrawing())
+		{
+			auto AwayToSide = [this]()
+			{
+				m_state = DrawingState::Side;
+				auto [dirA, dirB] = utils::perpendiculars(m_away_dir);
+				m_side_dir = randomNumber(0, 1) == 0 ? dirA : dirB;
+				m_side_steps = 0;
+			};
+
+			switch (m_state)
+			{
+			case DrawingState::Away:
+			{
+				Position next { act + m_away_dir };
+				if (!posOk(next) || (square(next).drawn() && square(next).drawer() == m_player->me()))
+				{ 
+					AwayToSide();
+				}
+				else
+				{
+					MyOrder order {};
+					order.target_pos = next;
+					order.priority = PRIO_DRAW;
+					order.order.dir = m_away_dir;
+					order.order.type = OrderType::movement;
+					order.order.unitId = m_unit;
+					m_player->ORDERS.push_back(order);
+
+					if (++m_away_steps >= DRAW_AWAY_DIST)
+						AwayToSide();
+				}
+				break;
+			}
+			case DrawingState::Side:
+			{
+				Position next { act + m_side_dir };
+				if (!posOk(next) || (square(next).drawn() && square(next).drawer() == m_player->me()))
+					m_state = DrawingState::Return;
+				else
+				{
+					MyOrder order {};
+					order.target_pos = next;
+					order.priority = PRIO_DRAW;
+					order.order.dir = m_side_dir;
+					order.order.type = OrderType::movement;
+					order.order.unitId = m_unit;
+					m_player->ORDERS.push_back(order);
+
+					if (++m_side_steps >= DRAW_SIDE_DIST)
+						m_state = DrawingState::Return;
+				}
+				break;
+			}
+			case DrawingState::Return:
+			{
+				Position src { unit(m_unit).position() };
+				vector<Position> source { src };
+				
+				bool found { false };
+				Position target{};
+				Direction target_dir{ Direction::null };
+
+				LayeredBFS bfs {
+					MAX_DRAW_BFS,
+					source,
+					// Visitor
+					[me = m_player->me(), &found, &target, &target_dir](Square const& sq, Direction first_dir, int index, int distance)
+					{
+						if (found)
+							return;
+
+						if (sq.painted() && sq.painter() == me)
+						{
+							target = sq.pos();
+							target_dir = first_dir;
+							found = true;
+						}
+					},
+					// Depth completion
+					[&found](int index) -> bool
+					{
+						return found;
+					},
+					// Queuer
+					[this](Square const& sq) -> std::vector<Direction>
+					{
+						std::vector<Direction> result;
+
+						for (auto&& dir : m_player->DIRS_STRAIGHT)
+						{
+							Position aux = sq.pos() + dir;
+							if (posOk(aux) && (!square(aux).drawn() || square(aux).drawer() != m_player->me()))
+								result.push_back(dir);
+						}
+
+						return result;
+					}
+				};
+				bfs.run();
+
+				// Go to the position we have found
+				MyOrder order {};
+				order.target_pos = src+target_dir;
+				order.priority = PRIO_DRAW;
+				order.order.dir = target_dir;
+				order.order.type = OrderType::movement;
+				order.order.unitId = m_unit;
+				m_player->ORDERS.push_back(order);
+
+				break;
+			}
+			
+			default:
+				m_state = DrawingState::Away;
+				m_away_steps = 0;
+				break;
+			}
+		}
+		else // not drawing
+		{
+			Square const& sq_act = square(unit(m_unit).position());
+			if (sq_act.painted() && sq_act.painter() == m_player->me())
+			{
+				// Inside
+				Position src { sq_act.pos() };
+
+				vector<Position> source { src };
+
+				bool found { false };
+				Position target{};
+				Direction target_dir{ Direction::null };
+
+				LayeredBFS bfs {
+					MAX_DRAW_BFS,
+					source,
+					// Visitor
+					[me = m_player->me(), &found, &target, &target_dir](Square const& sq, Direction first_dir, int index, int distance)
+					{
+						if (found)
+							return;
+
+						if (!sq.painted() || sq.painter() != me)
+						{
+							target = sq.pos();
+							target_dir = first_dir;
+							found = true;
+						}
+					},
+					// Depth completion
+					[&found](int index) -> bool
+					{
+						return found;
+					},
+					// Queuer
+					[this](Square const& sq) -> std::vector<Direction>
+					{
+						std::vector<Direction> result;
+
+						for (auto&& dir : m_player->DIRS_ALL)
+						{
+							Position aux = sq.pos() + dir;
+							if (!posOk(aux))
+								continue;	
+
+							Square const& sq_aux = square(aux);
+							if (sq_aux.drawn() && sq_aux.drawer() == m_player->me())
+								continue;
+
+							if (sq_aux.hasUnit() && sq_aux.unit().player() == m_player->me())
+								continue;
+
+							if (utils::isDiagonal(dir) && (!sq_aux.painted() || sq_aux.painter() != m_player->me()))
+								continue;
+
+							result.push_back(dir);
+						}
+
+						return result;
+					}
+				};
+				bfs.run();
+
+				// Go to the position we have found
+				Position next = src + target_dir;
+				if (!square(next).painted() || square(next).painter() != m_player->me())
+				{
+					// Start drawing
+					m_state = DrawingState::Away;
+					m_away_dir = target_dir;
+					m_away_steps = 1;
+				}
+
+				MyOrder order {};
+				order.target_pos = src+target_dir;
+				order.priority = PRIO_DRAW;
+				order.order.dir = target_dir;
+				order.order.type = OrderType::movement;
+				order.order.unitId = m_unit;
+				m_player->ORDERS.push_back(order);
+			}
+			else
+			{
+				// Outside
+				Position src { unit(m_unit).position() };
+				vector<Position> source { src };
+				
+				bool found { false };
+				Position target{};
+				Direction target_dir { Direction::null };
+
+				LayeredBFS bfs {
+					MAX_DRAW_BFS,
+					source,
+					// Visitor
+					[me = m_player->me(), &found, &target, &target_dir](Square const& sq, Direction first_dir, int index, int distance)
+					{
+						if (found)
+							return;
+
+						if (sq.painted() && sq.painter() == me)
+						{
+							target = sq.pos();
+							target_dir = first_dir;
+							found = true;
+						}
+					},
+					// Depth completion
+					[&found](int index) -> bool
+					{
+						return found;
+					},
+					// Queuer
+					[this](Square const& sq) -> std::vector<Direction>
+					{
+						std::vector<Direction> result;
+
+						for (auto&& dir : m_player->DIRS_STRAIGHT)
+						{
+							Position aux = sq.pos() + dir;
+							if (!posOk(aux))
+								continue;	
+
+							Square const& sq_aux = square(aux);
+							if (sq_aux.drawn() && sq_aux.drawer() == m_player->me())
+								continue;
+
+							if (sq_aux.hasUnit() && sq_aux.unit().player() == m_player->me())
+								continue;
+
+							result.push_back(dir);
+						}
+
+						return result;
+					}
+				};
+				bfs.run();
+
+				// Go to the position we have found
+				MyOrder order {};
+				order.target_pos = src+target_dir;
+				order.priority = PRIO_DRAW;
+				order.order.dir = target_dir;
+				order.order.type = OrderType::movement;
+				order.order.unitId = m_unit;
+				m_player->ORDERS.push_back(order);
+			}
+		}
+	}
+
+private:
+	bool IsDrawing() const
+	{
+		Square const& sq = square(unit(m_unit).position());
+		return sq.drawn() && sq.unitDrawer() == m_unit;
+	}
+
+	DrawingState m_state { DrawingState::None };
+	int m_away_steps { 0 };
+	int m_side_steps { 0 };
+	Direction m_away_dir { Direction::null };
+	Direction m_side_dir { Direction::null };
+	PLAYER_NAME* m_player { nullptr };
+
+	// Index of unit in MY_UNITS
+	int m_unit { -1 };
 };
 
 /*
@@ -411,6 +751,7 @@ vector<int> MY_UNITS;
 vector<MyOrder> ORDERS;
 vector<int> BUSY;
 Targets TARGETS{MAX_TARGETS};
+map<int, Drawing> DRAWINGS;
 
 void play()
 {
@@ -632,12 +973,46 @@ void UpdateUnits()
 	MY_UNITS = units(me());
 
 	if (MY_UNITS.empty())
+	{	
         BUSY.clear();
+	}
     else if (MY_UNITS.back() >= BUSY.size())
+	{
         BUSY.resize(MY_UNITS.back()+1);
+	}
 
 	for (auto&& x : BUSY)
 		x = false;
+
+	// Remove drawings of old units
+	vector<int> to_erase{};
+	for (auto it = DRAWINGS.begin(); it != DRAWINGS.end(); it++)
+	{
+		bool found = false;
+		for (auto unit : MY_UNITS)
+		{
+			if (it->first == unit)
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			to_erase.push_back(it->first);
+		}
+	}
+
+	for (int x : to_erase)
+		DRAWINGS.erase(x);
+
+	// Add drawings for new units
+	for (auto&& unit : MY_UNITS)
+	{
+		if (auto it = DRAWINGS.find(unit); it == DRAWINGS.end())
+			DRAWINGS[unit] = Drawing(this, unit);
+	}
 }
 
 void HandleCriticalCases()
@@ -672,7 +1047,7 @@ void HandleCriticalCases()
 		MAX_CRITICAL_BFS,
 		sources,
 		// Visitor
-		[&options, &sources, &index_map, me = me(), this](Square const& sq, int index, int distance)
+		[&options, &sources, &index_map, me = me(), this](Square const& sq, Direction first_dir, int index, int distance)
 		{
 			auto& my_options = options[index];
 			auto& source = sources[index];
@@ -924,9 +1299,13 @@ void AssignUnitsToConsumables()
 
 void ManageDrawings()
 {
-	/*
-	Start, continue and finish drawings
-	*/
+	for (auto&& unit : MY_UNITS)
+	{
+		if (BUSY[unit])
+			continue;
+
+		DRAWINGS[unit].Process();
+	}
 }
 
 void SendOrders()
@@ -960,28 +1339,6 @@ void SendOrders()
 /*
 	UTILITY
 */
-
-template <typename T>
-int FindInVector(T const& thing, std::vector<T> const& vec)
-{
-	return RecursiveFind(0,vec.size()-1,thing,vec);
-}
-
-template <typename T>
-int RecursiveFind(int l, int r, T const& thing, std::vector<T> const& vec)
-{
-	if (r>l) 
-		return -1;
-
-	int m = (l+r)/2;
-
-	if (vec[m] > thing)
-		return RecursiveFind(l,m-1,thing,vec);
-	else if (vec[m] < thing)
-		return RecursiveFind(m+1,r,thing,vec);
-
-	return m;
-}
 
 static bool IsDiagonal(Direction d){return d >= Direction::UL;}
 
