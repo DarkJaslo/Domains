@@ -252,14 +252,143 @@ struct MyOrder
 */
 const int OPENING_ROUNDS = 27;
 
-vector<Direction> UNIT0OPENING;
-vector<Direction> UNIT1OPENING;
-vector<Direction> UNIT2OPENING;
-vector<Direction> UNIT3OPENING;
-vector<Direction> UNIT4OPENING;
-vector<Direction> UNIT5OPENING;
-vector<Direction> UNIT6OPENING;
-vector<Direction> UNIT7OPENING;
+vector<Direction> UNIT0OPENING{
+    Direction::UR,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    //Stop
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    //Stop
+    Direction::left,
+    Direction::left,
+    Direction::left,
+    Direction::left,
+    Direction::left,
+    Direction::left,
+    Direction::left,
+    Direction::left
+};
+vector<Direction> UNIT1OPENING{
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::left
+};
+vector<Direction> UNIT2OPENING{
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::right,
+    Direction::down,
+    Direction::down,
+    Direction::down,
+    Direction::down,
+    Direction::down,
+    Direction::down,
+    Direction::down,
+    Direction::down,
+    Direction::null
+};
+vector<Direction> UNIT3OPENING{
+    Direction::UR,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::null
+};
+vector<Direction> UNIT4OPENING{
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::right,
+    Direction::right,
+    Direction::right
+};
+vector<Direction> UNIT5OPENING{
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right,
+    Direction::right
+};
+vector<Direction> UNIT6OPENING{
+    Direction::UR,
+    Direction::UR,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up,
+    Direction::up
+};
+vector<Direction> UNIT7OPENING{
+    Direction::UR,
+    Direction::UR,
+    Direction::right,
+    Direction::up,
+    Direction::right
+};
 
 Direction UNIT1SPECIAL[2];
 Direction UNIT2SPECIAL[2];
@@ -286,9 +415,9 @@ Targets TARGETS{MAX_TARGETS};
 void play()
 {
 	if (round() == 0)
-		Init();
-	else 
-		Update();
+		Init(); 
+	
+	Update();
 
 	if (ENABLE_OPENING && round() <= OPENING_ROUNDS) 
 	{
@@ -318,144 +447,7 @@ void Init()
 /* To be called once */
 void InitOpeningMoves()
 {
-	#define SR 27
-	UNIT0OPENING = {
-		Direction::UR,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		//Stop
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		//Stop
-		Direction::left,
-		Direction::left,
-		Direction::left,
-		Direction::left,
-		Direction::left,
-		Direction::left,
-		Direction::left,
-		Direction::left
-	};
-	UNIT1OPENING = {
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::left
-	};
-	UNIT2OPENING = {
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::right,
-		Direction::down,
-		Direction::down,
-		Direction::down,
-		Direction::down,
-		Direction::down,
-		Direction::down,
-		Direction::down,
-		Direction::down,
-		Direction::null
-	};
-	UNIT3OPENING = {
-		Direction::UR,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::null
-	};
-	UNIT4OPENING = {
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::right,
-		Direction::right,
-		Direction::right
-	};
-	UNIT5OPENING = {
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right,
-		Direction::right
-	};
-	UNIT6OPENING = {
-		Direction::UR,
-		Direction::UR,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up,
-		Direction::up
-	};
-	UNIT7OPENING = {
-		Direction::UR,
-		Direction::UR,
-		Direction::right,
-		Direction::up,
-		Direction::right
-	};
+	
 }
 
 /*
@@ -638,8 +630,11 @@ void Update()
 void UpdateUnits()
 {
 	MY_UNITS = units(me());
-	if (MY_UNITS.back() >= BUSY.size())
-		BUSY.resize(MY_UNITS.back()+1);
+
+	if (MY_UNITS.empty())
+        BUSY.clear();
+    else if (MY_UNITS.back() >= BUSY.size())
+        BUSY.resize(MY_UNITS.back()+1);
 
 	for (auto&& x : BUSY)
 		x = false;
