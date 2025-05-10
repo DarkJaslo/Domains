@@ -43,6 +43,8 @@ namespace utils
 {
   std::tuple<Direction, Direction> decompose(Direction dir);
 
+  std::tuple<Direction, Direction> perpendiculars(Direction dir);
+
   Direction invert(Direction dir);
 
   bool isDiagonal(Direction dir);

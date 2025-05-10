@@ -21,6 +21,30 @@ namespace utils
     }
   }
 
+  std::tuple<Direction, Direction> perpendiculars(Direction dir)
+  {
+    Direction perp;
+    switch (dir)
+    {
+      case Direction::up:
+        perp = right;
+        break;
+      case Direction::down:
+        perp = right;
+        break;
+      case Direction::right:
+        perp = up;
+        break;
+      case Direction::left:
+        perp = up;
+        break;
+      default:
+        perp = null;
+        break;
+    }
+    return std::make_tuple(perp, invert(perp));
+  }
+
   Direction invert(Direction dir)
   {
     switch (dir)
