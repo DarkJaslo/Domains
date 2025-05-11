@@ -670,7 +670,7 @@ bool Board::executeOrder(int plId, Order ord)
     { //Not on same-color domain
       if(isDiagonal(ord.dir))
       {
-        std::cerr << "warning: unit " << u.id() << " by player " << u.player() << " cannot move diagonally here (pos: " << u.position() << ")\n";
+        std::cerr << "warning: unit " << u.id() << " by player " << u.player() << " cannot move diagonally here (pos: " << u.position() << "), (order: " << ord << ")\n";
         return false;
       }
     }
