@@ -13,9 +13,9 @@ bool const ENABLE_PRIORITIES { true };
 bool const ENABLE_FIGHTS { true };
 bool const ENABLE_ATTACKS { true };
 bool const ENABLE_BUBBLE_POPS { true };
-bool const ENABLE_BONUS_COLLECTION { true };
+bool const ENABLE_BONUS_COLLECTION { false };
 bool const ENABLE_BAD_DIAG_HANDLE { true }; // Enemy has unfair fight position against you
-bool const ENABLE_STEP_ON_DRAWING { true };
+bool const ENABLE_STEP_ON_DRAWING { false }; // Makes player worse if true
 bool const ENABLE_DRAWING { true };
 bool const ENABLE_SAFE_APPROACH { true }; // At distance 2 and enemy distance 3 get close without using diagonals
 bool const ENABLE_DISTANCE2_INTELLIGENCE { true };
@@ -40,6 +40,7 @@ int const PRIO_AVOID_UNFAIR { 120 };
 int const PRIO_ATTACK_1 { 100 };
 int const PRIO_USE_ABILITY { 90 };
 int const PRIO_ATTACK_BUBBLE { 10 };
+int const PRIO_STEP_ON_DRAWING { 9 };
 int const PRIO_SEARCH { 5 };
 int const PRIO_GET_CLOSE { 0 };
 int const PRIO_DRAW { 0 };
@@ -406,6 +407,13 @@ public:
 					}
 				};
 				bfs.run();
+
+				Position next = src + target_dir;
+				Square const& sq_next = square(next);
+				if (sq_next.painted() && sq_next.painter() == m_player->me())
+				{
+					m_state = DrawingState::None;
+				}
 
 				// Go to the position we have found
 				MyOrder order {};
@@ -1223,9 +1231,16 @@ void HandleCriticalCases()
 				}
 			}
 		
-			if (ENABLE_STEP_ON_DRAWING)
+			if (ENABLE_STEP_ON_DRAWING && sq.drawn() && sq.drawer() != me)
 			{
+				MyOrder option;
+				GetClose(option);
+				option.priority = PRIO_STEP_ON_DRAWING;
 
+				if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
+				{
+					my_options.push_back(option);
+				}
 			}
 
 			if (ENABLE_BONUS_COLLECTION && sq.hasBonus())
@@ -1352,18 +1367,6 @@ void AssignUnitsToConsumables()
 
 	When a free player has been allocated, pathfind to the consumable and assign thing
 	*/
-	std::vector<Position> player_sources{};
-	std::vector<int> index_map{};
-
-	// Get free players
-	for (auto unit_id : MY_UNITS)
-	{
-		if (BUSY[unit_id] || DRAWINGS[unit_id].Busy())
-			continue;
-
-		player_sources.push_back(unit(unit_id).position());
-		index_map.push_back(unit_id);
-	}
 
 	std::map<int, Position> taken{};
 
@@ -1381,6 +1384,7 @@ void AssignUnitsToConsumables()
 	}
 	std::vector<bool> consumable_finished(consumable_sources.size(), false);
 	std::vector<int> consumable_found(consumable_sources.size(), 100);
+	std::vector<int> consumable_ally_found(consumable_sources.size(), 100);
 
 	LayeredBFS bfs{
 		MAX_CONSUMABLE_BFS,
@@ -1401,15 +1405,22 @@ void AssignUnitsToConsumables()
 			if (sq.hasUnit())
 			{
 				Unit const& un = sq.unit();
-				if (un.player() == me && !BUSY[un.id()] && !DRAWINGS[un.id()].Busy())
+				if (un.player() == me)
 				{
+					if (BUSY[un.id()])
+						return;
+
+					if (taken.find(un.id()) != taken.end())
+						return;
+
 					consumable_finished[index] = true;
 					taken.insert(std::make_pair(un.id(), consumable_sources[index]));
-					return;
 				}
-
-				// Enemy unit
-				consumable_found[index] = distance;				
+				else
+				{
+					// Enemy unit
+					consumable_found[index] = distance;				
+				}
 			}
 		},
 		// On depth completion
@@ -1448,7 +1459,7 @@ void AssignUnitsToConsumables()
 		Position current = unit(id).position();
 
 		Direction dir = PathfindFromAToBAs(current, destination, me());
-		
+
 		// If we exit a painted area, avoid diagonals
 		if (utils::isDiagonal(dir))
 		{
