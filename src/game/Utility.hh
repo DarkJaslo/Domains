@@ -58,11 +58,11 @@ struct Position{
   bool operator== (const Position& p) const;
   bool operator!= (const Position& p) const;
   bool operator<(const Position& p) const;
-  Position operator+(const Direction& d);
+  Position operator+(const Direction& d) const;
   Position& operator+= (const Direction& d);
-  Position operator+(const Position& other);
+  Position operator+(const Position& other) const;
   Position& operator+= (const Position& other);
-  Position operator-(const Position& other);
+  Position operator-(const Position& other) const;
   Position& operator-= (const Position& other);
   /* Returns the direction from this to p. Returns null if this == p  */
   Direction to(Position p);

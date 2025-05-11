@@ -97,7 +97,7 @@ bool Position::operator<(const Position& p) const{
   if(x != p.x) return x < p.x;
   return y < p.y;
 }
-Position Position::operator+ (const Direction& d){
+Position Position::operator+ (const Direction& d) const{
   Position p = *this;
   p += d;  
   return p;
@@ -116,7 +116,7 @@ Position& Position::operator+= (const Direction& d){
   }
   return *this;
 }
-Position Position::operator+(const Position& other){
+Position Position::operator+(const Position& other) const {
   return Position(x+other.x,y+other.y);
 }
 Position& Position::operator+= (const Position& other){
@@ -124,7 +124,7 @@ Position& Position::operator+= (const Position& other){
   y+=other.y;
   return *this;
 }
-Position Position::operator-(const Position& other){
+Position Position::operator-(const Position& other) const {
   return Position(x-other.x,y-other.y);
 }
 Position& Position::operator-= (const Position& other){
