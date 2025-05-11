@@ -30,6 +30,8 @@ int const MAX_TARGETS {1};
 int const MAX_CRITICAL_BFS {2};
 int const MAX_DRAW_BFS {100};
 int const MAX_WAIT_ROUNDS {1}; // 0 means no waiting
+int const MAX_CONSUMABLE_BFS { 40 };
+int const MAX_CONSUMABLE_DIST_DIFF { 2 };
 
 int const DRAW_AWAY_DIST {2};
 int const DRAW_SIDE_DIST {2};
@@ -38,6 +40,7 @@ int const PRIO_AVOID_UNFAIR { 120 };
 int const PRIO_ATTACK_1 { 100 };
 int const PRIO_USE_ABILITY { 90 };
 int const PRIO_ATTACK_BUBBLE { 10 };
+int const PRIO_SEARCH { 5 };
 int const PRIO_GET_CLOSE { 0 };
 int const PRIO_DRAW { 0 };
 int const PRIO_ATTACK_WAIT { 99 };
@@ -424,6 +427,8 @@ public:
 		}
 		else // not drawing
 		{
+			m_state = DrawingState::None;
+
 			Square const& sq_act = square(unit(m_unit).position());
 			if (sq_act.painted() && sq_act.painter() == m_player->me())
 			{
@@ -573,6 +578,10 @@ public:
 		}
 	}
 
+	bool Busy() const
+	{
+		return m_state != DrawingState::None;
+	}
 private:
 	bool IsDrawing() const
 	{
@@ -1334,13 +1343,139 @@ void HandleAbility()
 }
 
 void AssignUnitsToConsumables()
-{
-	/*
-	LayeredBFS from consumables to free players, mainly because this way we can pathfind 
-	using the diagonal movement intelligently
+{	
+	if (MAX_CONSUMABLE_BFS <= 0)
+		return;
 
-	If that does not work for some reason, just do some vector math
+	/*
+	LayeredBFS from consumable to free players
+
+	When a free player has been allocated, pathfind to the consumable and assign thing
 	*/
+	std::vector<Position> player_sources{};
+	std::vector<int> index_map{};
+
+	// Get free players
+	for (auto unit_id : MY_UNITS)
+	{
+		if (BUSY[unit_id] || DRAWINGS[unit_id].Busy())
+			continue;
+
+		player_sources.push_back(unit(unit_id).position());
+		index_map.push_back(unit_id);
+	}
+
+	std::map<int, Position> taken{};
+
+	std::vector<Position> consumable_sources{};
+	for (int i{0}; i < rows(); ++i)
+	{
+		for (int j{0}; j < cols(); ++j)
+		{
+			Position pos{i,j};
+			Square const& sq = square(pos);
+
+			if (sq.hasBonus() || sq.hasBubble())
+				consumable_sources.push_back(pos);
+		}
+	}
+	std::vector<bool> consumable_finished(consumable_sources.size(), false);
+	std::vector<int> consumable_found(consumable_sources.size(), 100);
+
+	LayeredBFS bfs{
+		MAX_CONSUMABLE_BFS,
+		consumable_sources,
+		// Visitor
+		[&consumable_finished, &consumable_found, &consumable_sources, me = me(), this, &taken]
+		(Square const& sq, Direction first_dir, int index, int distance)
+		{
+			if (consumable_finished[index])
+				return;
+
+			if (distance - consumable_found[index] > MAX_CONSUMABLE_DIST_DIFF)
+			{
+				consumable_finished[index] = true;
+				return;
+			}
+
+			if (sq.hasUnit())
+			{
+				Unit const& un = sq.unit();
+				if (un.player() == me && !BUSY[un.id()] && !DRAWINGS[un.id()].Busy())
+				{
+					consumable_finished[index] = true;
+					taken.insert(std::make_pair(un.id(), consumable_sources[index]));
+					return;
+				}
+
+				// Enemy unit
+				consumable_found[index] = distance;				
+			}
+		},
+		// On depth completion
+		[&consumable_finished](int index) -> bool
+		{
+			return consumable_finished[index];
+		},
+		// Queuer
+		[this](Square const& sq) -> std::vector<Direction>
+		{
+			std::vector<Direction> result;
+
+			for (auto&& dir : DIRS_DIAGONAL)
+			{
+				Position aux = sq.pos() + dir;
+				if (posOk(aux))
+				{
+					Square const& sq_aux = square(aux);
+					if (sq_aux.painted())
+						result.push_back(dir);
+				}
+			}
+
+			for (auto&& dir : DIRS_STRAIGHT)
+				result.push_back(dir);
+
+			return result;
+		}
+	};
+	bfs.run();
+
+	for (auto it = taken.begin(); it != taken.end(); ++it)
+	{
+		int id = it->first;
+		Position destination = it->second;
+		Position current = unit(id).position();
+
+		Direction dir = PathfindFromAToBAs(current, destination, me());
+		
+		// If we exit a painted area, avoid diagonals
+		if (utils::isDiagonal(dir))
+		{
+			Position next = current + dir;
+			if (posOk(next))
+			{
+				Square const& sq_next = square(next);
+				
+				if (!sq_next.painted() || sq_next.painter() != me())
+				{
+					auto [dir_x, dir_y] = utils::decompose(dir);
+					dir = randomNumber(0,1) == 1 ? dir_x : dir_y;
+				}
+			}
+		}
+
+		MyOrder order;
+		order.target_pos = current + dir;
+		order.priority = PRIO_SEARCH;
+		order.order.dir = dir;
+		order.order.type = OrderType::movement;
+		order.order.unitId = id;
+
+		TARGETS.add(order.target_pos);
+		ORDERS.push_back(order);
+		BUSY[id] = true;
+	}
 }
 
 void ManageDrawings()
@@ -1435,6 +1570,64 @@ int DistanceFromAToBAs(Square const& A, Square const& B, int player)
 
 			for (auto&& dir : DIRS_STRAIGHT)
 				result.push_back(dir);
+
+			return result;
+		}
+	};
+	bfs.run();
+
+	return result;
+}
+
+Direction PathfindFromAToBAs(Position A, Position B, int player)
+{
+	std::vector<Position> source { A };
+	Direction result { Direction::null };
+	bool found { false };
+
+	LayeredBFS bfs {
+		100,
+		source,
+		// Visitor
+		[&found, &result, &B](Square const& sq, Direction first_dir, int index, int distance)
+		{
+			if (found)
+				return;
+
+			if (sq.pos() == B)
+			{
+				found = true;
+				result = first_dir;
+			}
+		},
+		// Depth completion
+		[&found](int index) -> bool
+		{
+			return found;
+		},
+		// Queuer
+		[player, this, &found](Square const& sq) -> std::vector<Direction>
+		{
+			std::vector<Direction> candidates{};
+
+			if (sq.painted() && sq.painter() == player)
+				candidates = DIRS_DIAGONAL;
+
+			for (auto&& dir : DIRS_STRAIGHT)
+				candidates.push_back(dir);
+
+			std::vector<Direction> result{};
+			for (auto&& dir : candidates)
+			{
+				Position next = sq.pos() + dir;
+				if (!posOk(next))
+					continue;
+
+				Square const& sq_next = square(next);
+				// Drawings are walls
+				if (!sq_next.drawn() || sq_next.drawer() != player)
+					result.push_back(dir);
+			}
 
 			return result;
 		}
