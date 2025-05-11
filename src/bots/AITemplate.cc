@@ -774,6 +774,7 @@ vector<int> BUSY;
 Targets TARGETS{MAX_TARGETS};
 map<int, Drawing> DRAWINGS;
 map<int, int> WAITS;
+int DISTANCE_TO_BONUS{1000};
 
 void play()
 {
@@ -1253,20 +1254,6 @@ void HandleCriticalCases()
 					my_options.push_back(option);
 				}
 			}
-		
-			if (unit(index_map[index]).upgraded())
-			{
-				if (ABILITY_POLICY == AbilityPolicy::IMMEDIATE)
-				{
-					MyOrder option;
-					option.order.dir = Direction::null;
-					option.order.type = OrderType::ability;
-					option.priority = PRIO_USE_ABILITY;
-					option.target_pos = source;
-
-					my_options.push_back(option);
-				}
-			}
 		},
 		// On depth completion
 		[&options, &index_map, &sources, this](int index) -> bool
@@ -1350,11 +1337,243 @@ void HandleCriticalCases()
 
 void HandleAbility()
 {
-	/*
-	If there is an upgraded unit, decide what to do with it:
-		- Maybe it's already doing something, in that case skip
-		- If not, decide an action depending on the configuration
-	*/
+	int upgraded_id = -1;
+
+	for (auto&& u : MY_UNITS)
+	{
+		if (unit(u).upgraded())
+		{
+			upgraded_id = u;
+			break;
+		}
+	}
+
+	if (upgraded_id == -1)
+		return;
+
+	if (BUSY[upgraded_id])
+		return;
+
+	Unit un = unit(upgraded_id);
+	Position src = un.position();
+	std::vector<Position> source { un.position() };
+	bool found { false };
+	bool easy { false };
+
+	Direction move_dir { Direction::null };
+
+	LayeredBFS bfs{
+		100,
+		source,
+		// Visitor
+		[&found, &easy, me = me(), &move_dir, src, upgraded_id, this]
+		(Square const& sq, Direction first_dir, int index, int distance)
+		{
+			if (found)
+				return;
+
+			if (sq.hasUnit() && sq.unit().player() != me)
+			{
+				MyOrder order;
+				order.target_pos = src + first_dir;
+				order.priority = PRIO_GET_CLOSE;
+				order.order.dir = first_dir;
+				order.order.type = OrderType::movement;
+				order.order.unitId = upgraded_id;
+
+				if (TARGETS.can(order.target_pos))
+				{
+					TARGETS.add(order.target_pos);
+					BUSY[upgraded_id] = true;
+					ORDERS.push_back(order);
+					found = true;
+					easy = true;
+					return;
+				}
+			}
+
+			if (sq.drawn() && sq.drawer() != me)
+			{
+				if (distance <= 2)
+				{
+					// Nuke
+					MyOrder order;
+					order.target_pos = src;
+					order.priority = PRIO_USE_ABILITY;
+					order.order.dir = Direction::null;
+					order.order.type = OrderType::ability;
+					order.order.unitId = upgraded_id;
+
+					found = true;
+					easy = true;
+					return;
+				}
+				else
+				{
+					// Get close
+					MyOrder order;
+					order.target_pos = src + first_dir;
+					order.priority = PRIO_GET_CLOSE;
+					order.order.dir = first_dir;
+					order.order.type = OrderType::movement;
+					order.order.unitId = upgraded_id;
+
+					if (TARGETS.can(order.target_pos))
+					{
+						TARGETS.add(order.target_pos);
+						BUSY[upgraded_id] = true;
+						ORDERS.push_back(order);
+						found = true;
+						easy = true;
+						return;
+					}
+				}
+			}
+
+			if (!sq.painted() || sq.painter() != me)
+			{
+				found = true;
+				move_dir = first_dir;
+				return;
+			}
+		},
+		// Depth completion
+		[&found](int index) -> bool
+		{
+			return found;
+		},
+		// Queuer
+		[this, me = me(), src](Square const& sq) -> std::vector<Direction>
+		{
+			std::vector<Direction> options;
+
+			if (sq.painted() && sq.painter() == me)
+			{
+				options = DIRS_DIAGONAL;
+			}
+
+			for (auto&& dir : DIRS_STRAIGHT)
+				options.push_back(dir);
+
+			std::vector<Direction> result;
+
+			for (auto&& dir : options)
+			{
+				Position aux = src + dir;
+				if (posOk(aux))
+				{
+					Square const& sq_aux = square(aux);
+					if (!sq_aux.drawn() || sq_aux.drawer() != me)
+					{
+						result.push_back(dir);
+					}
+				}
+			}
+
+			return result;
+		}
+	};
+	bfs.run();
+
+	if (!easy)
+	{
+		Position next = src + move_dir;
+		Square const& sq_next = square(next);
+		if (sq_next.painted() && sq_next.painter() == me())
+		{
+			// Get close
+			MyOrder order;
+			order.target_pos = src + move_dir;
+			order.priority = PRIO_GET_CLOSE;
+			order.order.dir = move_dir;
+			order.order.type = OrderType::movement;
+			order.order.unitId = upgraded_id;
+
+			ORDERS.push_back(order);
+			TARGETS.add(order.target_pos);
+			BUSY[upgraded_id] = true;
+		}
+		else
+		{
+			// Compute best spot to use the ability on
+			std::vector<Position> source { src };
+
+			int best_paint = 0;
+			Position best_paint_pos{ -1, -1 };
+			Direction move_dir = Direction::null;
+
+			LayeredBFS bfs2
+			{
+				DISTANCE_TO_BONUS-2,
+				source,
+				// Visitor
+				[&best_paint, &best_paint_pos, me = me(), this, &move_dir]
+				(Square const& sq, Direction first_dir, int index, int distance)
+				{
+					Position pos = sq.pos();
+					int begin_row = pos.x - 2;
+					int end_row = pos.x + 2;
+					int begin_col = pos.y - 2;
+					int end_col = pos.y + 2;
+
+					int paintable = 0;
+
+					for (int i = begin_row; i < end_row; ++i)
+					{
+						for (int j = begin_col; j < end_col; ++j)
+						{
+							Position aux { i, j };
+							if (!posOk(aux))
+								continue;
+							
+							Square sq_aux = square(aux);
+							if (!sq_aux.painted() || sq_aux.painter() != me)
+								++paintable;
+						}
+					}
+
+					if (paintable > best_paint)
+					{
+						best_paint = paintable;
+						best_paint_pos = pos;
+						move_dir = first_dir;
+					}
+				},
+				// Depth completion
+				[](int index) -> bool
+				{
+					return false;
+				},
+				// Queuer
+				[this](Square const& sq) -> std::vector<Direction>
+				{
+					return DIRS_STRAIGHT;
+				}
+			};
+			bfs2.run();
+
+			MyOrder order;
+			order.order.unitId = upgraded_id;
+			order.order.dir = move_dir;
+
+			if (move_dir == Direction::null)
+			{
+				order.order.type = OrderType::ability;
+				order.target_pos = src;
+				order.priority = PRIO_USE_ABILITY;
+			}
+			else
+			{
+				order.order.type = OrderType::movement;
+				order.target_pos = src+move_dir;
+				order.priority = PRIO_GET_CLOSE;
+			}
+
+			ORDERS.push_back(order);
+			BUSY[upgraded_id] = true;
+			TARGETS.add(order.target_pos);
+		}
+	}
 }
 
 void AssignUnitsToConsumables()
@@ -1370,6 +1589,8 @@ void AssignUnitsToConsumables()
 
 	std::map<int, Position> taken{};
 
+	std::set<int> bonuses{};
+
 	std::vector<Position> consumable_sources{};
 	for (int i{0}; i < rows(); ++i)
 	{
@@ -1378,19 +1599,25 @@ void AssignUnitsToConsumables()
 			Position pos{i,j};
 			Square const& sq = square(pos);
 
-			if (sq.hasBonus() || sq.hasBubble())
+			if (sq.hasBonus())
+			{
+				bonuses.insert(consumable_sources.size());
+				consumable_sources.push_back(pos);
+			}
+		
+			if (sq.hasBubble())
 				consumable_sources.push_back(pos);
 		}
 	}
 	std::vector<bool> consumable_finished(consumable_sources.size(), false);
 	std::vector<int> consumable_found(consumable_sources.size(), 100);
-	std::vector<int> consumable_ally_found(consumable_sources.size(), 100);
+	int min_unit_to_bonus_distance = 1000;
 
 	LayeredBFS bfs{
 		MAX_CONSUMABLE_BFS,
 		consumable_sources,
 		// Visitor
-		[&consumable_finished, &consumable_found, &consumable_sources, me = me(), this, &taken]
+		[&consumable_finished, &consumable_found, &consumable_sources, me = me(), this, &taken, &bonuses, &min_unit_to_bonus_distance]
 		(Square const& sq, Direction first_dir, int index, int distance)
 		{
 			if (consumable_finished[index])
@@ -1415,6 +1642,12 @@ void AssignUnitsToConsumables()
 
 					consumable_finished[index] = true;
 					taken.insert(std::make_pair(un.id(), consumable_sources[index]));
+
+					if (bonuses.find(index) != bonuses.end())
+					{
+						if (distance < min_unit_to_bonus_distance)
+							min_unit_to_bonus_distance = distance;
+					}
 				}
 				else
 				{
@@ -1451,6 +1684,8 @@ void AssignUnitsToConsumables()
 		}
 	};
 	bfs.run();
+
+	DISTANCE_TO_BONUS = min_unit_to_bonus_distance;
 
 	for (auto it = taken.begin(); it != taken.end(); ++it)
 	{
