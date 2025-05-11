@@ -17,6 +17,8 @@ bool const ENABLE_BONUS_COLLECTION { true };
 bool const ENABLE_BAD_DIAG_HANDLE { true }; // Enemy has unfair fight position against you
 bool const ENABLE_STEP_ON_DRAWING { true };
 bool const ENABLE_DRAWING { true };
+bool const ENABLE_SAFE_APPROACH { true }; // At distance 2 and enemy distance 3 get close without using diagonals
+bool const ENABLE_DISTANCE2_INTELLIGENCE { true };
 
 enum class AbilityPolicy
 { 
@@ -27,6 +29,7 @@ AbilityPolicy ABILITY_POLICY { AbilityPolicy::IMMEDIATE };
 int const MAX_TARGETS {1};
 int const MAX_CRITICAL_BFS {2};
 int const MAX_DRAW_BFS {100};
+int const MAX_WAIT_ROUNDS {1}; // 0 means no waiting
 
 int const DRAW_AWAY_DIST {2};
 int const DRAW_SIDE_DIST {2};
@@ -37,6 +40,7 @@ int const PRIO_USE_ABILITY { 90 };
 int const PRIO_ATTACK_BUBBLE { 10 };
 int const PRIO_GET_CLOSE { 0 };
 int const PRIO_DRAW { 0 };
+int const PRIO_ATTACK_WAIT { 99 };
 
 struct PLAYER_NAME : public Player {
 
@@ -752,6 +756,7 @@ vector<MyOrder> ORDERS;
 vector<int> BUSY;
 Targets TARGETS{MAX_TARGETS};
 map<int, Drawing> DRAWINGS;
+map<int, int> WAITS;
 
 void play()
 {
@@ -1013,6 +1018,29 @@ void UpdateUnits()
 		if (auto it = DRAWINGS.find(unit); it == DRAWINGS.end())
 			DRAWINGS[unit] = Drawing(this, unit);
 	}
+
+	// Erase waits of dead units
+	to_erase.clear();
+	for (auto it = WAITS.begin(); it != WAITS.end(); ++it)
+	{
+		bool found = false;
+		for (auto unit : MY_UNITS)
+		{
+			if (it->first == unit)
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			to_erase.push_back(it->first);
+		}
+	}
+
+	for (int x : to_erase)
+		WAITS.erase(x);
 }
 
 void HandleCriticalCases()
@@ -1051,16 +1079,7 @@ void HandleCriticalCases()
 		{
 			auto& my_options = options[index];
 			auto& source = sources[index];
-			/*
-			Distance 1:
-			If there is a fight, decide accordingly
-			If there is a bubble pop it
-			If there is a drawing step on it
-			If there is a bonus go for it
 
-			Any other distance:
-			Same, but on the fight case move instead of attacking
-			*/
 			auto GetClose = [&source, &sq, me, this](MyOrder& option)
 			{
 				option.order.type = OrderType::movement;
@@ -1095,13 +1114,47 @@ void HandleCriticalCases()
 				}
 				else if (distance == 2)
 				{
-					// Check enemy advantage - are they on their square?
-					if (sq.painted() && sq.painter() == sq.unit().player())
+					Position vec { sq.pos() - source };
+					Square const& sq_source = square(source);
+
+					if (ENABLE_DISTANCE2_INTELLIGENCE)
 					{
-						Position vec { sq.pos() - source };
-						// Check if they can unfairly target us
-						if (abs(vec.x) > 0 && abs(vec.y) > 0 && abs(vec.x) + abs(vec.y) == 2)
+						int enemy_distance = DistanceFromAToBAs(sq, sq_source, sq.unit().player());
+
+						if (distance <= enemy_distance) // Equal footing or advantage
 						{
+							// Attack for K rounds, diagonally if possible
+							int& waited = WAITS[index_map[index]];
+
+							if (waited < MAX_WAIT_ROUNDS)
+							{
+								++waited;
+
+								Direction attack_dir = source.to(sq.pos());
+								option.order.type = OrderType::attack;
+								option.order.dir = attack_dir;
+								option.priority = PRIO_ATTACK_WAIT;
+								option.target_pos = source + attack_dir;
+							}
+							else // We have already waited (or we don't do that)
+							{
+								Direction move_dir = source.to(sq.pos());
+								if (ENABLE_SAFE_APPROACH && utils::isDiagonal(move_dir) && enemy_distance == 3)
+								{
+									// Moving in diagonal would expose us to attacks
+									auto [dir_x, dir_y] = utils::decompose(move_dir);
+									move_dir = randomNumber(0,1) == 1 ? dir_x : dir_y;
+								}
+
+								option.order.type = OrderType::movement;
+								option.order.dir = move_dir;
+								option.priority = PRIO_GET_CLOSE;
+								option.target_pos = source + move_dir;
+							}
+						}
+						else // They have an edge on us
+						{
+							// Move
 							option.priority = PRIO_AVOID_UNFAIR;
 							option.order.type = OrderType::movement;
 
@@ -1109,31 +1162,24 @@ void HandleCriticalCases()
 							{
 								// Run away
 								auto [dir_x, dir_y] = utils::decompose(sq.pos().to(source));
-								if (randomNumber(0,1) == 0)
-									option.order.dir = dir_x;
-								else
-									option.order.dir = dir_y;
+								option.order.dir = randomNumber(0,1) == 1 ? dir_x : dir_y;
 							}
 							else
 							{
 								// Dumber -> Get close
 								auto [dir_x, dir_y] = utils::decompose(source.to(sq.pos()));
-								if (randomNumber(0,1) == 0)
-									option.order.dir = dir_x;
-								else
-									option.order.dir = dir_y;
+								option.order.dir = randomNumber(0,1) == 1 ? dir_x : dir_y;
 							}
 
 							option.target_pos = source + option.order.dir;
 						}
 					}
-					else
+					else 
 					{
-						// Just get close for now
 						GetClose(option);
 					}
 				}
-				else
+				else // Any other distance
 				{
 					// Just get close for now
 					GetClose(option);
@@ -1317,6 +1363,15 @@ void SendOrders()
 			ord.priority = randomNumber(0, 200);
 	}
 
+	// Invert priority of things that should happen last
+	for (auto&& ord : ORDERS)
+	{
+		if (ord.priority == PRIO_ATTACK_WAIT)
+		{
+			ord.priority = -PRIO_ATTACK_WAIT;
+		}
+	}
+
 	std::sort(ORDERS.begin(), ORDERS.end());
 
 	for (auto&& ord : ORDERS)
@@ -1324,12 +1379,14 @@ void SendOrders()
 		switch (ord.order.type)
 		{
 		case OrderType::movement:
+			WAITS[ord.order.unitId] = 0;
 			move(ord.order.unitId, ord.order.dir);
 			break;
 		case OrderType::attack:
 			attack(ord.order.unitId, ord.order.dir);
 			break;
 		case OrderType::ability:
+			WAITS[ord.order.unitId] = 0;
 			ability(ord.order.unitId);
 			break;
 		}
@@ -1339,6 +1396,53 @@ void SendOrders()
 /*
 	UTILITY
 */
+
+/*  Returns the distance from A to B assuming a unit of the given player.
+	This basically means "Manhattan distance but step diagonally whenever you can" */
+int DistanceFromAToBAs(Square const& A, Square const& B, int player)
+{
+	std::vector<Position> source { A.pos() };
+	int result { 0 };
+	bool found { false };
+
+	LayeredBFS bfs {
+		100,
+		source,
+		// Visitor
+		[&found, &result, &B](Square const& sq, Direction first_dir, int index, int distance)
+		{
+			if (found)
+				return;
+
+			if (sq.pos() == B.pos())
+			{
+				found = true;
+				result = distance;
+			}
+		},
+		// Depth completion
+		[&found](int index) -> bool
+		{
+			return found;
+		},
+		// Queuer
+		[player, this, &found](Square const& sq) -> std::vector<Direction>
+		{
+			std::vector<Direction> result{};
+
+			if (sq.painted() && sq.painter() == player)
+				result = DIRS_DIAGONAL;
+
+			for (auto&& dir : DIRS_STRAIGHT)
+				result.push_back(dir);
+
+			return result;
+		}
+	};
+	bfs.run();
+
+	return result;
+}
 
 static bool IsDiagonal(Direction d){return d >= Direction::UL;}
 
