@@ -19,12 +19,9 @@ bool const ENABLE_STEP_ON_DRAWING { false }; // Makes player worse if true
 bool const ENABLE_DRAWING { true };
 bool const ENABLE_SAFE_APPROACH { true }; // At distance 2 and enemy distance 3 get close without using diagonals
 bool const ENABLE_DISTANCE2_INTELLIGENCE { true };
-
-enum class AbilityPolicy
-{ 
-	IMMEDIATE // Use try to use it as soon as you have it 
-};
-AbilityPolicy ABILITY_POLICY { AbilityPolicy::IMMEDIATE };
+bool const ENABLE_DOMAIN_EXPANSION { true };
+bool const ENABLE_USEFUL_ABILITIES { true };
+bool const ENABLE_REALLY_USEFUL_ABILITIES { true };
 
 int const MAX_TARGETS {1};
 int const MAX_CRITICAL_BFS {2};
@@ -1121,6 +1118,7 @@ void HandleCriticalCases()
 			{
 				// Target this unit
 				MyOrder option;
+				option.target_pos = Position(-1, -1);
 
 				if (distance == 1)
 				{
@@ -1130,12 +1128,31 @@ void HandleCriticalCases()
 					option.target_pos = sq.pos();
 					// Don't need to set unitId here
 				}
-				else if (distance == 2)
+				else if (distance >= 2)
 				{
 					Position vec { sq.pos() - source };
 					Square const& sq_source = square(source);
 
-					if (ENABLE_DISTANCE2_INTELLIGENCE)
+					if (ENABLE_DOMAIN_EXPANSION && unit(index_map[index]).upgraded())
+					{
+						Position AtoB = sq.pos() - sq_source.pos();
+						AtoB.x = abs(AtoB.x);
+						AtoB.y = abs(AtoB.y);
+						int enemy_distance = DistanceFromAToBAs(sq, sq_source, sq.unit().player());
+
+						// We can trap this unit inside our ability
+						if (enemy_distance > 1 && AtoB.x <= 2 && AtoB.y <= 2)
+						{
+							option.priority = PRIO_USE_ABILITY;
+							option.target_pos = source;
+							option.order.dir = Direction::null;
+							option.order.type = OrderType::ability;
+							// Don't need to set unitId here
+							goto push;
+						}
+					}
+
+					if (ENABLE_DISTANCE2_INTELLIGENCE && distance == 2)
 					{
 						int enemy_distance = DistanceFromAToBAs(sq, sq_source, sq.unit().player());
 
@@ -1192,17 +1209,13 @@ void HandleCriticalCases()
 							option.target_pos = source + option.order.dir;
 						}
 					}
-					else 
+					else if (!ENABLE_DISTANCE2_INTELLIGENCE)
 					{
 						GetClose(option);
 					}
 				}
-				else // Any other distance
-				{
-					// Just get close for now
-					GetClose(option);
-				}
 
+				push:
 				if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
 				{
 					my_options.push_back(option);
@@ -1237,17 +1250,6 @@ void HandleCriticalCases()
 				MyOrder option;
 				GetClose(option);
 				option.priority = PRIO_STEP_ON_DRAWING;
-
-				if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
-				{
-					my_options.push_back(option);
-				}
-			}
-
-			if (ENABLE_BONUS_COLLECTION && sq.hasBonus())
-			{
-				MyOrder option;
-				GetClose(option);
 
 				if (posOk(option.target_pos) && TARGETS.can(option.target_pos))
 				{
@@ -1337,6 +1339,9 @@ void HandleCriticalCases()
 
 void HandleAbility()
 {
+	if (!ENABLE_USEFUL_ABILITIES)
+		return;
+
 	int upgraded_id = -1;
 
 	for (auto&& u : MY_UNITS)
@@ -1372,7 +1377,7 @@ void HandleAbility()
 			if (found)
 				return;
 
-			if (sq.hasUnit() && sq.unit().player() != me)
+			if (ENABLE_DOMAIN_EXPANSION && sq.hasUnit() && sq.unit().player() != me)
 			{
 				MyOrder order;
 				order.target_pos = src + first_dir;
@@ -1432,6 +1437,43 @@ void HandleAbility()
 
 			if (!sq.painted() || sq.painter() != me)
 			{
+				if (!ENABLE_REALLY_USEFUL_ABILITIES)
+				{
+					if (distance <= 2)
+					{
+						MyOrder order;
+						order.target_pos = src;
+						order.priority = PRIO_USE_ABILITY;
+						order.order.dir = Direction::null;
+						order.order.type = OrderType::ability;
+						order.order.unitId = upgraded_id;
+					}
+					else
+					{
+						// Get close
+						MyOrder order;
+						order.target_pos = src + first_dir;
+						order.priority = PRIO_GET_CLOSE;
+						order.order.dir = first_dir;
+						order.order.type = OrderType::movement;
+						order.order.unitId = upgraded_id;
+
+						if (TARGETS.can(order.target_pos))
+						{
+							TARGETS.add(order.target_pos);
+							BUSY[upgraded_id] = true;
+							ORDERS.push_back(order);
+							found = true;
+							easy = true;
+							return;
+						}
+					}
+					
+					found = true;
+					move_dir = first_dir;
+					return;
+				}
+
 				found = true;
 				move_dir = first_dir;
 				return;
@@ -1475,13 +1517,14 @@ void HandleAbility()
 	};
 	bfs.run();
 
-	if (!easy)
+	// The closest thing is a square we don't own
+	if (ENABLE_REALLY_USEFUL_ABILITIES && !easy)
 	{
 		Position next = src + move_dir;
 		Square const& sq_next = square(next);
 		if (sq_next.painted() && sq_next.painter() == me())
 		{
-			// Get close
+			// Not there yet -> get close
 			MyOrder order;
 			order.target_pos = src + move_dir;
 			order.priority = PRIO_GET_CLOSE;
@@ -1825,6 +1868,8 @@ int DistanceFromAToBAs(Square const& A, Square const& B, int player)
 	return result;
 }
 
+/*  Returns the direction a unit of the given player has to take in a movement to go from A to B, assuming
+	also that the unit is located on A. */
 Direction PathfindFromAToBAs(Position A, Position B, int player)
 {
 	std::vector<Position> source { A };
