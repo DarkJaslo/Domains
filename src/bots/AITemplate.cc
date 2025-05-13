@@ -22,6 +22,7 @@ bool const ENABLE_DISTANCE2_INTELLIGENCE { true };
 bool const ENABLE_DOMAIN_EXPANSION { true };
 bool const ENABLE_USEFUL_ABILITIES { true };
 bool const ENABLE_REALLY_USEFUL_ABILITIES { true };
+bool const ENABLE_FILLER { true }; // Tries to draw on tight sections, like bottlenecks
 
 int const MAX_TARGETS {1};
 int const MAX_CRITICAL_BFS {2};
@@ -29,6 +30,8 @@ int const MAX_DRAW_BFS {100};
 int const MAX_WAIT_ROUNDS {1}; // 0 means no waiting
 int const MAX_CONSUMABLE_BFS { 40 };
 int const MAX_CONSUMABLE_DIST_DIFF { 2 };
+int const MAX_FILLER_CHECK { 10 };
+double const MIN_FILLER_RATIO { 4.5 };
 
 int const DRAW_AWAY_DIST {2};
 int const DRAW_SIDE_DIST {2};
@@ -181,55 +184,58 @@ public:
 	void run()
 	{
 		while (!finished())
-		{
-			for (int source {0}; source < m_sources; ++source)
-			{
-				if (m_finished[source])
-					continue;
-
-				auto& queue = m_queues[source];
-				auto& search = m_searches[source];
-				while (!queue.empty())
-				{
-					if (queue.front().distance > m_current_depth)
-						break;
-
-					auto info = queue.front();
-					queue.pop();
-
-					auto const& sq = square(info.pos);
-					auto directions = m_queuer(sq);
-					for (auto&& dir : directions)
-					{
-						auto new_pos {info.pos + dir};
-						if (!posOk(new_pos))
-							continue;
-
-						if (search.queued(new_pos) || search.contains(new_pos))
-							continue;
-
-						Direction first_move = info.from_where; 
-						if (first_move == Direction::null)
-							first_move = dir;
-
-						queue.push(Info{new_pos, first_move, m_current_depth+1});
-						search.queue(new_pos);
-					}
-
-					m_visitor(sq, info.from_where, source, m_current_depth);
-					search.add(info.pos);
-				}
-			}
-
-			for (int source {0}; source < m_sources; ++source)
-				if (m_on_depth_completion(source))
-					m_finished[source] = true;
-
-			++m_current_depth;
-		}
+			run_layer();
 	}
 
-private:
+	bool run_layer()
+	{
+		for (int source {0}; source < m_sources; ++source)
+		{
+			if (m_finished[source])
+				continue;
+
+			auto& queue = m_queues[source];
+			auto& search = m_searches[source];
+			while (!queue.empty())
+			{
+				if (queue.front().distance > m_current_depth)
+					break;
+
+				auto info = queue.front();
+				queue.pop();
+
+				auto const& sq = square(info.pos);
+				auto directions = m_queuer(sq);
+				for (auto&& dir : directions)
+				{
+					auto new_pos {info.pos + dir};
+					if (!posOk(new_pos))
+						continue;
+
+					if (search.queued(new_pos) || search.contains(new_pos))
+						continue;
+
+					Direction first_move = info.from_where; 
+					if (first_move == Direction::null)
+						first_move = dir;
+
+					queue.push(Info{new_pos, first_move, m_current_depth+1});
+					search.queue(new_pos);
+				}
+
+				m_visitor(sq, info.from_where, source, m_current_depth);
+				search.add(info.pos);
+			}
+		}
+
+		for (int source {0}; source < m_sources; ++source)
+			if (m_on_depth_completion(source))
+				m_finished[source] = true;
+
+		++m_current_depth;
+		return m_current_depth > m_max_depth;
+	}
+
 	bool finished() const
 	{
 		if (m_current_depth > m_max_depth)
@@ -242,6 +248,7 @@ private:
 		return true;
 	}
 
+private:
 	int m_max_depth;
 	int m_sources;
 	std::function<void(Square const&, Direction, int, int)> m_visitor;
@@ -265,6 +272,55 @@ struct MyOrder
 	{
 		return this->priority > other.priority;
 	}
+};
+
+class Distancer
+{
+public:
+	Distancer(int max_distance,
+			  Position const& source,
+			  std::function<std::vector<Direction>(Square const&)> queuer)
+		: m_distances { 50, 50 }
+	{
+		std::vector sources { source };
+		for (auto&& x : m_distances)
+			x = -1;
+
+		m_bfs = new LayeredBFS
+		{
+			max_distance,
+			sources,
+			// Visitor
+			[this](Square const& sq, Direction first_dir, int index, int distance)
+			{
+				m_distances[sq.pos()] = distance;
+			},
+			// Depth completion
+			[](int index) -> bool
+			{
+				return false;
+			},
+			queuer
+		};
+	}
+
+	~Distancer()
+	{
+		delete m_bfs;
+	}
+
+	// -1 means "not found"
+	int Distance(Position target)
+	{
+		while (!m_bfs->finished() && m_distances[target] == -1)
+			m_bfs->run_layer();
+
+		return m_distances[target];
+	}
+
+private:
+	LayeredBFS* m_bfs;
+	Matrix<int16_t> m_distances;
 };
 
 enum class DrawingState
@@ -340,6 +396,12 @@ public:
 			}
 			case DrawingState::Side:
 			{
+				if (ENABLE_FILLER)
+				{
+					if (TryFiller(act))
+						return;
+				}
+
 				Position next { act + m_side_dir };
 				if (!posOk(next) || (square(next).drawn() && square(next).drawer() == m_player->me()))
 					m_state = DrawingState::Return;
@@ -361,6 +423,12 @@ public:
 			case DrawingState::Return:
 			{
 				Position src { unit(m_unit).position() };
+				if (ENABLE_FILLER)
+				{
+					if (TryFiller(src))
+						return;
+				}
+
 				vector<Position> source { src };
 				
 				bool found { false };
@@ -425,8 +493,13 @@ public:
 			}
 			
 			default:
-				m_state = DrawingState::Away;
+				m_state = DrawingState::Return;
 				m_away_steps = 0;
+				if (ENABLE_FILLER)
+				{
+					if (TryFiller(act))
+						return;
+				}
 				break;
 			}
 		}
@@ -439,6 +512,12 @@ public:
 			{
 				// Inside
 				Position src { sq_act.pos() };
+
+				if (ENABLE_FILLER)
+				{
+					if (TryFiller(act))
+						return;
+				}
 
 				vector<Position> source { src };
 
@@ -592,6 +671,129 @@ private:
 	{
 		Square const& sq = square(unit(m_unit).position());
 		return sq.drawn() && sq.unitDrawer() == m_unit;
+	}
+
+	bool TryFiller(Position act)
+	{
+		/* Try to find a Square we own that:
+		- Is close to us if we allow any move
+		- Is far from us if we only allow moving on our squares
+
+		This should identify bottleneck-like structures and do intelligent drawings
+		*/
+		Distancer distancer 
+		{
+			100,
+			act,
+			[this, me = m_player->me()](Square const& sq) -> std::vector<Direction>
+			{
+				std::vector<Direction> result;
+
+				for (auto&& dir : m_player->DIRS_STRAIGHT)
+				{
+					Position next { sq.pos() + dir };
+					if (posOk(next))
+					{
+						Square const& sq_next = square(next);
+						if ((sq_next.painted() && sq_next.painter() == me) || (sq_next.drawn() && sq_next.unitDrawer() == m_unit && !sq_next.hasUnit()))
+							result.push_back(dir);
+					}
+				}
+				return result;
+			}
+		};
+
+		double best_ratio { 1.0 };
+		Position best_candidate { -1, -1 };
+		Direction move_dir { Direction::null };
+		std::vector<Position> source { act };
+		LayeredBFS bfs
+		{
+			MAX_FILLER_CHECK,
+			source,
+			// Visitor
+			[&distancer, me = m_player->me(), &best_ratio, &move_dir, &best_candidate, this]
+			(Square const& sq, Direction first_dir, int index, int distance)
+			{
+				int connection_distance = distancer.Distance(sq.pos());
+				double ratio = static_cast<double>(connection_distance)/static_cast<double>(distance);
+
+				if (ratio > best_ratio)
+				{
+					best_candidate = sq.pos();
+					best_ratio = ratio;
+					move_dir = first_dir;
+				}
+			},
+			// Depth completion
+			[](int index) -> bool
+			{
+				return false;
+			},
+			// Queuer
+			[this, me = m_player->me()](Square const& sq) -> std::vector<Direction>
+			{
+				std::vector<Direction> options;
+
+				if (sq.painted() && sq.painter() == me)
+					options = m_player->DIRS_ALL;
+				else
+					options = m_player->DIRS_STRAIGHT;
+
+				std::vector<Direction> result;
+
+				for (auto&& dir : options)
+				{
+					Position next { sq.pos() + dir};
+					if (posOk(next))
+					{
+						Square const& sq_next = square(next);
+						if (!m_player->FILLER_MARKS[next] && (!sq_next.drawn() || sq_next.drawer() != me))
+							result.push_back(dir);
+					}
+				}
+				return result;
+			}
+		};
+		bfs.run();
+
+		if (best_ratio >= MIN_FILLER_RATIO)
+		{
+			// Block zone from being accessed by others
+			for (int row = best_candidate.x-2; row < best_candidate.x+2; ++row)
+			{
+				for (int col = best_candidate.y-2; col < best_candidate.y+2; ++col)
+				{
+					Position aux { row, col };
+					if (posOk(aux))
+						m_player->FILLER_MARKS[aux] = true;
+				}
+			}
+
+			// Take the shortest path while also starting a drawing
+			Position next { act + move_dir };
+			Square const& sq_next = square(next);
+			if (utils::isDiagonal(move_dir) && (!sq_next.painted() || sq_next.painter() != m_player->me()))
+			{
+				auto [dir_x, dir_y] = utils::decompose(move_dir);
+
+				if (randomNumber(0,1) == 0)
+					move_dir = dir_x;
+				else
+					move_dir = dir_y;
+			}
+
+			MyOrder order {};
+			order.target_pos = act+move_dir;
+			order.priority = PRIO_DRAW;
+			order.order.dir = move_dir;
+			order.order.type = OrderType::movement;
+			order.order.unitId = m_unit;
+			m_player->ORDERS.push_back(order);
+
+			return true;
+		}
+		return false;
 	}
 
 	DrawingState m_state { DrawingState::None };
@@ -772,6 +974,7 @@ Targets TARGETS{MAX_TARGETS};
 map<int, Drawing> DRAWINGS;
 map<int, int> WAITS;
 int DISTANCE_TO_BONUS{1000};
+Matrix<bool> FILLER_MARKS{50, 50};
 
 void play()
 {
@@ -985,6 +1188,8 @@ void Update()
 	UpdateUnits();
 	ORDERS.clear();
 	TARGETS.clear();
+	for (auto&& x : FILLER_MARKS)
+		x = false;
 }
 
 /* Used by update */
