@@ -1369,6 +1369,9 @@ void Board::resolveAbilities()
   }
 
   vector<bool> canUse(info.numPlayers,true);
+  for (int i = 0; i < canUse.size(); ++i)
+    if(unitsMap[i].first == -1)
+      canUse[i] = false;
 
   //invalidates overlapping abilities
   for(int i = 0; i < unitsMap.size()-1; ++i)
