@@ -1,5 +1,93 @@
 #include "Utility.hh"
 
+#include <tuple>
+
+namespace utils
+{
+  std::tuple<Direction, Direction> decompose(Direction dir)
+  {
+    switch (dir)
+    {
+    case Direction::UL:
+      return std::make_tuple(Direction::left, Direction::up);
+    case Direction::UR:
+      return std::make_tuple(Direction::right, Direction::up);
+    case Direction::DL:
+      return std::make_tuple(Direction::left, Direction::down);
+    case Direction::DR:
+      return std::make_tuple(Direction::right, Direction::down);
+    default:
+      return std::make_tuple(Direction::null, Direction::null);
+    }
+  }
+
+  std::tuple<Direction, Direction> perpendiculars(Direction dir)
+  {
+    Direction perp;
+    switch (dir)
+    {
+      case Direction::up:
+        perp = right;
+        break;
+      case Direction::down:
+        perp = right;
+        break;
+      case Direction::right:
+        perp = up;
+        break;
+      case Direction::left:
+        perp = up;
+        break;
+      default:
+        perp = null;
+        break;
+    }
+    return std::make_tuple(perp, invert(perp));
+  }
+
+  Direction invert(Direction dir)
+  {
+    switch (dir)
+    {
+    case Direction::up:
+      return Direction::down;
+    case Direction::down:
+      return Direction::up;
+    case Direction::left:
+      return Direction::right;
+    case Direction::right:
+      return Direction::left;
+    case Direction::UL:
+      return Direction::DR;
+    case Direction::UR:
+      return Direction::DL;
+    case Direction::DL:
+      return Direction::UR;
+    case Direction::DR:
+      return Direction::UL;
+    default:
+      return Direction::null;
+    }
+  }
+
+  bool isDiagonal(Direction dir)
+  {
+    switch (dir)
+    {
+    case Direction::DL:    
+      return true;
+    case Direction::DR:
+      return true;    
+    case Direction::UR:
+      return true;    
+    case Direction::UL:
+      return true;    
+    default:
+      return false;
+    }
+  }
+};
+
 //Position
 Position::Position(){ x = 0; y = 0;};
 Position::Position(int posx, int posy){ x = static_cast<int8_t>(posx); y = static_cast<int8_t>(posy); }
@@ -9,7 +97,7 @@ bool Position::operator<(const Position& p) const{
   if(x != p.x) return x < p.x;
   return y < p.y;
 }
-Position Position::operator+ (const Direction& d){
+Position Position::operator+ (const Direction& d) const{
   Position p = *this;
   p += d;  
   return p;
@@ -28,7 +116,7 @@ Position& Position::operator+= (const Direction& d){
   }
   return *this;
 }
-Position Position::operator+(const Position& other){
+Position Position::operator+(const Position& other) const {
   return Position(x+other.x,y+other.y);
 }
 Position& Position::operator+= (const Position& other){
@@ -36,7 +124,7 @@ Position& Position::operator+= (const Position& other){
   y+=other.y;
   return *this;
 }
-Position Position::operator-(const Position& other){
+Position Position::operator-(const Position& other) const {
   return Position(x-other.x,y-other.y);
 }
 Position& Position::operator-= (const Position& other){
@@ -45,23 +133,35 @@ Position& Position::operator-= (const Position& other){
   return *this;
 }
 Direction Position::to(Position p){
-  Direction d = Direction::left;
-  if(*this+d == p){return d;}
-  d = Direction::right;
-  if(*this+d == p){return d;}
-  d = Direction::up;
-  if(*this+d == p){return d;}
-  d = Direction::down;
-  if(*this+d == p){return d;}
-  d = Direction::DL;
-  if(*this+d == p){return d;}
-  d = Direction::DR;
-  if(*this+d == p){return d;}
-  d = Direction::UL;
-  if(*this+d == p){return d;}
-  d = Direction::UR;
-  if(*this+d == p){return d;}
-  return Direction::null;
+  Position vec{ p - *this };
+  if (vec.x == 0 && vec.y == 0)
+    return Direction::null;
+
+  if (vec.x == 0)
+  {
+    if (vec.y > 0)
+      return Direction::right;
+
+    return Direction::left;
+  }
+  else if (vec.y == 0)
+  {
+    if (vec.x > 0)
+      return Direction::down;
+
+    return Direction::up;
+  }
+  else
+  {
+    if (vec.x > 0 && vec.y > 0)
+      return Direction::DR;
+    else if (vec.x < 0 && vec.y > 0)
+      return Direction::UR;
+    else if (vec.x > 0 && vec.y < 0)
+      return Direction::DL;
+    else
+      return Direction::UL;
+  } 
 }
 
 //Square
@@ -74,15 +174,12 @@ Square::Square(const Square& sq){
   plPainter = sq.plPainter;
   plDrawer = sq.plDrawer;
   uDrawer = sq.uDrawer;
-  isBorder = sq.isBorder;
-  closes = sq.closes;
   isAbility = sq.isAbility;
   counter = sq.counter;
 }
 Position Square::pos()const{return p;}
 bool Square::painted()const{return plPainter != -1;}
 bool Square::drawn()const{return uDrawer != -1;}
-bool Square::border()const{return isBorder;}
 bool Square::ability()const{return isAbility;}
 int Square::roundsUntilAbilityEnd()const{return static_cast<int>(counter);}
 int Square::painter()const{return static_cast<int>(plPainter);}

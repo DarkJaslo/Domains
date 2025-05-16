@@ -1,3 +1,0 @@
-Dummy:
-
-Does not step on drawings, but can get stuck because the pathfinding is simple 

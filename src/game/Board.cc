@@ -1,5 +1,8 @@
 #include "Board.hh"
 #include "Encoding.hh"
+
+#include <functional>
+#include <tuple>
 using namespace std;
 
 /*
@@ -57,8 +60,118 @@ vector<int> GameInfo::randomPermutation()
   return v;
 }
 
+class PositionSet
+{
+public:
+  enum State{OUTSIDE,QUEUED,INSIDE};
+  PositionSet(int rows, int cols)
+	: _container{rows, cols}
+  {
+	clear();
+  }
+  bool queued(Position p) const{
+    return _container[p] == State::QUEUED;
+  }
+  bool contains(Position p) const{
+    return _container[p] == State::INSIDE;
+  }
+  void queue(Position p){
+    _container[p] = State::QUEUED;
+  }
+  void add(Position p){
+    _container[p] = State::INSIDE;
+  }
+  void remove(Position p){
+    _container[p] = State::OUTSIDE;
+  }
+  void clear(){
+	for (auto&& p : _container)
+		p = State::OUTSIDE;
+  }
+  void print(){
+    std::cerr << "printing contents..." << std::endl;
+    for (int i = 0; i < 50; ++i){
+      for (int j = 0; j < 50; ++j){
+        Position p(i,j);
+        if (_container[p] != State::OUTSIDE){
+          std::cerr << i << "," << j << " ";
+        }
+      }
+    }
+    std::cerr << std::endl;
+  }
+private:
+  Matrix<int8_t> _container;  
+};
+
+class BFS
+{
+public:
+
+	struct Info
+	{
+		Position pos;
+		Direction from_where;
+	};
+	/*
+    grid is the subgrid of the map we want to use for the search
+
+		visitor is called for each visited Square with the direction we come from
+
+		queuer returns all the directions from the Square passed as parameter that
+		the user wants to enqueue
+	*/
+	BFS(Position source,
+      Matrix<Square> const& grid,
+			std::function<void(Square const&, Direction)> visitor,
+			std::function<std::vector<Direction>(Square const&)> queuer)
+		    : m_visitor{visitor}, m_queuer{queuer}, m_grid{grid}, m_search{grid.rows(), grid.cols()}
+	{
+    m_queue.push(Info{source, Direction::null});
+    m_search.queue(source);
+	}
+
+	void run()
+	{
+		while (!m_queue.empty())
+    {
+      auto info = m_queue.front();
+      m_queue.pop();
+
+      Square const& sq = m_grid[info.pos];
+      auto directions = m_queuer(sq);
+      for (auto&& dir : directions)
+      {
+        auto new_pos {info.pos + dir};
+        if (new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= m_grid.rows() || new_pos.y >= m_grid.cols())
+          continue;
+
+        if (m_search.queued(new_pos) || m_search.contains(new_pos))
+          continue;
+
+        m_queue.push(Info{new_pos, new_pos.to(info.pos)});
+        m_search.queue(new_pos);
+      }
+
+      m_visitor(sq, info.from_where);
+      m_search.add(info.pos);
+    }
+  }
+
+private:
+	std::function<void(Square const&, Direction)> m_visitor;
+	std::function<std::vector<Direction>(Square const&)> m_queuer;
+
+  Matrix<Square> const& m_grid;
+
+	// State
+  PositionSet m_search;
+  std::queue<Info> m_queue {};
+};
+
 //Utility functions
 const vector<Direction> NORMAL_DIRS = {Direction::up, Direction::down, Direction::left, Direction::right};
+const vector<Direction> DIAGONAL_DIRS = {Direction::UL, Direction::UR, Direction::DL, Direction::DR};
 bool isDiagonal(Direction d){return d >= Direction::UL;}
 bool Board::unitOk(int uid)const {return uid >= 0 and uid < static_cast<int>(info.unitsVector.size());}
 template <typename T>
@@ -162,13 +275,11 @@ void Board::iniBoard(int s, int rounds, std::ifstream& config_file)
       sq.p = ij;
       sq.uDrawer = -1;
       sq.plPainter = -1;
-      sq.isBorder = false;
       sq.isAbility = false;
       sq.plDrawer = -1;
       sq.u = nullptr;
       sq.b = nullptr;
       sq.bb = nullptr;
-      sq.closes = false;
       info.square_map[ij] = sq;
     }
   }
@@ -238,68 +349,8 @@ void Board::killUnit(Unit& u)
   erasePath(u.id(),drawStarts[u.id()].second);
 }
 
-void Board::deenclose(Position p){
-  if(not info.posOk(p)) return;
-  if(not info.square(p).closes) return;
-  
-  info.square_map[p].closes = false;
-  deenclose(p+Direction::up);
-  deenclose(p+Direction::down);
-  deenclose(p+Direction::left);
-  deenclose(p+Direction::right);
-}
-
-void Board::enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax)
-{
-  if(not info.posOk(p)) return;
-  if(info.square(p).closes) return;
-  if(info.square(p).uDrawer == uid or (info.square(p).painter() == plId and info.square(p).border()))
-  {
-    info.square_map[p].closes = true;
-    if(not info.square(p).border()){
-      info.square_map[p].isBorder = true;
-    }
-    if(p.x < xmin) xmin = p.x;
-    if(p.x > xmax) xmax = p.x;
-    if(p.y < ymin) ymin = p.y;
-    if(p.y > ymax) ymax = p.y;
-
-    enclose(plId,uid,p+Direction::up,   xmin,xmax,ymin,ymax);
-    enclose(plId,uid,p+Direction::down, xmin,xmax,ymin,ymax);
-    enclose(plId,uid,p+Direction::left, xmin,xmax,ymin,ymax);
-    enclose(plId,uid,p+Direction::right,xmin,xmax,ymin,ymax);
-  }
-}
-
 //used to flood
 #define COLORINDEX 10
-
-void Board::flood(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid){
-  //borders are drawings and painted squares
-  if(p.x < 0 or p.y < 0 or p.x >= grid.rows() or p.y >= grid.cols())
-  {
-    if(correct) correct = false;
-    return;
-  }
-  //Else,
-  Square sq = grid[p];
-  if((sq.painter() >= COLORINDEX) or (sq.uDrawer == uid) or (sq.painter() == plId))
-  {
-    if(debugFlood){
-      if(sq.painter() == plId) std::cerr << "found border at " << p << "\n";
-      else if(sq.plDrawer == plId) std::cerr << "found drawing at " << p << "\n";
-    }
-    return;
-  }
-  //Else,
-  if(debugFlood) std::cerr << "flooded position " << int(p.x) << "," << int(p.y) << " with col " << col << "\n";
-  
-  grid[p].plPainter = col;
-  flood(plId,uid,col,p+NORMAL_DIRS[0],correct,grid);
-  flood(plId,uid,col,p+NORMAL_DIRS[1],correct,grid);
-  flood(plId,uid,col,p+NORMAL_DIRS[2],correct,grid);
-  flood(plId,uid,col,p+NORMAL_DIRS[3],correct,grid);
-}
 
 void Board::perpendicularDirections(Direction dir, Direction& res1, Direction& res2)
 {
@@ -315,53 +366,257 @@ void Board::perpendicularDirections(Direction dir, Direction& res1, Direction& r
   }
 }
 
-Position Board::followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid)
+std::tuple<Position, Position> Board::calculateSubsection(int plId, Position source)
 {
-  if(act == Position(-1,-1)) return act;
+  /* BFS from source:
+     We only enqueue border squares and our drawings
+     Calculate min and max positions */
 
-  Direction d = act.to(ant);
-  Position next;
+  Position min { info.rows(), info.cols() };
+  Position max { -1, -1 };
 
-  for(int i = 0; i < 4; ++i)
+  auto IsBorder = [this](Square const& sq, int plId) -> bool
   {
-    if(NORMAL_DIRS[i] == d) continue;
+    if (sq.painter() != plId && (!sq.drawn() || sq.drawer() != plId))
+      return false;
 
-    Position aux = act+NORMAL_DIRS[i];
-    if(aux.x < 0 or aux.y < 0 or aux.x >= grid.rows() or aux.y >= grid.cols()) continue;
+    for (auto&& dir : NORMAL_DIRS)
+    {
+      Position aux { sq.pos() + dir };
+      if (aux.x < 0 || aux.y < 0 || aux.x >= info.rows() || aux.y >= info.cols())
+        continue;
 
-    Square sq = grid[aux];
-    if(sq.uDrawer == uid){ return aux; }
-  }
+      Square const& sq_aux = info.square(aux);
+      if (!sq_aux.painted() || sq_aux.painter() != plId)
+        return true;
+    }
+    return false;
+  };
 
-  //If it has not returned, it means end of drawing
-  return Position(-1,-1);
+  BFS bfs
+  {
+    source,
+    info.square_map,
+    // Visitor
+    [&min, &max](Square const& sq, Direction from)
+    {
+      Position pos = sq.pos();
+      if (pos.x < min.x)
+        min.x = pos.x;
+
+      if (pos.x > max.x)
+        max.x = pos.x;
+
+      if (pos.y < min.y)
+        min.y = pos.y;
+
+      if (pos.y > max.y)
+        max.y = pos.y;
+    },
+    // Queuer
+    [plId, this, IsBorder](Square const& sq) -> std::vector<Direction>
+    {
+      std::vector<Direction> result{};
+      for (auto&& dir : DIAGONAL_DIRS)
+      {
+        Position aux = sq.pos()+dir;
+        if (aux.x < 0 || aux.y < 0 || aux.x >= info.rows() || aux.y >= info.cols())
+          continue;
+
+        Square const& sq_aux = info.square(aux);
+        if (IsBorder(sq_aux, plId))
+        {
+          auto [dir_a, dir_b] = utils::decompose(dir);
+          Square const& sq_a = info.square(sq.pos()+dir_a);
+          Square const& sq_b = info.square(sq.pos()+dir_b);
+          // If just one of them is ours and the other is not
+          bool ours_a = sq_a.painter() == plId || sq_a.drawer() == plId;
+          bool ours_b = sq_b.painter() == plId || sq_b.drawer() == plId;
+          if (ours_a != ours_b)
+          {
+            result.push_back(dir);
+          }
+        }
+      }
+
+      for (auto&& dir : NORMAL_DIRS)
+      {
+        Position aux = sq.pos()+dir;
+        if (aux.x < 0 || aux.y < 0 || aux.x >= info.rows() || aux.y >= info.cols())
+          continue;
+
+        Square const& sq_aux = info.square(aux);
+        if (IsBorder(sq_aux, plId))
+          result.push_back(dir);
+      }
+      return result;
+    }
+  };
+  bfs.run();
+
+  return std::make_tuple( min, max );
 }
 
-void Board::paint(int plId, int uid, Position in, Position out){
+std::vector<int> Board::followDrawingAndFlood(int plId, int uid, Matrix<Square>& grid, Position source, Position min)
+{
+  std::vector<int> colors{COLORINDEX};
+  std::vector<bool> success{true};
+  int validated = -1; // The last element in the above vectors does not count
 
-  /*Follows the drawing and tries to flood in all directions that are not drawn*/
+  // Use if needed
+  /* auto PrintGrid = [&grid, source, min]()
+  {
+    for (int row {0}; row < grid.rows(); ++row)
+    {
+      for (int col {0}; col < grid.cols(); ++col)
+      {
+        Position p{row, col};
+        if (p == source-min)
+          cerr << 'S';
+        else if (grid[p].drawn())
+          cerr << grid[p].drawer()+4;
+        else if (grid[p].painter() == -1)
+          cerr << '-';
+        else if (grid[p].painter() >= 10)
+          cerr << char('A'+grid[p].painter());
+        else
+          cerr << grid[p].painter();
+      }
+      cerr << endl;
+    }
+  };
+  */
 
-  if(debugPaint) cerr << "Painting at " << in << "\n";
+  BFS follow_drawing
+  {
+    source-min,
+    grid,
+    // Visitor
+    [&colors, &success, &grid, &validated, uid, plId, min](Square const& sq, Direction from)
+    {
+      for (auto&& dir : NORMAL_DIRS)
+      {
+        Position aux = sq.pos()+dir;
+        Position aux_grid = aux-min;
+        if (aux_grid.x < 0 || aux_grid.y < 0 || aux_grid.x >= grid.rows() || aux_grid.y >= grid.cols())
+          continue;
 
-  //Calculates the maximum subsection of the grid to paint
-  int xmin,xmax,ymin,ymax;
-  xmin = xmax = out.x;
-  ymin = ymax = out.y;
-  enclose(plId,uid,out,xmin,xmax,ymin,ymax);
-  deenclose(out);
+        Square const& sq_aux = grid[aux_grid];
+        if ((sq_aux.drawn() && sq_aux.unitDrawer() == uid) || sq_aux.painter() == plId || sq_aux.painter() >= COLORINDEX)
+          continue;
 
-  if(debugPaint) cerr << "Enclosed perimeter: " << xmin << "," << ymin << " " << xmax << "," << ymax << "\n";
+        bool flooded {false};
+        BFS flooder
+        {
+          aux-min,
+          grid,
+          // Visitor
+          [plId, uid, &flooded, &grid, &colors, min](Square const& sq, Direction from)
+          {
+            if ((sq.drawn() && sq.unitDrawer() == uid) || sq.painter() == plId || sq.painter() >= COLORINDEX)
+              return;
 
-  int rows = xmax-xmin+1;
-  int cols = ymax-ymin+1;
+            if (!flooded)
+              flooded = true;
+
+            grid[sq.pos()-min].plPainter = colors.back();
+          },
+          // Queuer
+          [&colors, &success, &grid, plId, uid, min](Square const& sq) -> std::vector<Direction>
+          {
+            std::vector<Direction> result{};
+
+            for (auto&& dir : NORMAL_DIRS)
+            {
+              Position aux = sq.pos()+dir;
+              Position aux_grid = aux-min;
+              if (aux_grid.x < 0 || aux_grid.y < 0 || aux_grid.x >= grid.rows() || aux_grid.y >= grid.cols())
+              {
+                if (success.back())
+                  success.back() = false;
+              
+                continue;
+              }
+              
+              Square const& sq_aux = grid[aux_grid];
+              if ((sq_aux.drawn() && sq_aux.unitDrawer() == uid) || sq_aux.painter() == plId || sq_aux.painter() >= COLORINDEX)
+                continue;
+
+              result.push_back(dir);
+            }
+
+            return result;
+          }
+        };
+        flooder.run();
+
+        if (flooded)
+        {
+          validated++;
+          colors.push_back(colors.back()+1);
+          success.push_back(true);
+        }
+      }
+    },
+    // Queuer
+    [&grid, uid, min](Square const& sq) -> std::vector<Direction>
+    {
+      std::vector<Direction> result;
+      for (auto&& dir : NORMAL_DIRS)
+      {
+        Position aux = sq.pos()+dir;
+        Position aux_grid = aux-min;
+        if (aux_grid.x < 0 || aux_grid.y < 0 || aux_grid.x >= grid.rows() || aux_grid.y >= grid.cols())
+          continue;
+
+        Square const& sq_aux = grid[aux_grid];
+        if (sq_aux.drawn() && sq_aux.unitDrawer() == uid)
+        {
+          result.push_back(dir);
+        }
+      }
+      return result;
+    }
+  };
+  follow_drawing.run();
+
+  std::vector<int> valid_colors;
+  valid_colors.reserve(colors.size());
+  for (int i = 0; i <= validated; ++i)
+  {
+    if (success[i])
+    {
+      valid_colors.push_back(colors[i]);
+    }
+  }
+  return valid_colors;
+}
+
+void Board::paint(int plId, int uid, Position out)
+{
+  /*
+    Painting remastered:
+    1. We calculate a subsection of the grid to do calculations on
+    2. We then follow the drawing that caused the paint event, flooding in all directions with fictional colours
+      These floods are successful iff they don't reach any edge of the subgrid
+    3. Paint squares of valid flood colours
+  */
+
+  auto [min, max] = calculateSubsection(plId, out);
+
+  if(debugPaint) cerr << "Painting at " << out << "\n";
+  if(debugPaint) cerr << "Enclosed perimeter: " << min << ", " << max << "\n";
+
+  int rows = max.x-min.x+1;
+  int cols = max.y-min.y+1;
   Matrix<Square> map(rows,cols);
 
   //Copies such subsection
-  for(int i = xmin; i <= xmax; ++i)
+  for(int i = min.x; i <= max.x; ++i)
   {
-    for(int j = ymin; j <= ymax; ++j)
+    for(int j = min.y; j <= max.y; ++j)
     {
-      Position mapPos(i-xmin,j-ymin);
+      Position mapPos(i-min.x,j-min.y);
       Position squareMapPos(i,j);
       map[mapPos] = info.square_map[squareMapPos];
     }
@@ -372,71 +627,15 @@ void Board::paint(int plId, int uid, Position in, Position out){
   //Erase starting position oh this painter unit's drawing
   drawStarts[uid].first = Position(-1,-1);
 
-  //Variables to follow the drawing and flood
-  Position act = Position(out.x-xmin,out.y-ymin);
-  Position ant = Position(in.x-xmin,in.y-ymin);
-  Position next = followDrawing(uid,act,ant,map);
-
-  if(debugPaint)
-  {
-    std::cerr << "Followed drawing #1\n";
-    std::cerr << "next: "<< next << "\n";
-  }
-
-  //Visited list to avoid loops
-  vector<vector<bool>> visitedNext(xmax-xmin+1,vector<bool>(ymax-ymin+1,false));
-
-  vector<int> validColors; //contains valid flood colors
-  int colAct = COLORINDEX;
-
-  //Follows the drawings and tries to flood
-
-  while(act != Position(-1,-1) and not visitedNext[act.x][act.y])
-  {  
-    visitedNext[act.x][act.y] = true;
-    Direction d1 = Direction::null;
-    Direction d2 = Direction::null;
-    perpendicularDirections(act.to(ant),d1,d2);
-
-    if(d1 == Direction::null or d2 == Direction::null)
-    {
-      std::cerr << "wrong perpendicularDirections() output, wtf\n";
-      exit(1);
-    }
-
-    Direction d3 = inverse(act.to(ant));
-    vector<Direction> floodDirs;
-    floodDirs.reserve(3);
-    floodDirs.emplace_back(d1);
-    floodDirs.emplace_back(d2);
-    floodDirs.emplace_back(d3);
-
-    //Tries to flood
-    for(Direction d : floodDirs)
-    {
-      if(d == act.to(ant)) continue;
-
-      Position floodPos = act+d;
-      if(floodPos.x < 0 or floodPos.y < 0 or floodPos.x >= map.rows() or floodPos.y >= map.cols()) continue;
-      if(map[floodPos].uDrawer == uid) continue;
-
-      bool valid = true;
-      flood(plId,uid,colAct,floodPos,valid,map);
-      if(valid) { validColors.push_back(colAct); }
-      ++colAct;
-    }
-
-    ant = act;
-    act = next;
-    next = followDrawing(uid,act,ant,map);
-  }
+  std::vector<int> successful_colors = followDrawingAndFlood(plId, uid, map, out, min);
 
   //Paints correctly flooded squares
-  for(int i = 0; i < map.rows(); ++i){
+  for(int i = 0; i < map.rows(); ++i)
+  {
     for(int j = 0; j < map.cols(); ++j)
     {
       Position pos(i,j);
-      Position sqpos(i+xmin,j+ymin);
+      Position sqpos(i+min.x,j+min.y);
       Square sq = map[pos];
 
       if(sq.uDrawer == uid)
@@ -449,22 +648,22 @@ void Board::paint(int plId, int uid, Position in, Position out){
 
       if(sq.painter() < COLORINDEX) continue;
       
-      if(findInVector(sq.painter(),validColors))
+      if(findInVector(sq.painter(),successful_colors))
       {
         map[pos].plPainter = plId;
 
-        //Erases start of possible drawings
+        // Erases start of possible drawings
         for(int i = 0; i < drawStarts.size(); ++i)
         {
-          if(drawStarts[i].first == Position(pos.x+xmin,pos.y+ymin))
+          if(drawStarts[i].first == Position(pos.x+min.x,pos.y+min.y))
           {
-            if(debugDrawErase) cerr << "erasing drawing starting in " << Position(pos.x+xmin,pos.y+ymin) << "\n";
+            if(debugDrawErase) cerr << "erasing drawing starting in " << Position(pos.x+min.x,pos.y+min.y) << "\n";
             erasePath(i,drawStarts[i].second);
           }
         }
 
-        //Erases all drawings
-        if(info.square(sqpos).drawn() and info.square(sqpos).uDrawer != uid)
+        // Erases all drawings (INCLUDING those from allies)
+        if(info.square(sqpos).drawn() && info.square(sqpos).uDrawer != uid)
         {
           if(debug) std::cerr << std::endl << "erasing path that started at " << i <<"," << j << "\n\n";
           erasePath(info.square(sqpos).uDrawer,sqpos);
@@ -473,19 +672,21 @@ void Board::paint(int plId, int uid, Position in, Position out){
     }
   }
 
-  //Copies the painted squares back
-  for(int i = xmin; i <= xmax; ++i){
-    for(int j = ymin; j <= ymax; ++j)
+  // Copies the painted squares back
+  for(int i = min.x; i <= max.x; ++i)
+  {
+    for(int j = min.y; j <= max.y; ++j)
     {
-      Position mapPos(i-xmin,j-ymin);
+      Position mapPos(i-min.x,j-min.y);
       Position squareMapPos(i,j);
       Square sq = info.square_map[squareMapPos];
 
-      if(map[mapPos].painter() == plId and sq.painter() != plId)
+      if(map[mapPos].painter() == plId && sq.painter() != plId)
       {
         sq.plPainter = plId;
       }
-      if(sq.uDrawer == uid)
+      // Paints the unit's drawing too
+      if (sq.uDrawer == uid)
       {
         sq.plPainter = plId;
         sq.uDrawer = -1;
@@ -495,44 +696,6 @@ void Board::paint(int plId, int uid, Position in, Position out){
     }
   }
 
-  //Updates borders
-  if(debugPaint) std::cerr << "updating borders...\n";
-  for(int i = xmin-1; i <= xmax+1; ++i){
-    for(int j = ymin-1; j <= ymax+1; ++j)
-    {
-      Position pos = Position(i,j);
-      if(not info.posOk(pos)) continue;
-      if(info.square_map[pos].plPainter != plId) continue;
-      
-      bool border = false;
-      for(int index = 0; index < 1; ++index)
-      {
-        Position pos2 = pos+Direction::UL;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::up;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::UR;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::left;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::right;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::DL;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::down;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-        pos2 = pos+Direction::DR;
-        if(info.posOk(pos2) and info.square_map[pos2].plPainter != plId){border = true;break;}
-      }
-      
-      if(border){
-        if(not info.square_map[pos].border()) info.square_map[pos].isBorder = true;
-      }
-      else{
-        if(info.square_map[pos].border()) info.square_map[pos].isBorder = false;
-      }
-    }
-  }
   if(debug) std::cerr << "paint function end\n";
 }
 
@@ -563,7 +726,7 @@ void Board::draw(int plId, int uid, Position pnew, Position pant, Direction dir)
     //if behind you is a drawing and you enter a secure painted area, enclose and paint
     if(snew.plPainter == plId)
     {
-      paint(plId,uid,snew.p,sant.p);
+      paint(plId,uid,/*snew.p,*/sant.p);
       return;
     }
   }
@@ -645,7 +808,7 @@ int Board::fight(Unit& u1, Unit& u2, FightMode fm)
 
 bool Board::executeOrder(int plId, Order ord)
 {
-  if(debugOrders) std::cerr << "executing order to " << ord.unitId << " owned by " << plId << " ";
+  if(debugOrders) std::cerr << "executing order by " << info.unitsVector[ord.unitId].pl << ": " << ord << std::endl;
   if(debugOrders) std::cerr << ord.dir << " " << ord.type << " " << ord.unitId << "\n";
 
   if(not unitOk(ord.unitId))
@@ -670,7 +833,7 @@ bool Board::executeOrder(int plId, Order ord)
     { //Not on same-color domain
       if(isDiagonal(ord.dir))
       {
-        std::cerr << "warning: unit " << u.id() << " by player " << u.player() << " cannot move diagonally here (pos: " << u.position() << ")\n";
+        std::cerr << "warning: unit " << u.id() << " by player " << u.player() << " cannot move diagonally here (pos: " << u.position() << "), (order: " << ord << ")\n";
         return false;
       }
     }
@@ -837,13 +1000,13 @@ bool Board::executeOrder(int plId, Order ord)
         FightMode fm = FightMode::Fair;
         if(isDiagonal(ord.dir))
         {
-          Square sqaux = info.square(sq.p+dirAux);
+          Square sqaux = info.square(u.position()+dirAux);
           if(isDiagonal(sqaux.p.to(u.p)) and sqaux.painter() != sqaux.unit().player())
           {
             fm = FightMode::Attacks;
           }
         }
-        fight(u,info.unitsVector[sq.u->id()],fm);
+        fight(u,info.unitsVector[info.square_map[u.position()+dirAux].u->id()],fm);
         return true;
       }
       else //Free attack: at the end of all turns, looks again to see if someone has moved here and attacks
@@ -887,7 +1050,7 @@ void Board::performFreeAttacks()
     freeAttacks.pop();
 
     if(killedUnits[f.uid]) continue;
-    if(not info.square(f.tPos).hasUnit()) continue;
+    if(not info.square(f.tPos).hasUnit() || !info.square(f.uPos).hasUnit()) continue;
     if(info.square(f.tPos).unit().player() == info.square(f.uPos).unit().player()) continue;
 
     FightMode fm = FightMode::Fair;
@@ -904,118 +1067,59 @@ void Board::performFreeAttacks()
 
 void Board::popBubble(Position p, bool isForced)
 {
-  if(not info.posOk(p)) return;
+  // Some validation
+  if (!info.posOk(p)) 
+    return;
   Square sq = info.square(p);
-  if(not sq.hasBubble()) return;
+  if (!sq.hasBubble()) 
+    return;
   Bubble b = info.bubble(p);
+  int plId = b.player();
 
-  queue<Position> affected;
-  vector<Position> toPaint = {p, p+Direction::up, p+Direction::down, p+Direction::left, p+Direction::right};
-
-  for(int i = 0; i < toPaint.size(); ++i)
+  /* Paint the five squares if possible
+     If any steps on an enemy drawing, erase
+     If it's an ally drawing, trigger painting (on both ends if there are two)
+  */
+  std::vector<Direction> paint_dirs { Direction::null, Direction::up, Direction::down, Direction::left, Direction::right };
+  std::vector<Position> paint_triggers{};
+  
+  for (auto&& dir : paint_dirs)
   {
-    Position aux = toPaint[i];
-    if(not info.posOk(aux)) continue;
-    Square sqaux = info.square(aux);
-    if(sqaux.ability()) continue;
+    Position paint_pos {p+dir};
+    if (!info.posOk(paint_pos))
+      continue;
 
-    affected.push(aux);
-    
-    if(sqaux.painter() != b.player())
+    Square& sq_paint = info.square_map[paint_pos];
+
+    // Paint this square
+    sq_paint.plPainter = plId;
+
+    // Check for drawings
+    if (sq_paint.drawn() && sq_paint.drawer() == plId)
     {
-      info.square_map[aux].plPainter = b.player();
+      if (sq_paint.drawer() == plId)
+        paint_triggers.push_back(paint_pos);
+      else
+        erasePath(sq_paint.unitDrawer(), paint_pos);
     }
   }
 
-  for(int i = 0; i < toPaint.size(); ++i)
+  for (auto&& pos : paint_triggers)
   {
-    Position aux = toPaint[i];
-    if(not info.posOk(aux)) continue;
-    Square sqaux = info.square(aux);
-    if(not sqaux.drawn()) continue;
-    
-    if(sqaux.plDrawer == b.player())
+    Square const& sq_aux = info.square(pos);
+    if (sq_aux.drawn() && sq_aux.drawer() == plId)
     {
-      if(debug) std::cerr << "painting from bubble pop at " << int(aux.x) << "," << int(aux.y) << "\n";
-
-      //Find out drawing
-      Position drawingOut(-1,-1);
-      for(int i = 0; i < NORMAL_DIRS.size(); ++i)
-      {
-        Position aux2 = aux+NORMAL_DIRS[i];
-        if(not info.posOk(aux2)) continue;
-        Square sqaux2 = info.square_map[aux2];
-        if(sqaux2.uDrawer == sqaux.uDrawer)
-        {
-          drawingOut = aux2;
-          break;
-        }
-      }
-      if(drawingOut == Position(-1,-1))
-      {
-        if(debug) std::cerr << "popBubble: didn't find a position" << std::endl;
-        if(sqaux.drawn())
-        {
-          erasePath(sqaux.uDrawer,drawStarts[sqaux.uDrawer].second);
-        }
-        continue;
-      }
-
-      paint(b.player(),sqaux.uDrawer,aux,drawingOut);
-
-      //Erase drawing
-      sqaux = info.square(aux);
-      if(sqaux.drawn())
-      {
-        erasePath(sqaux.uDrawer,drawStarts[sqaux.uDrawer].second);
-      }
-    }
-    else if(sqaux.plDrawer != -1)
-    {
-      if(debug)
-      {
-        std::cerr << "at pos " << int(sqaux.pos().x) << "," << int(sqaux.pos().y) << ": "; 
-        std::cerr << "call to erasePath from popBubble because plDrawer is " << int(sqaux.plDrawer);
-        std::cerr << " and bubble is " << b.player() << "\n";
-      }
-      erasePath(sqaux.uDrawer,aux);
+      paint(plId, sq_aux.unitDrawer(), pos);
     }
   }
 
-  vector<Position> affPos = {p+Direction::UL, p+Direction::UR, p+Direction::DL, p+Direction::DR, Position(p.x-2,p.y), Position(p.x+2,p.y), Position(p.x,p.y-2), Position(p.x,p.y+2)};
-
-  for(Position p : affPos)
-    if(info.posOk(p)) affected.push(p);
-
-  vector<Direction> dirs = {Direction::up, Direction::down, Direction::left, Direction::right};
-
-  while(not affected.empty())
-  {
-    Square sq = info.square(affected.front());
-    affected.pop();
-
-    for(int i = 0; i < dirs.size(); ++i)
-    {
-      Position aux = sq.pos()+dirs[i];
-      if(not info.posOk(aux)) continue;
-      Square sqaux = info.square(aux);
-
-      if(sq.painter() != sqaux.painter())
-      {
-        info.square_map[sq.pos()].isBorder = true;
-        info.square_map[aux].isBorder = true;
-        break;
-      }
-    }
-  }
-
-  if(isForced){ //Done by someone else
+  // Give points
+  if(isForced) // Triggered by someone else
     info.playerPoints[b.player()] += info.pointsPerPop;
-  }
-  else{
+  else
     info.playerPoints[b.player()] += info.pointsPerBubble;
-  }
 
+  // Update information of both the square and the bubble
   info.square_map[b.position()].bb = nullptr;
   b.pl = -1;
   b.p = Position(-1,-1);
@@ -1068,52 +1172,65 @@ void Board::useAbility(int plId, Position p)
     std::cerr << "xmin: " << xmin << " " << "xmax: " << xmax << " " << "ymin: " << ymin << " " << "ymax: " << ymax << "\n";
   } 
 
-  //Paint and highlight all squares as 'ability squares'
-  //Erase all drawings made by enemies
-  //Erase all ally-drawn squares if they are not border
-  for(int i = xmin; i <= xmax; ++i){
+  std::vector<Position> painting_candidates{};
+
+  // Paint and highlight all squares as 'ability squares'
+  // Erase all drawings made by enemies
+  // Store possible painting spots
+  for(int i = xmin; i <= xmax; ++i)
+  {
     for(int j = ymin; j <= ymax; ++j)
     {
-      Position pos(i,j);
-      if(not info.posOk(pos)) continue;
+      Position pos{ i, j };
+      if (!info.posOk(pos)) 
+        continue;
 
-      Square sq = info.square(pos);
-      if(sq.ability() and sq.painter() != plId)
-      {
+      Square& sq = info.square_map[pos];
+      if (sq.ability() && sq.painter() != plId)
         invalidateAbility(sq.painter(),pos);
-      }
-      if(sq.drawn())
+
+      if (sq.drawn())
       {
-        if(sq.plDrawer != plId)
+        if (sq.plDrawer != plId)
         {
           if(debug)
           {
             std::cerr << "square drawer is " << int(sq.plDrawer) << " but plId is " << plId << "\n";
             std::cerr << "erasing path\n";
           }          
-          erasePath(sq.uDrawer,pos);
-          sq = info.square(pos); //updating            
+          erasePath(sq.uDrawer,pos);          
         }
-        else if(sq.plDrawer == plId)
+        else // if (sq.plDrawer == plId)
         {
-          if(i != xmin and i != xmax and j != ymin and j != ymax)
+          if (i != xmin && i != xmax && j != ymin && j != ymax)
           {
-            if(drawStarts[sq.uDrawer].first != Position(-1,-1)) 
+            if (drawStarts[sq.uDrawer].first != Position(-1,-1)) 
               drawStarts[sq.uDrawer].first = Position(-1,-1);
             sq.plDrawer = -1;
             sq.uDrawer = -1;
           }
+          else
+          {
+            // Store for later consideration
+            painting_candidates.push_back(sq.pos());
+          }
         }
       }
-      sq.isBorder = false;
       sq.plPainter = plId;
       sq.isAbility = true;
-      sq.counter = info.abilityDuration+1; //+1 because unfortunately, counter is decremented after using abilities
-      info.square_map[pos] = sq;
+      sq.counter = info.abilityDuration+1; //+1 because it is decremented after using abilities
     }
   }
 
-  //Prints ability
+  // Paint (or try to)
+  for (auto&& candidate : painting_candidates)
+  {
+    Square const& sq_candidate = info.square(candidate);
+    if (sq_candidate.drawn() && sq_candidate.drawer() == plId)
+      paint(plId, sq_candidate.unitDrawer(), candidate); 
+  }
+
+  // Prints ability
   if(debug)
   {
     std::cerr << "printing ability " << std::endl;
@@ -1128,202 +1245,6 @@ void Board::useAbility(int plId, Position p)
         else std::cerr << -9 << " ";
       }
       std::cerr << std::endl;
-    }
-  }
-
-  //Looks at the border and makes it border if needed
-  for(int i = ymin; i <= ymax; ++i)
-  {
-    Position p1(xmin,i);
-    if(info.posOk(p1))
-    {
-      Square s1 = info.square(p1);
-      Position up = p1+Direction::up;
-      if(info.posOk(up))
-      {
-        Square sq = info.square(up);
-        if(s1.painter() != sq.painter())
-        {
-          if(s1.painter() != -1)
-          {
-            s1.isBorder = true;
-          }
-          if(sq.painter() != -1)
-          {
-            sq.isBorder = true;
-            info.square_map[up] = sq;
-          }
-        }
-      }
-
-      if(i == xmin or i == xmax) //Special case for corners
-      {
-        if(not s1.border())
-        {
-          Position spec = i == xmin ? p1+Direction::left : p1+Direction::right;
-          if(info.posOk(spec)){
-            Square sq = info.square(spec);
-            if(s1.painter() != sq.painter())
-            {
-              if(s1.painter() != -1)
-              {
-                s1.isBorder = true;
-              }
-              if(sq.painter() != -1)
-              {
-                sq.isBorder = true;
-              }
-            }
-            info.square_map[spec] = sq;
-          }
-        }
-      }
-      info.square_map[p1] = s1;
-    }
-
-    p1 = Position(xmax,i);
-    if(info.posOk(p1))
-    {
-      Square s1 = info.square(p1);
-      Position down = p1+Direction::down;
-      if(info.posOk(down))
-      {
-        Square sq = info.square(down);
-        if(s1.painter() != sq.painter())
-        {
-          if(s1.painter() != -1)
-          {
-            s1.isBorder = true;
-          }
-          if(sq.painter() != -1)
-          {
-            sq.isBorder = true;
-          }
-        }
-        info.square_map[down] = sq;
-      }
-
-      if(i == xmin or i == xmax)
-      { //Special case for corners
-        if(not s1.border())
-        {
-          Position spec = i == xmin ? p1+Direction::left : p1+Direction::right;
-          if(info.posOk(spec))
-          {
-            Square sq = info.square(spec);
-            if(s1.painter() != sq.painter())
-            {
-              if(s1.painter() != -1)
-              {
-                s1.isBorder = true;
-              }
-              if(sq.painter() != -1)
-              {
-                sq.isBorder = true;
-              }
-            }
-            info.square_map[spec] = sq;
-          }
-        }
-      }
-      info.square_map[p1] = s1;
-    }  
-  }
-  for(int i = xmin+1; i <= xmax-1; ++i)
-  {
-    Position p1(i,ymin);
-    if(info.posOk(p1))
-    {
-      Square s1 = info.square(p1);
-      Position left = p1+Direction::left;
-      if(info.posOk(left))
-      {
-        Square sq = info.square(left);
-        if(s1.painter() != sq.painter())
-        {
-          if(s1.painter() != -1)
-          {
-            info.square_map[p1].isBorder = true;
-          }
-          if(sq.painter() != -1)
-          {
-            info.square_map[left].isBorder = true;
-          }
-        }
-      }
-      
-    }
-    p1 = Position(i,ymax);
-    if(info.posOk(p1))
-    {
-      Square s1 = info.square(p1);
-      Position right = p1+Direction::right;
-      if(info.posOk(right))
-      {
-        Square sq = info.square(right);
-        if(s1.painter() != sq.painter())
-        {
-          if(s1.painter() != -1)
-          {
-            info.square_map[p1].isBorder = true;
-          }
-          if(sq.painter() != -1)
-          {
-            info.square_map[right].isBorder = true;
-          }
-        }
-      }
-    }
-  }
-
-  //Paints if needed
-  for(int i = xmin; i <= xmax; ++i){
-    for(int j = ymin; j <= ymax; ++j)
-    {
-      Position pos(i,j);
-      if(info.posOk(pos))
-      {
-        Square sq = info.square(pos);
-        if((pos.x == xmin or pos.x == xmax or pos.y == ymin or pos.y == ymax) and sq.drawn())
-        {
-          if(debug)
-          {
-            std::cerr << "drawer is " << int(sq.uDrawer) << "\n";
-            std::cerr << "pos " << i << "," << j << ", ";
-            std::cerr << "Painting from ability\n";
-            std::cerr << "plId = " << plId << ", uid = " << int(sq.uDrawer) << ", p = " << int(pos.x) << "," << int(pos.y) << "\n";
-            std::cerr << int(sq.plDrawer) << "\n";
-          }          
-
-          Position drawingOut(-1,-1);
-          for(int i = 0; i < NORMAL_DIRS.size(); ++i)
-          {
-            Position aux2 = pos+NORMAL_DIRS[i];
-            if(not info.posOk(aux2)) continue;
-            Square sqaux2 = info.square_map[aux2];
-            if(sqaux2.uDrawer == sq.uDrawer)
-            {
-              drawingOut = aux2;
-              break;
-            }
-          }
-          if(drawingOut == Position(-1,-1))
-          {
-            if(debug) std::cerr << "didn't find out drawing position" << std::endl;
-            info.square_map[pos].uDrawer = -1;
-            info.square_map[pos].plDrawer = -1;
-            continue;
-          }
-
-          paint(plId,sq.uDrawer,pos,drawingOut);
-        }
-        else if(sq.drawn()) //Specific case, DON'T TOUCH
-        {
-          sq.uDrawer = -1;
-          sq.plDrawer = -1;
-          info.square_map[pos] = sq;
-        }
-      }
     }
   }
 }
@@ -1369,6 +1290,9 @@ void Board::resolveAbilities()
   }
 
   vector<bool> canUse(info.numPlayers,true);
+  for (int i = 0; i < canUse.size(); ++i)
+    if(unitsMap[i].first == -1)
+      canUse[i] = false;
 
   //invalidates overlapping abilities
   for(int i = 0; i < unitsMap.size()-1; ++i)
@@ -1588,15 +1512,13 @@ void Board::computeEnergies()
     else
     {
       //Might want to change this when the unit is upgraded
-      if(not u.upgraded() and u.energ > info.energyMin) u.energ--;
+      if(!u.upgraded() && u.energ > info.energyMin) u.energ--;
     }
   }
 }
 
 void Board::executeRound(const vector<Player*>& pl)
 {
-  //if(info.round() == 81) exit(1);
-
   info.old_square_map = info.square_map;
   info.old_playerPoints = info.playerPoints;
   if(debugBasic) std::cerr << "Executing round " << info.round() << "\n";
@@ -1654,17 +1576,6 @@ void Board::executeRound(const vector<Player*>& pl)
     }
   }
 
-  /*
-  for(int i = 0; i < pl.size(); ++i){
-    for(int j = 0; j <= pl[i]->index; ++j){
-      if(executeOrder(i,pl[i]->orderList[j])){
-        if(debugOrders) std::cerr << "order executed succesfully" << std::endl;
-      }
-      else{
-        if(debugOrders) std::cerr << "order didn't execute" << std::endl;
-      }
-    }
-  }*/
   if(debugBasic) std::cerr << "\texecuting free attacks...\n";
   performFreeAttacks();
   if(debugBasic) std::cerr << "\tpopping bubbles...\n";
@@ -1686,8 +1597,6 @@ void Board::executeRound(const vector<Player*>& pl)
 
 void Board::printRound(bool new_viewer)
 {
-  //std::cerr << std::endl << "Printing round " << info.round() << std::endl << std::endl;
-
   if(info.round()==0)
   {
     debugBasic = false;
@@ -1698,8 +1607,8 @@ void Board::printRound(bool new_viewer)
     debugFlood = false;
   }
 
-  //VIEWER FORMAT
-  if(view)
+  // VIEWER FORMAT
+  if (view)
   {
     cout << info.round() << " ";
     if (new_viewer)
@@ -1821,14 +1730,12 @@ void Board::spawnPlayer(int i, int j, int plId)
 
   //Center square
   info.square_map[p].u = &info.unitsVector[plId];
-  info.square_map[p].isBorder = false;
   info.square_map[p].plPainter = plId;
 
   const vector<Direction> DIRS = {DL,Direction::left,UL,down,up,DR,Direction::right,UR};
   for(int k = 0; k < DIRS.size(); ++k)
   {
     Position aux = p+DIRS[k];
-    info.square_map[aux].isBorder = true;
     info.square_map[aux].plPainter = plId;
   }
 }

@@ -8,10 +8,10 @@ ROUNDS_PER_RESPAWN          3
 ROUNDS_PER_BUBBLE           15
 ROUNDS_PER_BUBBLE_MOVE      5
 MAX_ROUNDS_PER_BONUS        4
-POINTS_PER_UNIT             30
-POINTS_PER_BUBBLE           30
-POINTS_PER_POP              50
-POINTS_PER_SQUARE           5
+POINTS_PER_UNIT             500
+POINTS_PER_BUBBLE           500
+POINTS_PER_POP              5000
+POINTS_PER_SQUARE           1
 ENERGY_AT_START             5
 MAX_ENERGY                  20
 MIN_ENERGY                  1
