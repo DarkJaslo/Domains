@@ -174,15 +174,12 @@ Square::Square(const Square& sq){
   plPainter = sq.plPainter;
   plDrawer = sq.plDrawer;
   uDrawer = sq.uDrawer;
-  isBorder = sq.isBorder;
-  closes = sq.closes;
   isAbility = sq.isAbility;
   counter = sq.counter;
 }
 Position Square::pos()const{return p;}
 bool Square::painted()const{return plPainter != -1;}
 bool Square::drawn()const{return uDrawer != -1;}
-bool Square::border()const{return isBorder;}
 bool Square::ability()const{return isAbility;}
 int Square::roundsUntilAbilityEnd()const{return static_cast<int>(counter);}
 int Square::painter()const{return static_cast<int>(plPainter);}

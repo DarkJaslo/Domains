@@ -38,22 +38,16 @@ private:
   //Updates everything to match u's death
   void killUnit(Unit& u);
 
-  //enclose marks squares and this function removes those marks
-  void deenclose(Position p);
-
-  //Saves a rectangle (Position(xmin,ymin),Position(xmax,ymax)) to paint
-  void enclose(int plId, int uid, Position p, int& xmin, int& xmax, int& ymin, int& ymax);
-
-  void flood(int plId, int uid, int col, Position p, bool& correct, Matrix<Square>& grid);
-
   void perpendicularDirections(Direction dir, Direction& res1, Direction& res2);
 
-  Position followDrawing(int uid, Position act, Position ant, Matrix<Square>& grid);
+  std::tuple<Position, Position> calculateSubsection(int plId, Position source);
 
-  //Seriously how the fuck do you document this
-  void paint(int plId, int uid, Position in, Position out);
+  std::vector<int> followDrawingAndFlood(int plId, int uid, Matrix<Square>& grid, Position source, Position min);
 
-  //Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
+  // Still undocumented but 90% less arcane than before
+  void paint(int plId, int uid, Position out);
+
+  // Tries to draw. If in your own territory, it does not. If it steps on a drawing, it tries to paint and erases it. If none of this happens, draws the square at pnew
   void draw(int plId, int uid, Position pnew, Position pant, Direction dir);
 
   enum FightMode{

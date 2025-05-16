@@ -182,8 +182,6 @@ public:
   //Pre: Square is drawn
   //Returns the id of the drawer unit
   int unitDrawer() const;
-  //Returns true if this Square separates territories
-  bool border() const;
   //Returns true if this Square is currently from an ability
   bool ability() const;
   //Returns the number of rounds left for the ability
@@ -228,8 +226,6 @@ private:
   int8_t plPainter;  //Player
   int8_t plDrawer;   //Player
   int8_t uDrawer;    //Unit id
-  bool isBorder;
-  bool closes;    //Used only for painting
   bool isAbility;
   int8_t counter;   //Tells rounds before wearing off. -1 means no counter
 };
