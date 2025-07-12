@@ -1,7 +1,7 @@
 # Domains
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img1.PNG" alt="image 1" title = "A game " width="70%" height="70%">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img1.PNG" alt="image 1" title = "A game " style="width: 70%;">
 </p>
 
 <p>
@@ -21,7 +21,7 @@ Participants code their own players, following a certain set of rules that will 
 Initially, all players are placed in a different corner of the board, with a starting domain of 3x3 squares. The objective is to accumulate points by possessing squares, popping bubbles and killing units. A variable but eventually limited number of units belong to every player, and the player must give orders to them every round. There are three possible orders: moving, attacking and using the ability.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img2.PNG" alt="image 2" title = "A game " width="60%" height="70%">
+<img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img2.PNG" alt="image 2" title = "A game " style="width: 60%;">
 </p>
 <p align="center">
 <span style="color: #777777;">The initial state of the board.
