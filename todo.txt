@@ -1,7 +1,6 @@
 -Include build instructions
 
--Fix painting (still buggy):
-    Redo useAbility 100%
-    Check borders correctly even if it means doing it on a subgrid each time paints happen
+-Make competition-friendly:
+    Count runtime, abort players that run for too long
 
--Painting really sucks sometimes, fix it
+-Update documentation with the updates (mainly viewerV2)
