@@ -4,6 +4,8 @@
 <img src="https://raw.githubusercontent.com/DarkJaslo/Domains/master/img/img1.PNG" alt="image 1" title = "A game " style="width: 70%;">
 </p>
 
+<h2> Clarification: I made this game myself! It's NOT from my university! Assume less and read more! </h2>
+
 <p>
   This game is all about painting and expanding. From two to four programs (players) compete on a board simultaneously for a number of rounds, and the player that gets the most points wins. <b>WARNING!</b> This is still a Beta, so expect some mistakes here and there.
 
